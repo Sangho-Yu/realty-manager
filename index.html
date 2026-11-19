@@ -496,7 +496,7 @@
       return `<svg class="${sizeClass} ${colorClass} shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>`;
     }
 
-    // 폴더별 고유 색상 테마 매핑
+    // 폴더별 고유 색상 테마 매핑 (00 ~ 06 구분)
     function getFolderTheme(pathArr, folderName) {
       const rootName = pathArr.length > 0 ? pathArr[0] : folderName;
       if (rootName.startsWith('00_')) {
@@ -550,7 +550,16 @@
           iconBg: 'bg-amber-50 border-amber-200',
           cardBorder: 'border-amber-200/80 hover:border-amber-400',
           badge: 'bg-amber-50 text-amber-700',
-          tag: '사무소행정'
+          tag: '행정·세무'
+        };
+      }
+      if (rootName.startsWith('06_')) {
+        return {
+          iconColor: 'text-rose-500',
+          iconBg: 'bg-rose-50 border-rose-200',
+          cardBorder: 'border-rose-200/80 hover:border-rose-400',
+          badge: 'bg-rose-50 text-rose-700',
+          tag: '홍보·마케팅'
         };
       }
       return {
@@ -796,7 +805,6 @@
       renderCachedItems();
     }
 
-    // 첨부 이미지 스타일의 깔끔한 선형 폴더 아이콘 트리 렌더링
     window.toggleTreeExpand = (pathStr, e) => {
       e.stopPropagation();
       if (appState.expandedNodes.has(pathStr)) {
@@ -840,7 +848,6 @@
                </span>`
             : `<span class="w-4 h-4 inline-block shrink-0"></span>`;
 
-          // 펼쳐진 상위 폴더는 열린 폴더 아이콘, 그 외에는 색상별 닫힌 선형 폴더 아이콘
           const folderSvg = getOutlineFolderSvg(theme.iconColor, hasKids && isExpanded, "w-4 h-4");
 
           branchHtml += `
@@ -935,7 +942,6 @@
       }
     }
 
-    // 상단 색상별 하위폴더 카드 + 하단 서류 테이블 분리 렌더링
     function renderCachedItems() {
       const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
       let items = [...appState.cachedItems];
@@ -1018,6 +1024,7 @@
       }
     }
 
+    // 기본 표준폴더 일괄 생성 (05_사무소행정_세무 및 06_홍보_마케팅 분리 반영)
     async function initializeStandardStructure() {
       const standardFolders = [
         { path: [], name: '00_공통서식_마스터' },
@@ -1029,16 +1036,20 @@
         { path: [], name: '03_거래완료_보관함' },
         { path: ['03_거래완료_보관함'], name: '2026년_거래완료' },
         { path: [], name: '04_대출상담_금융서류' },
-        { path: [], name: '05_사무소행정_세무' }
-        { path: [], name: '06_홍보_마케팅' }
+        { path: [], name: '05_사무소행정_세무' },
+        { path: ['05_사무소행정_세무'], name: '01_사업자_자격증_공제증서' },
+        { path: ['05_사무소행정_세무'], name: '02_세무_경비_영수증' },
+        { path: [], name: '06_홍보_마케팅' },
+        { path: ['06_홍보_마케팅'], name: '01_블로그_SNS_포스팅' },
+        { path: ['06_홍보_마케팅'], name: '02_DID_영상_단지홍보물' }
       ];
 
-      setBackgroundSyncing(true, true, "구글 드라이브에 표준 6대 폴더 구조를 생성하는 중...");
+      setBackgroundSyncing(true, true, "구글 드라이브에 표준 폴더 구조를 생성하는 중...");
       try {
         for (const f of standardFolders) {
           await createFolderInternal(f.path, f.name);
         }
-        alert("구글 드라이브(내 드라이브 > 부동산업무)에 표준 폴더 구조가 생성되었습니다!");
+        alert("구글 드라이브(내 드라이브 > 부동산업무)에 표준 폴더 구조(00~06)가 생성되었습니다!");
         await refreshCurrentView(true, true);
       } catch (err) {
         alert("폴더 생성 오류: " + err.message);
