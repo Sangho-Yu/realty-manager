@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>부동산이즈 두산공인중개사사무소 | 서류·폴더 통합 관리 시스템</title>
+  <title>부동산이즈 두산공인중개사사무소 | Google Drive 서류·폴더 통합 관리</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -14,9 +14,16 @@
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     .tree-item.active { background-color: #e0f2fe; color: #0369a1; font-weight: 600; border-right: 3px solid #0284c7; }
     .drop-zone-active { border: 2px dashed #0284c7 !important; background-color: #f0f9ff !important; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.8s linear infinite; }
   </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
+
+  <!-- 상단 로딩 표시 바 -->
+  <div id="globalLoadingBar" class="hidden fixed top-0 left-0 right-0 h-1 bg-sky-200 z-50 overflow-hidden">
+    <div class="h-full bg-sky-500 animate-pulse w-full"></div>
+  </div>
 
   <!-- 상단 헤더 -->
   <header class="bg-slate-900 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-2 shadow-md z-20 shrink-0">
@@ -24,53 +31,51 @@
       <button onclick="toggleMobileSidebar()" class="md:hidden p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200" title="폴더 메뉴 열기">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <div class="bg-sky-600 p-2 rounded-lg hidden sm:flex items-center justify-center">
+      <div class="bg-emerald-600 p-2 rounded-lg hidden sm:flex items-center justify-center">
         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
       </div>
       <div>
         <h1 class="text-sm sm:text-base font-bold tracking-tight flex items-center gap-2">
           <span>부동산이즈 두산공인중개사사무소</span>
-          <span class="hidden lg:inline-block text-xs font-normal bg-slate-800 text-sky-300 px-2 py-0.5 rounded border border-slate-700">서류·물건 폴더 통합 관리</span>
+          <span class="hidden lg:inline-block text-xs font-normal bg-slate-800 text-emerald-300 px-2 py-0.5 rounded border border-slate-700">Google Drive 직접 연동 시스템</span>
         </h1>
-        <p id="connectionStatusText" class="text-[11px] text-slate-400">클라우드 서버(doosan-realty) 연결 중...</p>
+        <p id="connectionStatusText" class="text-[11px] text-slate-400">Google Drive (내 드라이브 > 부동산업무) 연결 중...</p>
       </div>
     </div>
 
     <div class="flex items-center gap-2 flex-wrap">
-      <!-- 모드 전환 / 연결 버튼 -->
-      <button onclick="connectCloudMode()" id="btnCloudMode" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white flex items-center gap-1.5 transition shadow-sm">
+      <button onclick="connectGDriveMode()" id="btnGDriveMode" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 transition shadow-sm">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
-        <span>클라우드 실시간 모드</span>
+        <span>Google Drive 연동</span>
       </button>
 
       <button onclick="connectLocalFolder()" id="btnLocalMode" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
         <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-        <span class="hidden sm:inline">내 PC 폴더 연결</span>
+        <span class="hidden sm:inline">내 PC 로컬폴더</span>
         <span class="sm:hidden">PC폴더</span>
       </button>
 
       <button onclick="openCloudInfoModal()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 transition shadow-sm">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-        <span>모바일·동기화 설정</span>
+        <span>모바일·연동 정보</span>
       </button>
     </div>
   </header>
 
   <!-- 이전 PC 폴더 빠른 복원 배너 -->
-  <div id="savedLocalBanner" class="hidden bg-emerald-50 border-b border-emerald-200 px-4 py-2 flex items-center justify-between text-xs text-emerald-900 shrink-0">
+  <div id="savedLocalBanner" class="hidden bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between text-xs text-amber-900 shrink-0">
     <div class="flex items-center gap-2">
-      <span class="font-semibold">💾 이전에 연결한 PC 작업폴더가 있습니다:</span>
+      <span class="font-semibold">💾 이전에 연결한 PC 로컬폴더가 있습니다:</span>
       <span id="savedLocalFolderName" class="font-bold underline"></span>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick="restoreSavedLocalFolder()" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-semibold">바로 연결하기</button>
-      <button onclick="clearSavedLocalFolder()" class="px-2 py-1 text-emerald-700 hover:underline">기록 해제</button>
+      <button onclick="restoreSavedLocalFolder()" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold">로컬모드 열기</button>
+      <button onclick="clearSavedLocalFolder()" class="px-2 py-1 text-amber-700 hover:underline">기록 해제</button>
     </div>
   </div>
 
   <!-- 메인 컨테이너 -->
   <div class="flex-1 flex overflow-hidden relative">
-    <!-- 모바일 배경 오버레이 -->
     <div id="mobileBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/50 z-20 hidden md:hidden"></div>
 
     <!-- 좌측 사이드바 (폴더 트리) -->
@@ -81,24 +86,22 @@
           <span>+ 새 폴더 마법사 (물건/고객)</span>
         </button>
         <button onclick="initializeStandardStructure()" class="w-full py-1.5 px-3 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition">
-          <svg class="w-3.5 h-3.5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
           <span>기본 표준폴더 일괄 생성</span>
         </button>
       </div>
 
       <div class="px-3 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between border-b border-slate-100">
-        <span>폴더 구조 탐색기</span>
-        <button onclick="refreshCurrentView()" class="text-sky-600 hover:text-sky-800" title="새로고침">↻ 새로고침</button>
+        <span>구글 드라이브 폴더 구조</span>
+        <button onclick="refreshCurrentView(true)" class="text-sky-600 hover:text-sky-800 font-semibold" title="새로고침">↻ 동기화</button>
       </div>
 
-      <div id="folderTreeContainer" class="flex-1 overflow-y-auto custom-scrollbar py-2 text-xs select-none">
-        <!-- 트리 렌더링 영역 -->
-      </div>
+      <div id="folderTreeContainer" class="flex-1 overflow-y-auto custom-scrollbar py-2 text-xs select-none"></div>
 
       <div class="p-3 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-500">
         <div class="flex items-center justify-between">
-          <span>동기화 코드:</span>
-          <span id="sidebarWorkspaceBadge" class="font-mono font-bold text-sky-700">doosan-realty-main</span>
+          <span>저장 위치:</span>
+          <span class="font-bold text-emerald-700">내 드라이브 &gt; 부동산업무</span>
         </div>
       </div>
     </aside>
@@ -107,13 +110,11 @@
     <main id="mainDropZone" class="flex-1 flex flex-col overflow-hidden bg-slate-50/70">
       <!-- 경로(Breadcrumb) & 검색/액션 바 -->
       <div class="bg-white border-b border-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shrink-0">
-        <div id="breadcrumbContainer" class="flex items-center flex-wrap gap-1 text-xs font-medium text-slate-600">
-          <!-- 경로 표시 -->
-        </div>
+        <div id="breadcrumbContainer" class="flex items-center flex-wrap gap-1 text-xs font-medium text-slate-600"></div>
 
         <div class="flex items-center gap-2 flex-wrap">
           <div class="relative">
-            <input type="text" id="searchInput" oninput="renderFileList()" placeholder="현재 폴더 내 검색..." class="pl-7 pr-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-sky-500 w-36 sm:w-48" />
+            <input type="text" id="searchInput" oninput="renderCachedItems()" placeholder="현재 폴더 내 검색..." class="pl-7 pr-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-sky-500 w-36 sm:w-48" />
             <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           </div>
 
@@ -128,7 +129,7 @@
         </div>
       </div>
 
-      <!-- 물건 진행단계 원클릭 이동 배너 (조건부 표시) -->
+      <!-- 물건 진행단계 원클릭 이동 배너 -->
       <div id="stageActionBar" class="hidden bg-amber-50 border-b border-amber-200 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
         <div class="flex items-center gap-2 text-amber-900 font-medium">
           <span>📌 물건 단계 빠른 이관:</span>
@@ -139,15 +140,18 @@
 
       <!-- 폴더 및 파일 목록 리스트 -->
       <div class="flex-1 overflow-y-auto custom-scrollbar p-4">
+        <div id="loadingStateBox" class="hidden flex-col items-center justify-center py-16 text-center text-slate-500">
+          <div class="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full spinner mb-3"></div>
+          <p id="loadingStateText" class="text-xs font-semibold">구글 드라이브와 실시간 통신 중입니다...</p>
+        </div>
+
         <div id="emptyStateBox" class="hidden flex-col items-center justify-center py-16 text-center text-slate-400">
           <svg class="w-12 h-12 mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
           <p class="text-sm font-semibold text-slate-600">이 폴더는 비어 있습니다.</p>
           <p class="text-xs mt-1">파일을 이 화면으로 끌어다 놓거나 상단 <strong>[서류 등록 · 이름지정]</strong> 버튼을 눌러 서류를 추가하세요.</p>
         </div>
 
-        <div id="itemsGrid" class="space-y-2">
-          <!-- 폴더 및 파일 카드 목록 -->
-        </div>
+        <div id="itemsGrid" class="space-y-2"></div>
       </div>
     </main>
   </div>
@@ -164,7 +168,6 @@
       </div>
 
       <div class="p-5 overflow-y-auto custom-scrollbar space-y-4 text-xs">
-        <!-- Step 1: 용도 선택 -->
         <div id="wizardStep1" class="space-y-3">
           <p class="font-bold text-slate-700 text-sm">어떤 용도의 폴더를 만드시겠습니까?</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -199,7 +202,6 @@
           </div>
         </div>
 
-        <!-- Step 2: 필수 정보 입력 -->
         <div id="wizardStep2" class="hidden space-y-3">
           <div id="wizardFieldsProperty" class="space-y-3">
             <div class="grid grid-cols-2 gap-2.5">
@@ -290,10 +292,9 @@
           </div>
         </div>
 
-        <!-- Step 3: 미리보기 및 하위폴더 확인 -->
         <div id="wizardStep3" class="hidden space-y-3">
           <div class="bg-slate-100 p-3 rounded-xl border border-slate-200">
-            <div class="text-[11px] text-slate-500">생성될 상위 폴더 위치 및 이름:</div>
+            <div class="text-[11px] text-slate-500">생성될 구글 드라이브 폴더 위치 및 이름:</div>
             <div id="wizPreviewParentPath" class="font-mono text-[11px] text-sky-700 mt-0.5"></div>
             <div id="wizPreviewFolderName" class="font-bold text-sm text-slate-900 mt-1"></div>
           </div>
@@ -310,7 +311,7 @@
         <div class="ml-auto flex items-center gap-2">
           <button onclick="closeModal('wizardModal')" class="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800">취소</button>
           <button id="btnWizNext" onclick="wizardNext()" class="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold">다음 단계 ▶</button>
-          <button id="btnWizFinish" onclick="executeWizardCreate()" class="hidden px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold">✓ 폴더 일괄 생성</button>
+          <button id="btnWizFinish" onclick="executeWizardCreate()" class="hidden px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold">✓ 구글 드라이브에 생성</button>
         </div>
       </div>
     </div>
@@ -359,53 +360,46 @@
         </div>
 
         <div class="bg-slate-100 p-2.5 rounded-lg border border-slate-200">
-          <div class="text-[11px] text-slate-500">최종 저장될 표준 파일명:</div>
+          <div class="text-[11px] text-slate-500">구글 드라이브에 저장될 최종 파일명:</div>
           <div id="finalFileNamePreview" class="font-mono font-bold text-emerald-800 mt-0.5 break-all">-</div>
         </div>
       </div>
 
       <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
         <button onclick="closeModal('uploadModal')" class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900">취소</button>
-        <button onclick="executeFileUpload()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm">현재 폴더에 저장</button>
+        <button onclick="executeFileUpload()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm">구글 드라이브에 업로드</button>
       </div>
     </div>
   </div>
 
-  <!-- 3. 모바일 · 클라우드 동기화 설정 모달 -->
+  <!-- 3. 모바일 · 구글 드라이브 연동 정보 모달 -->
   <div id="cloudInfoModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-      <div class="bg-indigo-700 text-white px-5 py-3.5 flex items-center justify-between">
-        <h2 class="text-sm font-bold">☁️ 스마트폰 · 태블릿 · 외부PC 실시간 클라우드 연동</h2>
-        <button onclick="closeModal('cloudInfoModal')" class="text-indigo-200 hover:text-white text-lg leading-none">&times;</button>
+      <div class="bg-emerald-700 text-white px-5 py-3.5 flex items-center justify-between">
+        <h2 class="text-sm font-bold">☁️ Google Drive 직접 연동 안내</h2>
+        <button onclick="closeModal('cloudInfoModal')" class="text-emerald-200 hover:text-white text-lg leading-none">&times;</button>
       </div>
 
       <div class="p-5 overflow-y-auto custom-scrollbar space-y-4 text-xs">
-        <div class="bg-sky-50 border border-sky-200 rounded-xl p-3.5 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-sky-900">🔑 사무소 클라우드 공유 코드 (모든 기기 동기화 키)</span>
-            <span class="text-[10px] bg-sky-600 text-white px-2 py-0.5 rounded-full font-semibold">doosan-realty 연결됨</span>
-          </div>
-          <p class="text-slate-600 leading-relaxed">
-            사무실 PC, 갤럭시 탭, 스마트폰에서 아래 <strong>동일한 공유 코드</strong>로 연결하면 어느 기기에서 서류를 올리든 실시간으로 함께 열람·수정됩니다.
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 space-y-1.5">
+          <div class="font-bold text-emerald-900">✅ 실시간 양방향 동기화 작동 중</div>
+          <p class="text-slate-700 leading-relaxed">
+            현재 웹앱에서 생성하는 모든 폴더와 서류는 대표님의 구글 드라이브 <strong>[내 드라이브 &gt; 부동산업무]</strong> 폴더에 직접 저장됩니다.<br/>
+            사무실 PC 탐색기(<strong>E:\GoogleDrive_Y\부동산업무</strong>) 및 스마트폰 구글 드라이브 앱과 100% 동일하게 유지됩니다.
           </p>
-          <div class="flex gap-2">
-            <input type="text" id="workspaceCodeInput" class="flex-1 border border-sky-300 rounded-lg px-3 py-1.5 font-mono font-bold text-slate-800 bg-white" />
-            <button onclick="applyWorkspaceCode()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold shrink-0">코드 적용</button>
-          </div>
-          <div class="text-[11px] text-slate-500">연결된 인증 UID: <span id="modalAuthUid" class="font-mono">연결 중...</span></div>
         </div>
 
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
-          <div class="font-bold text-slate-800">📱 스마트폰 · 갤럭시 탭에서 바로 접속하는 방법</div>
+          <div class="font-bold text-slate-800">📱 스마트폰 · 갤럭시 탭에서 접속하는 방법</div>
           <ol class="list-decimal list-inside text-slate-600 space-y-1 leading-relaxed">
-            <li>스마트폰·태블릿 인터넷(크롬/삼성인터넷)에서 <strong>https://sangho-yu.github.io/realty-manager/</strong> 로 접속합니다.</li>
-            <li>브라우저 메뉴(⋮)에서 <strong>[홈 화면에 추가]</strong>를 눌러두면 앱처럼 바로 실행됩니다.</li>
-            <li>현장에서 찍은 신분증·임장 사진을 올리면 사무실 PC 화면에 1초 만에 바로 나타납니다.</li>
+            <li>스마트폰·태블릿 브라우저에서 <strong>https://sangho-yu.github.io/realty-manager/</strong> 로 접속합니다.</li>
+            <li>브라우저 메뉴(⋮)에서 <strong>[홈 화면에 추가]</strong>를 눌러두면 앱처럼 바로 열립니다.</li>
+            <li>현장에서 찍은 신분증·임장 사진을 올리면 사무실 PC의 <code>E:\GoogleDrive_Y\부동산업무</code> 폴더에도 자동 생성됩니다.</li>
           </ol>
         </div>
 
         <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900 leading-relaxed">
-          <strong>⚠️ 클라우드 저장 용량 안내:</strong> 클라우드 실시간 모드에서는 빠른 동기화를 위해 <strong>파일 1건당 최대 750KB 이하</strong>(압축 PDF, 모바일 촬영 신분증·현장사진)를 권장하며, 수십 MB 이상의 대용량 원본 파일은 상단 <strong>[내 PC 폴더 연결]</strong>(구글 드라이브 동기화 폴더) 모드를 병행해 주세요.
+          <strong>💡 대용량 파일 안내:</strong> 웹앱 직접 업로드는 1건당 최대 <strong>15MB 이하</strong>(일반 PDF, 스캔본, 스마트폰 사진 모두 가능)를 권장하며, 수백 MB 이상의 동영상 원본 등은 PC 탐색기(<code>E:\GoogleDrive_Y\부동산업무</code>)에 직접 넣으셔도 웹앱 목록에 즉시 나타납니다.
         </div>
       </div>
 
@@ -436,6 +430,7 @@
       <div class="bg-slate-900 text-white px-5 py-3 flex items-center justify-between shrink-0">
         <h3 id="previewFileName" class="text-sm font-bold truncate pr-4">파일 미리보기</h3>
         <div class="flex items-center gap-2 shrink-0">
+          <a id="previewDriveLinkBtn" href="#" target="_blank" class="hidden px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs font-bold">구글 드라이브에서 열기</a>
           <a id="previewDownloadBtn" href="#" download class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold">다운로드</a>
           <button onclick="closeModal('previewModal')" class="text-slate-400 hover:text-white text-xl leading-none px-1">&times;</button>
         </div>
@@ -444,145 +439,90 @@
     </div>
   </div>
 
-  <!-- Firebase SDK & 애플리케이션 스크립트 -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  <script>
+    // 영구 내장된 Google Apps Script 웹앱 URL (내 드라이브 > 부동산업무 직접 연결)
+    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxCPZMjqU02zwImAbgFOLYxkUHMZ84fj-V8taWB7OAFLYsIBV6b1D4mfWSImqcQUbwC/exec";
 
-    // 영구 내장된 Firebase 설정 (doosan-realty)
-    const EMBEDDED_FIREBASE_CONFIG = {
-      apiKey: "AIzaSyCnoVNWSKOsJ1oa78GHGesHlrd-6MbgFB8",
-      authDomain: "doosan-realty.firebaseapp.com",
-      projectId: "doosan-realty",
-      storageBucket: "doosan-realty.firebasestorage.app",
-      messagingSenderId: "827716127688",
-      appId: "1:827716127688:web:f5187da29dad86328b4efd",
-      measurementId: "G-4S3XRDCETR"
-    };
-
-    // 전역 상태 관리
-    window.appState = {
-      mode: 'cloud', // 'cloud' | 'local'
-      workspaceId: localStorage.getItem('doosan_workspace_id') || 'doosan-realty-main',
-      currentPath: [], // 예: ['01_매물접수_임장관리', '[261119] 꿈마을건영_302동1201호_매매_8억5천']
-      cloudItems: [], // Firestore 전체 문서 캐시
+    const appState = {
+      mode: 'gdrive', // 'gdrive' | 'local'
+      currentPath: [],
+      cachedItems: [],
+      cachedTree: [],
       localRootHandle: null,
-      db: null,
-      auth: null,
-      user: null,
-      unsubscribeSnapshot: null,
       selectedFileObj: null,
       wizardType: 'property',
       wizardStep: 1,
       wizardCreateInCurrent: false
     };
 
-    // 유틸리티: 오늘 날짜 YYMMDD
-    window.getTodayYYMMDD = () => {
+    function getTodayYYMMDD() {
       const d = new Date();
-      const yy = String(d.getFullYear()).slice(-2);
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      return `${yy}${mm}${dd}`;
-    };
-
-    // 경로 ID 인코딩 (Firestore 문서 ID용)
-    function pathToDocId(pathArr, name) {
-      const full = [...pathArr, name].join('/');
-      return btoa(unescape(encodeURIComponent(full))).replace(/\//g, '_').replace(/\+/g, '-');
+      return `${String(d.getFullYear()).slice(-2)}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
     }
 
-    // 1. Firebase 초기화 및 자동 연결
-    async function initFirebaseCloud() {
-      try {
-        const app = initializeApp(EMBEDDED_FIREBASE_CONFIG);
-        window.appState.auth = getAuth(app);
-        window.appState.db = getFirestore(app);
-
-        onAuthStateChanged(window.appState.auth, (user) => {
-          if (user) {
-            window.appState.user = user;
-            document.getElementById('modalAuthUid').textContent = user.uid;
-            if (window.appState.mode === 'cloud') {
-              subscribeCloudWorkspace();
-            }
-          }
-        });
-
-        await signInAnonymously(window.appState.auth);
-      } catch (err) {
-        console.error("Firebase 연결 오류:", err);
-        document.getElementById('connectionStatusText').textContent = "⚠️ 클라우드 연결 확인 필요 (Firebase 콘솔에서 익명 로그인 활성화 여부 확인)";
-      }
-    }
-
-    // 실시간 Firestore 구독
-    function subscribeCloudWorkspace() {
-      if (window.appState.unsubscribeSnapshot) {
-        window.appState.unsubscribeSnapshot();
-      }
-      const colRef = collection(window.appState.db, `workspaces/${window.appState.workspaceId}/items`);
-      window.appState.unsubscribeSnapshot = onSnapshot(query(colRef), (snapshot) => {
-        const list = [];
-        snapshot.forEach((docSnap) => {
-          list.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        window.appState.cloudItems = list;
-        updateConnectionUI();
-        renderSidebarTree();
-        renderCurrentFolder();
-      }, (error) => {
-        console.error("Firestore 구독 오류:", error);
-        document.getElementById('connectionStatusText').textContent = "⚠️ Firestore 권한/네트워크 오류: " + error.message;
-      });
-    }
-
-    window.connectCloudMode = () => {
-      window.appState.mode = 'cloud';
-      window.appState.currentPath = [];
-      updateConnectionUI();
-      if (window.appState.user) {
-        subscribeCloudWorkspace();
+    function setLoading(isLoading, text = "구글 드라이브와 실시간 통신 중입니다...") {
+      document.getElementById('globalLoadingBar').classList.toggle('hidden', !isLoading);
+      const box = document.getElementById('loadingStateBox');
+      if (isLoading) {
+        document.getElementById('loadingStateText').textContent = text;
+        box.classList.remove('hidden');
+        box.classList.add('flex');
+        document.getElementById('itemsGrid').innerHTML = '';
+        document.getElementById('emptyStateBox').classList.add('hidden');
       } else {
-        initFirebaseCloud();
+        box.classList.add('hidden');
+        box.classList.remove('flex');
       }
-    };
+    }
+
+    // Apps Script API 호출 헬퍼
+    async function callGasApi(payload) {
+      const res = await fetch(GAS_WEBAPP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Google Drive 서버 응답 오류");
+      return data;
+    }
 
     function updateConnectionUI() {
-      const btnCloud = document.getElementById('btnCloudMode');
+      const btnGDrive = document.getElementById('btnGDriveMode');
       const btnLocal = document.getElementById('btnLocalMode');
       const statusText = document.getElementById('connectionStatusText');
-      document.getElementById('sidebarWorkspaceBadge').textContent = window.appState.workspaceId;
 
-      if (window.appState.mode === 'cloud') {
-        btnCloud.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white flex items-center gap-1.5 transition shadow-sm";
+      if (appState.mode === 'gdrive') {
+        btnGDrive.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 transition shadow-sm";
         btnLocal.className = "px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition";
-        statusText.innerHTML = `<span class="text-emerald-400 font-semibold">● 클라우드 실시간 동기화 중</span> (코드: ${window.appState.workspaceId})`;
+        statusText.innerHTML = `<span class="text-emerald-400 font-semibold">● Google Drive 직접 연동 중</span> (내 드라이브 &gt; 부동산업무)`;
       } else {
-        btnCloud.className = "px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition";
+        btnGDrive.className = "px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition";
         btnLocal.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1.5 transition shadow-sm";
-        statusText.innerHTML = `<span class="text-amber-300 font-semibold">● 내 PC 로컬 폴더 연결됨:</span> ${window.appState.localRootHandle?.name || ''}`;
+        statusText.innerHTML = `<span class="text-amber-300 font-semibold">● 내 PC 로컬 폴더 직접 연결:</span> ${appState.localRootHandle?.name || ''}`;
       }
     }
 
-    // 2. 로컬 PC 폴더 연결 (File System Access API + IndexedDB 영구 저장)
+    async function connectGDriveMode() {
+      appState.mode = 'gdrive';
+      appState.currentPath = [];
+      updateConnectionUI();
+      await refreshCurrentView(true);
+    }
+
+    // 로컬 PC 폴더 연결 (IndexedDB 복원 지원)
     const IDB_NAME = 'DoosanRealtyLocalDB';
     function saveHandleToIDB(handle) {
       const req = indexedDB.open(IDB_NAME, 1);
       req.onupgradeneeded = (e) => e.target.result.createObjectStore('handles');
-      req.onsuccess = (e) => {
-        const tx = e.target.result.transaction('handles', 'readwrite');
-        tx.objectStore('handles').put(handle, 'rootDir');
-      };
+      req.onsuccess = (e) => e.target.result.transaction('handles', 'readwrite').objectStore('handles').put(handle, 'rootDir');
     }
 
-    async function checkSavedLocalHandle() {
+    function checkSavedLocalHandle() {
       const req = indexedDB.open(IDB_NAME, 1);
       req.onupgradeneeded = (e) => e.target.result.createObjectStore('handles');
       req.onsuccess = (e) => {
-        const tx = e.target.result.transaction('handles', 'readonly');
-        const getReq = tx.objectStore('handles').get('rootDir');
+        const getReq = e.target.result.transaction('handles', 'readonly').objectStore('handles').get('rootDir');
         getReq.onsuccess = () => {
           if (getReq.result) {
             window._pendingLocalHandle = getReq.result;
@@ -593,203 +533,165 @@
       };
     }
 
-    window.restoreSavedLocalFolder = async () => {
+    async function restoreSavedLocalFolder() {
       if (!window._pendingLocalHandle) return;
-      try {
-        const perm = await window._pendingLocalHandle.requestPermission({ mode: 'readwrite' });
-        if (perm === 'granted') {
-          window.appState.localRootHandle = window._pendingLocalHandle;
-          window.appState.mode = 'local';
-          window.appState.currentPath = [];
-          document.getElementById('savedLocalBanner').classList.add('hidden');
-          updateConnectionUI();
-          await renderSidebarTree();
-          await renderCurrentFolder();
-        }
-      } catch (err) {
-        alert("폴더 권한 복원 중 오류가 발생했습니다: " + err.message);
+      const perm = await window._pendingLocalHandle.requestPermission({ mode: 'readwrite' });
+      if (perm === 'granted') {
+        appState.localRootHandle = window._pendingLocalHandle;
+        appState.mode = 'local';
+        appState.currentPath = [];
+        document.getElementById('savedLocalBanner').classList.add('hidden');
+        updateConnectionUI();
+        await refreshCurrentView(true);
       }
-    };
+    }
 
-    window.clearSavedLocalFolder = () => {
+    function clearSavedLocalFolder() {
       const req = indexedDB.open(IDB_NAME, 1);
       req.onsuccess = (e) => {
-        const tx = e.target.result.transaction('handles', 'readwrite');
-        tx.objectStore('handles').delete('rootDir');
+        e.target.result.transaction('handles', 'readwrite').objectStore('handles').delete('rootDir');
         document.getElementById('savedLocalBanner').classList.add('hidden');
       };
-    };
+    }
 
-    window.connectLocalFolder = async () => {
+    async function connectLocalFolder() {
       if (!window.showDirectoryPicker) {
-        alert("현재 브라우저(모바일 등)에서는 PC 로컬 폴더 직접 연결을 지원하지 않습니다. 상단 [클라우드 실시간 모드]를 사용해 주세요.");
+        alert("모바일 브라우저에서는 상단 [Google Drive 연동] 모드를 사용해 주세요.");
         return;
       }
       try {
         const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
-        window.appState.localRootHandle = handle;
-        window.appState.mode = 'local';
-        window.appState.currentPath = [];
+        appState.localRootHandle = handle;
+        appState.mode = 'local';
+        appState.currentPath = [];
         saveHandleToIDB(handle);
         document.getElementById('savedLocalBanner').classList.add('hidden');
         updateConnectionUI();
-        await renderSidebarTree();
-        await renderCurrentFolder();
+        await refreshCurrentView(true);
       } catch (err) {
-        if (err.name !== 'AbortError') alert("폴더 연결 취소 또는 오류: " + err.message);
-      }
-    };
-
-    // 3. 기본 표준 폴더 일괄 생성
-    window.initializeStandardStructure = async () => {
-      const standardFolders = [
-        { path: [], name: '00_공통서식_마스터' },
-        { path: ['00_공통서식_마스터'], name: '01_계약서_확인설명서' },
-        { path: ['00_공통서식_마스터'], name: '02_접수_위임_동의서' },
-        { path: ['00_공통서식_마스터'], name: '03_특약_정산표_체크리스트' },
-        { path: [], name: '01_매물접수_임장관리' },
-        { path: [], name: '02_계약진행_잔금관리' },
-        { path: [], name: '03_거래완료_보관함' },
-        { path: ['03_거래완료_보관함'], name: '2026년_거래완료' },
-        { path: [], name: '04_대출상담_금융서류' },
-        { path: [], name: '05_사무소행정_세무_홍보' }
-      ];
-
-      for (const f of standardFolders) {
-        await createFolderInternal(f.path, f.name);
-      }
-      alert("공인중개사 표준 6대 폴더 구조가 생성되었습니다.");
-      await renderSidebarTree();
-      await renderCurrentFolder();
-    };
-
-    async function createFolderInternal(parentPath, folderName) {
-      if (window.appState.mode === 'cloud') {
-        const docId = pathToDocId(parentPath, folderName);
-        const docRef = doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, docId);
-        await setDoc(docRef, {
-          type: 'folder',
-          name: folderName,
-          parentPath: parentPath.join('/'),
-          updatedAt: Date.now()
-        }, { merge: true });
-      } else {
-        let dir = window.appState.localRootHandle;
-        for (const seg of parentPath) {
-          dir = await dir.getDirectoryHandle(seg, { create: true });
-        }
-        await dir.getDirectoryHandle(folderName, { create: true });
+        if (err.name !== 'AbortError') alert("폴더 연결 오류: " + err.message);
       }
     }
 
-    // 4. 사이드바 폴더 트리 렌더링
-    window.renderSidebarTree = async () => {
+    // 전체 뷰 및 트리 갱신
+    async function refreshCurrentView(reloadTree = false) {
+      renderBreadcrumb();
+      updateStageActionBar();
+
+      if (appState.mode === 'gdrive') {
+        setLoading(true, "구글 드라이브 폴더 목록을 불러오는 중...");
+        try {
+          const listPromise = callGasApi({ action: 'list', path: appState.currentPath });
+          const treePromise = reloadTree ? callGasApi({ action: 'tree' }) : Promise.resolve(null);
+          const [listRes, treeRes] = await Promise.all([listPromise, treePromise]);
+
+          appState.cachedItems = listRes.items || [];
+          if (treeRes && treeRes.tree) {
+            appState.cachedTree = treeRes.tree;
+            renderSidebarTree();
+          } else {
+            renderSidebarTree();
+          }
+          updateConnectionUI();
+        } catch (err) {
+          document.getElementById('connectionStatusText').innerHTML = `<span class="text-rose-400">⚠️ 구글 드라이브 연결 오류: ${err.message}</span>`;
+        } finally {
+          setLoading(false);
+          renderCachedItems();
+        }
+      } else if (appState.localRootHandle) {
+        await loadLocalFolderData(reloadTree);
+      }
+    }
+
+    async function loadLocalFolderData(reloadTree) {
+      let dir = appState.localRootHandle;
+      for (const seg of appState.currentPath) dir = await dir.getDirectoryHandle(seg);
+      const items = [];
+      for await (const entry of dir.values()) {
+        if (entry.kind === 'directory') {
+          items.push({ type: 'folder', name: entry.name });
+        } else {
+          const f = await entry.getFile();
+          items.push({ type: 'file', name: entry.name, size: f.size, mimeType: f.type });
+        }
+      }
+      appState.cachedItems = items;
+      if (reloadTree) {
+        const tree = [];
+        async function scanLocal(d, p, depth) {
+          if (depth > 2) return;
+          for await (const e of d.values()) {
+            if (e.kind === 'directory') {
+              const np = [...p, e.name];
+              tree.push({ path: np, name: e.name });
+              await scanLocal(e, np, depth + 1);
+            }
+          }
+        }
+        await scanLocal(appState.localRootHandle, [], 0);
+        appState.cachedTree = tree;
+      }
+      renderSidebarTree();
+      renderCachedItems();
+    }
+
+    // 사이드바 트리 렌더링
+    function renderSidebarTree() {
       const container = document.getElementById('folderTreeContainer');
-      const currentStr = window.appState.currentPath.join('/');
+      const currentStr = appState.currentPath.join('/');
 
       let html = `
         <div onclick="navigateTo([])" class="tree-item px-3 py-2 cursor-pointer flex items-center gap-2 hover:bg-slate-100 ${currentStr === '' ? 'active' : ''}">
           <span>🏠</span>
-          <span class="truncate">전체 최상위 폴더</span>
+          <span class="truncate">부동산업무 (최상위)</span>
         </div>
       `;
 
-      if (window.appState.mode === 'cloud') {
-        const folders = window.appState.cloudItems
-          .filter(i => i.type === 'folder')
-          .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-
-        const buildBranch = (parentStr, depth) => {
-          const children = folders.filter(f => f.parentPath === parentStr);
-          let out = '';
-          for (const child of children) {
-            const fullPathArr = parentStr ? [...parentStr.split('/'), child.name] : [child.name];
-            const fullPathStr = fullPathArr.join('/');
-            const isActive = currentStr === fullPathStr;
-            const padLeft = 12 + depth * 14;
-            out += `
-              <div onclick='navigateTo(${JSON.stringify(fullPathArr)})' style="padding-left:${padLeft}px" class="tree-item pr-3 py-1.5 cursor-pointer flex items-center gap-1.5 hover:bg-slate-100 ${isActive ? 'active' : 'text-slate-700'}">
-                <span class="text-amber-500">📁</span>
-                <span class="truncate">${child.name}</span>
-              </div>
-            `;
-            out += buildBranch(fullPathStr, depth + 1);
-          }
-          return out;
-        };
-        html += buildBranch('', 0);
-      } else if (window.appState.localRootHandle) {
-        const buildLocalBranch = async (dirHandle, pathArr, depth) => {
-          let out = '';
-          const entries = [];
-          for await (const entry of dirHandle.values()) {
-            if (entry.kind === 'directory') entries.push(entry);
-          }
-          entries.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-          for (const entry of entries) {
-            const nextPath = [...pathArr, entry.name];
-            const nextStr = nextPath.join('/');
-            const isActive = currentStr === nextStr;
-            const padLeft = 12 + depth * 14;
-            out += `
-              <div onclick='navigateTo(${JSON.stringify(nextPath)})' style="padding-left:${padLeft}px" class="tree-item pr-3 py-1.5 cursor-pointer flex items-center gap-1.5 hover:bg-slate-100 ${isActive ? 'active' : 'text-slate-700'}">
-                <span class="text-amber-500">📁</span>
-                <span class="truncate">${entry.name}</span>
-              </div>
-            `;
-            if (depth < 2) {
-              out += await buildLocalBranch(entry, nextPath, depth + 1);
-            }
-          }
-          return out;
-        };
-        html += await buildLocalBranch(window.appState.localRootHandle, [], 0);
+      const sortedTree = [...appState.cachedTree].sort((a, b) => a.path.join('/').localeCompare(b.path.join('/'), 'ko'));
+      for (const node of sortedTree) {
+        const fullStr = node.path.join('/');
+        const isActive = currentStr === fullStr;
+        const padLeft = 12 + (node.path.length - 1) * 14;
+        html += `
+          <div onclick='navigateTo(${JSON.stringify(node.path)})' style="padding-left:${padLeft}px" class="tree-item pr-3 py-1.5 cursor-pointer flex items-center gap-1.5 hover:bg-slate-100 ${isActive ? 'active' : 'text-slate-700'}">
+            <span class="text-amber-500">📁</span>
+            <span class="truncate">${node.name}</span>
+          </div>
+        `;
       }
-
       container.innerHTML = html;
-    };
+    }
 
-    window.navigateTo = async (pathArr) => {
-      window.appState.currentPath = pathArr;
-      // 모바일 사이드바 닫기
+    async function navigateTo(pathArr) {
+      appState.currentPath = pathArr;
       document.getElementById('sidebarDrawer').classList.add('-translate-x-full');
       document.getElementById('mobileBackdrop').classList.add('hidden');
-      await renderSidebarTree();
-      await renderCurrentFolder();
-    };
+      await refreshCurrentView(false);
+    }
 
-    window.refreshCurrentView = async () => {
-      await renderSidebarTree();
-      await renderCurrentFolder();
-    };
-
-    // 5. 현재 폴더 목록 및 Breadcrumb 렌더링
-    window.renderCurrentFolder = async () => {
+    function renderBreadcrumb() {
       const bc = document.getElementById('breadcrumbContainer');
-      const pathArr = window.appState.currentPath;
-
-      let bcHtml = `<button onclick="navigateTo([])" class="hover:text-sky-600 font-bold flex items-center gap-1"><span>🏠 최상위</span></button>`;
+      const pathArr = appState.currentPath;
+      let html = `<button onclick="navigateTo([])" class="hover:text-sky-600 font-bold flex items-center gap-1"><span>🏠 부동산업무</span></button>`;
       pathArr.forEach((seg, idx) => {
         const sub = pathArr.slice(0, idx + 1);
-        bcHtml += `<span class="text-slate-300">/</span><button onclick='navigateTo(${JSON.stringify(sub)})' class="hover:text-sky-600 truncate max-w-[160px] sm:max-w-xs ${idx === pathArr.length - 1 ? 'text-sky-700 font-bold' : ''}">${seg}</button>`;
+        html += `<span class="text-slate-300">/</span><button onclick='navigateTo(${JSON.stringify(sub)})' class="hover:text-sky-600 truncate max-w-[160px] sm:max-w-xs ${idx === pathArr.length - 1 ? 'text-sky-700 font-bold' : ''}">${seg}</button>`;
       });
-      bc.innerHTML = bcHtml;
-
-      updateStageActionBar();
-      await renderFileList();
-    };
+      bc.innerHTML = html;
+    }
 
     function updateStageActionBar() {
       const bar = document.getElementById('stageActionBar');
       const btns = document.getElementById('stageButtonsContainer');
       const label = document.getElementById('stageTargetLabel');
-      const pathArr = window.appState.currentPath;
+      const pathArr = appState.currentPath;
 
       if (pathArr.length === 2 && (pathArr[0] === '01_매물접수_임장관리' || pathArr[0] === '02_계약진행_잔금관리')) {
         bar.classList.remove('hidden');
         label.textContent = pathArr[1];
         if (pathArr[0] === '01_매물접수_임장관리') {
-          btns.innerHTML = `<button onclick="movePropertyStage('02_계약진행_잔금관리')" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded font-bold">계약성사 ➔ 02_계약진행으로 이관</button>`;
+          btns.innerHTML = `<button onclick="movePropertyStage('02_계약진행_잔금관리')" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded font-bold">계약성사 ➔ 02_계약진행으로 이동</button>`;
         } else {
           btns.innerHTML = `<button onclick="movePropertyStage('03_거래완료_보관함')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold">잔금완료 ➔ 03_거래완료 보관함 이관</button>`;
         }
@@ -798,76 +700,49 @@
       }
     }
 
-    window.movePropertyStage = async (targetRootFolder) => {
-      const pathArr = window.appState.currentPath;
+    async function movePropertyStage(targetRootFolder) {
+      const pathArr = appState.currentPath;
       if (pathArr.length < 2) return;
       const folderName = pathArr[1];
-      if (!confirm(`'${folderName}' 물건 폴더 전체를 [${targetRootFolder}] 로 이동하시겠습니까?`)) return;
+      if (!confirm(`'${folderName}' 물건 폴더를 구글 드라이브의 [${targetRootFolder}] 로 이동하시겠습니까?`)) return;
 
-      if (window.appState.mode === 'cloud') {
-        const oldPrefix = `${pathArr[0]}/${folderName}`;
-        const newName = targetRootFolder === '03_거래완료_보관함' ? `${getTodayYYMMDD()}완료_${folderName}` : folderName;
-        const newPrefix = `${targetRootFolder}/${newName}`;
-
-        // 폴더 자체와 모든 하위 항목 복사 후 삭제
-        const targets = window.appState.cloudItems.filter(item => {
-          const itemFull = item.parentPath ? `${item.parentPath}/${item.name}` : item.name;
-          return itemFull === oldPrefix || itemFull.startsWith(oldPrefix + '/');
-        });
-
-        await createFolderInternal([], targetRootFolder);
-        for (const item of targets) {
-          const itemFull = item.parentPath ? `${item.parentPath}/${item.name}` : item.name;
-          const suffix = itemFull.slice(oldPrefix.length);
-          const updatedFull = newPrefix + suffix;
-          const parts = updatedFull.split('/');
-          const updatedName = parts.pop();
-          const updatedParent = parts.join('/');
-
-          const newDocId = pathToDocId(parts, updatedName);
-          await setDoc(doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, newDocId), {
-            ...item,
-            name: updatedName,
-            parentPath: updatedParent,
-            updatedAt: Date.now()
+      if (appState.mode === 'gdrive') {
+        setLoading(true, "물건 폴더 단계를 이동하는 중...");
+        try {
+          await callGasApi({
+            action: 'move',
+            type: 'folder',
+            path: [pathArr[0]],
+            name: folderName,
+            destPath: [targetRootFolder]
           });
-          await deleteDoc(doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, item.id));
+          let finalName = folderName;
+          if (targetRootFolder === '03_거래완료_보관함' && !folderName.includes('완료_')) {
+            finalName = `${getTodayYYMMDD()}완료_${folderName}`;
+            await callGasApi({
+              action: 'rename',
+              type: 'folder',
+              path: [targetRootFolder],
+              oldName: folderName,
+              newName: finalName
+            });
+          }
+          appState.currentPath = [targetRootFolder, finalName];
+          await refreshCurrentView(true);
+        } catch (err) {
+          alert("폴더 이동 오류: " + err.message);
+          setLoading(false);
         }
-        await navigateTo([targetRootFolder, newName]);
-      } else {
-        alert("내 PC 로컬 폴더 모드에서는 윈도우 탐색기에서 폴더를 드래그하여 이동하시거나 클라우드 모드에서 원클릭 이관을 이용해 주세요.");
       }
-    };
+    }
 
-    window.renderFileList = async () => {
+    function renderCachedItems() {
       const grid = document.getElementById('itemsGrid');
       const emptyBox = document.getElementById('emptyStateBox');
       const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-      const currentStr = window.appState.currentPath.join('/');
 
-      let items = [];
-      if (window.appState.mode === 'cloud') {
-        items = window.appState.cloudItems
-          .filter(i => i.parentPath === currentStr)
-          .map(i => ({ ...i }));
-      } else if (window.appState.localRootHandle) {
-        let dir = window.appState.localRootHandle;
-        for (const seg of window.appState.currentPath) {
-          dir = await dir.getDirectoryHandle(seg);
-        }
-        for await (const entry of dir.values()) {
-          if (entry.kind === 'directory') {
-            items.push({ type: 'folder', name: entry.name, handle: entry });
-          } else {
-            const file = await entry.getFile();
-            items.push({ type: 'file', name: entry.name, size: file.size, mimeType: file.type, updatedAt: file.lastModified, handle: entry });
-          }
-        }
-      }
-
-      if (keyword) {
-        items = items.filter(i => i.name.toLowerCase().includes(keyword));
-      }
+      let items = [...appState.cachedItems];
+      if (keyword) items = items.filter(i => i.name.toLowerCase().includes(keyword));
 
       items.sort((a, b) => {
         if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
@@ -887,7 +762,7 @@
       grid.innerHTML = items.map((item) => {
         const safeName = item.name.replace(/'/g, "\\'");
         if (item.type === 'folder') {
-          const nextPath = [...window.appState.currentPath, item.name];
+          const nextPath = [...appState.currentPath, item.name];
           return `
             <div class="bg-white border border-slate-200 hover:border-sky-400 rounded-xl px-4 py-3 flex items-center justify-between gap-3 shadow-sm transition group">
               <div onclick='navigateTo(${JSON.stringify(nextPath)})' class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
@@ -925,28 +800,66 @@
           `;
         }
       }).join('');
-    };
+    }
 
-    // 6. 3단계 폴더 생성 마법사 로직
-    window.openFolderWizard = (inCurrent = false) => {
-      window.appState.wizardCreateInCurrent = inCurrent;
-      window.appState.wizardStep = 1;
+    // 기본 표준폴더 일괄 생성
+    async function initializeStandardStructure() {
+      const standardFolders = [
+        { path: [], name: '00_공통서식_마스터' },
+        { path: ['00_공통서식_마스터'], name: '01_계약서_확인설명서' },
+        { path: ['00_공통서식_마스터'], name: '02_접수_위임_동의서' },
+        { path: ['00_공통서식_마스터'], name: '03_특약_정산표_체크리스트' },
+        { path: [], name: '01_매물접수_임장관리' },
+        { path: [], name: '02_계약진행_잔금관리' },
+        { path: [], name: '03_거래완료_보관함' },
+        { path: ['03_거래완료_보관함'], name: '2026년_거래완료' },
+        { path: [], name: '04_대출상담_금융서류' },
+        { path: [], name: '05_사무소행정_세무_홍보' }
+      ];
+
+      setLoading(true, "구글 드라이브에 표준 6대 폴더 구조를 생성하는 중...");
+      try {
+        for (const f of standardFolders) {
+          await createFolderInternal(f.path, f.name);
+        }
+        alert("구글 드라이브(내 드라이브 > 부동산업무)에 표준 폴더 구조가 생성되었습니다!");
+        await refreshCurrentView(true);
+      } catch (err) {
+        alert("폴더 생성 오류: " + err.message);
+        setLoading(false);
+      }
+    }
+
+    async function createFolderInternal(parentPath, folderName) {
+      if (appState.mode === 'gdrive') {
+        await callGasApi({ action: 'createFolder', path: parentPath, name: folderName });
+      } else {
+        let dir = appState.localRootHandle;
+        for (const seg of parentPath) dir = await dir.getDirectoryHandle(seg, { create: true });
+        await dir.getDirectoryHandle(folderName, { create: true });
+      }
+    }
+
+    // 3단계 폴더 생성 마법사
+    function openFolderWizard(inCurrent = false) {
+      appState.wizardCreateInCurrent = inCurrent;
+      appState.wizardStep = 1;
       document.getElementById('wizPropDate').value = getTodayYYMMDD();
       document.getElementById('wizLoanDate').value = getTodayYYMMDD();
       updateWizardUI();
       openModal('wizardModal');
-    };
+    }
 
-    window.selectWizardType = (type, labelEl) => {
-      window.appState.wizardType = type;
+    function selectWizardType(type, labelEl) {
+      appState.wizardType = type;
       document.querySelectorAll('#wizardStep1 label').forEach(el => {
         el.className = "border border-slate-200 hover:border-sky-300 rounded-xl p-3 cursor-pointer flex items-start gap-2.5";
       });
       labelEl.className = "border-2 border-sky-500 bg-sky-50/50 rounded-xl p-3 cursor-pointer flex items-start gap-2.5";
-    };
+    }
 
     function updateWizardUI() {
-      const step = window.appState.wizardStep;
+      const step = appState.wizardStep;
       document.getElementById('wizardStepBadge').textContent = `${step} / 3 단계`;
       document.getElementById('wizardStep1').classList.toggle('hidden', step !== 1);
       document.getElementById('wizardStep2').classList.toggle('hidden', step !== 2);
@@ -957,7 +870,7 @@
       document.getElementById('btnWizFinish').classList.toggle('hidden', step !== 3);
 
       if (step === 2) {
-        const t = window.appState.wizardType;
+        const t = appState.wizardType;
         document.getElementById('wizardFieldsProperty').classList.toggle('hidden', t !== 'property');
         document.getElementById('wizardFieldsLoan').classList.toggle('hidden', t !== 'loan');
         document.getElementById('wizardFieldsPeriod').classList.toggle('hidden', t !== 'period');
@@ -967,45 +880,39 @@
       }
     }
 
-    window.wizardPrev = () => {
-      if (window.appState.wizardStep > 1) {
-        window.appState.wizardStep--;
-        updateWizardUI();
-      }
-    };
+    function wizardPrev() {
+      if (appState.wizardStep > 1) { appState.wizardStep--; updateWizardUI(); }
+    }
 
-    window.wizardNext = () => {
-      if (window.appState.wizardStep === 2) {
-        const t = window.appState.wizardType;
+    function wizardNext() {
+      if (appState.wizardStep === 2) {
+        const t = appState.wizardType;
         if (t === 'property') {
           if (!document.getElementById('wizPropComplex').value.trim() || !document.getElementById('wizPropUnit').value.trim() || !document.getElementById('wizPropPrice').value.trim()) {
-            alert("단지명, 동·호수, 금액을 모두 입력해 주세요.");
-            return;
+            alert("단지명, 동·호수, 금액을 모두 입력해 주세요."); return;
           }
         } else if (t === 'loan') {
           if (!document.getElementById('wizLoanClient').value.trim() || !document.getElementById('wizLoanComplex').value.trim()) {
-            alert("고객 성함과 담보 물건지를 입력해 주세요.");
-            return;
+            alert("고객 성함과 담보 물건지를 입력해 주세요."); return;
           }
         } else if (t === 'custom') {
           if (!document.getElementById('wizCustomName').value.trim()) {
-            alert("폴더 이름을 입력해 주세요.");
-            return;
+            alert("폴더 이름을 입력해 주세요."); return;
           }
         }
       }
-      window.appState.wizardStep++;
+      appState.wizardStep++;
       updateWizardUI();
-    };
+    }
 
     function getWizardComputedTarget() {
-      const t = window.appState.wizardType;
-      let targetParent = [...window.appState.currentPath];
+      const t = appState.wizardType;
+      let targetParent = [...appState.currentPath];
       let folderName = '';
       let subs = [];
 
       if (t === 'property') {
-        if (!window.appState.wizardCreateInCurrent) targetParent = ['01_매물접수_임장관리'];
+        if (!appState.wizardCreateInCurrent) targetParent = ['01_매물접수_임장관리'];
         const d = document.getElementById('wizPropDate').value.trim() || getTodayYYMMDD();
         const c = document.getElementById('wizPropComplex').value.trim().replace(/\s+/g, '');
         const u = document.getElementById('wizPropUnit').value.trim().replace(/\s+/g, '');
@@ -1014,7 +921,7 @@
         folderName = `[${d}] ${c}_${u}_${deal}_${p}`;
         subs = ['01_공적장부_발급본', '02_신분증_위임_자격서류', '03_계약서_확인설명서', '04_신고필증_확정일자', '05_영수증_정산내역'];
       } else if (t === 'loan') {
-        if (!window.appState.wizardCreateInCurrent) targetParent = ['04_대출상담_금융서류'];
+        if (!appState.wizardCreateInCurrent) targetParent = ['04_대출상담_금융서류'];
         const d = document.getElementById('wizLoanDate').value.trim() || getTodayYYMMDD();
         const cl = document.getElementById('wizLoanClient').value.trim();
         const cx = document.getElementById('wizLoanComplex').value.trim().replace(/\s+/g, '');
@@ -1022,7 +929,7 @@
         folderName = `[${d}] ${cl}_${cx}${bk ? '_' + bk : ''}`;
         subs = ['01_신분_소득재직서류', '02_등기_계약_담보서류', '03_은행심사_자서서류'];
       } else if (t === 'period') {
-        if (!window.appState.wizardCreateInCurrent) targetParent = ['03_거래완료_보관함'];
+        if (!appState.wizardCreateInCurrent) targetParent = ['03_거래완료_보관함'];
         const y = document.getElementById('wizPeriodYear').value.trim();
         const l = document.getElementById('wizPeriodLabel').value.trim();
         folderName = `${y}_${l}`;
@@ -1037,7 +944,7 @@
 
     function buildWizardPreview() {
       const { targetParent, folderName, subs } = getWizardComputedTarget();
-      document.getElementById('wizPreviewParentPath').textContent = `위치: /${targetParent.join('/')}`;
+      document.getElementById('wizPreviewParentPath').textContent = `위치: /부동산업무/${targetParent.join('/')}`;
       document.getElementById('wizPreviewFolderName').textContent = `📁 ${folderName}`;
 
       const box = document.getElementById('wizSubfolderChecklistBox');
@@ -1055,26 +962,29 @@
       }
     }
 
-    window.executeWizardCreate = async () => {
+    async function executeWizardCreate() {
       const { targetParent, folderName } = getWizardComputedTarget();
-      if (targetParent.length > 0) {
-        await createFolderInternal([], targetParent[0]);
-      }
-      await createFolderInternal(targetParent, folderName);
-
-      const newFolderPath = [...targetParent, folderName];
       const checkedSubs = Array.from(document.querySelectorAll('.wiz-sub-chk:checked')).map(el => el.value);
-      for (const sub of checkedSubs) {
-        await createFolderInternal(newFolderPath, sub);
-      }
-
       closeModal('wizardModal');
-      await navigateTo(newFolderPath);
-    };
+      setLoading(true, `'${folderName}' 및 하위폴더를 구글 드라이브에 생성하는 중...`);
 
-    // 7. 서류 등록 및 표준 파일명 생성
-    window.openUploadModal = (preloadedFile = null) => {
-      window.appState.selectedFileObj = preloadedFile;
+      try {
+        await createFolderInternal(targetParent, folderName);
+        const newFolderPath = [...targetParent, folderName];
+        for (const sub of checkedSubs) {
+          await createFolderInternal(newFolderPath, sub);
+        }
+        appState.currentPath = newFolderPath;
+        await refreshCurrentView(true);
+      } catch (err) {
+        alert("폴더 생성 오류: " + err.message);
+        setLoading(false);
+      }
+    }
+
+    // 서류 등록 및 표준 파일명 생성
+    function openUploadModal(preloadedFile = null) {
+      appState.selectedFileObj = preloadedFile;
       document.getElementById('docDatePrefix').value = getTodayYYMMDD();
       if (preloadedFile) {
         const dotIdx = preloadedFile.name.lastIndexOf('.');
@@ -1088,12 +998,12 @@
       }
       updateFinalFileNamePreview();
       openModal('uploadModal');
-    };
+    }
 
-    window.handleFileSelected = (files) => {
+    function handleFileSelected(files) {
       if (!files || files.length === 0) return;
       const f = files[0];
-      window.appState.selectedFileObj = f;
+      appState.selectedFileObj = f;
       const dotIdx = f.name.lastIndexOf('.');
       const rawBase = dotIdx > -1 ? f.name.slice(0, dotIdx) : f.name;
       if (!document.getElementById('docBaseName').value.trim()) {
@@ -1101,119 +1011,125 @@
       }
       document.getElementById('selectedFileInfo').textContent = `선택된 파일: ${f.name} (${Math.round(f.size / 1024)} KB)`;
       updateFinalFileNamePreview();
-    };
+    }
 
-    window.applyQuickDocName = (docLabel) => {
+    function applyQuickDocName(docLabel) {
       document.getElementById('docBaseName').value = docLabel;
       updateFinalFileNamePreview();
-    };
+    }
 
-    window.updateFinalFileNamePreview = () => {
-      const f = window.appState.selectedFileObj;
+    function updateFinalFileNamePreview() {
+      const f = appState.selectedFileObj;
       const ext = f && f.name.includes('.') ? f.name.slice(f.name.lastIndexOf('.')) : '.pdf';
       const prefix = document.getElementById('docDatePrefix').value.trim();
       const base = document.getElementById('docBaseName').value.trim() || '서류명';
       const finalName = prefix ? `${prefix}_${base}${ext}` : `${base}${ext}`;
       document.getElementById('finalFileNamePreview').textContent = finalName;
       return finalName;
-    };
+    }
 
-    window.executeFileUpload = async () => {
-      const f = window.appState.selectedFileObj;
-      if (!f) {
-        alert("등록할 파일을 먼저 선택해 주세요.");
-        return;
-      }
+    async function executeFileUpload() {
+      const f = appState.selectedFileObj;
+      if (!f) { alert("등록할 파일을 먼저 선택해 주세요."); return; }
       const finalName = updateFinalFileNamePreview();
 
-      if (window.appState.mode === 'cloud') {
-        if (f.size > 760 * 1024) {
-          alert(`현재 파일 크기(${Math.round(f.size / 1024)}KB)가 클라우드 실시간 동기화 권장 한도(750KB)를 초과합니다.\n\n사진 용량을 줄이거나 상단 [내 PC 폴더 연결] 모드를 이용해 주세요.`);
+      if (appState.mode === 'gdrive') {
+        if (f.size > 15 * 1024 * 1024) {
+          alert("웹앱 직접 업로드는 15MB 이하 파일을 권장합니다. 대용량 파일은 PC 탐색기(E:\\GoogleDrive_Y\\부동산업무)에 직접 넣어주세요.");
           return;
         }
+        closeModal('uploadModal');
+        setLoading(true, `'${finalName}' 파일을 구글 드라이브에 업로드하는 중...`);
+
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const dataUrl = e.target.result;
-          const docId = pathToDocId(window.appState.currentPath, finalName);
-          await setDoc(doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, docId), {
-            type: 'file',
-            name: finalName,
-            parentPath: window.appState.currentPath.join('/'),
-            size: f.size,
-            mimeType: f.type || 'application/octet-stream',
-            dataUrl,
-            updatedAt: Date.now()
-          });
-          closeModal('uploadModal');
+          try {
+            await callGasApi({
+              action: 'uploadFile',
+              path: appState.currentPath,
+              name: finalName,
+              mimeType: f.type || 'application/octet-stream',
+              base64: e.target.result
+            });
+            await refreshCurrentView(false);
+          } catch (err) {
+            alert("파일 업로드 오류: " + err.message);
+            setLoading(false);
+          }
         };
         reader.readAsDataURL(f);
       } else {
-        let dir = window.appState.localRootHandle;
-        for (const seg of window.appState.currentPath) {
-          dir = await dir.getDirectoryHandle(seg);
-        }
-        const fileHandle = await dir.getFileHandle(finalName, { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(f);
-        await writable.close();
+        let dir = appState.localRootHandle;
+        for (const seg of appState.currentPath) dir = await dir.getDirectoryHandle(seg);
+        const fh = await dir.getFileHandle(finalName, { create: true });
+        const w = await fh.createWritable();
+        await w.write(f);
+        await w.close();
         closeModal('uploadModal');
-        await renderFileList();
+        await refreshCurrentView(false);
       }
-    };
+    }
 
-    // 드래그 앤 드롭 업로드 지원
+    // 드래그 앤 드롭 지원
     const dropZone = document.getElementById('mainDropZone');
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropZone.classList.add('drop-zone-active');
-    });
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drop-zone-active'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drop-zone-active'));
     dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
       dropZone.classList.remove('drop-zone-active');
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        openUploadModal(e.dataTransfer.files[0]);
-      }
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) openUploadModal(e.dataTransfer.files[0]);
     });
 
-    // 8. 미리보기, 이름수정, 이동, 삭제
-    window.previewFile = async (fileName) => {
+    // 미리보기, 이름수정, 이동, 삭제
+    async function previewFile(fileName) {
       document.getElementById('previewFileName').textContent = fileName;
       const area = document.getElementById('previewContentArea');
       const dlBtn = document.getElementById('previewDownloadBtn');
+      const driveBtn = document.getElementById('previewDriveLinkBtn');
 
-      let url = '';
-      let mime = '';
-
-      if (window.appState.mode === 'cloud') {
-        const currentStr = window.appState.currentPath.join('/');
-        const found = window.appState.cloudItems.find(i => i.type === 'file' && i.parentPath === currentStr && i.name === fileName);
-        if (!found || !found.dataUrl) return;
-        url = found.dataUrl;
-        mime = found.mimeType || '';
-      } else {
-        let dir = window.appState.localRootHandle;
-        for (const seg of window.appState.currentPath) dir = await dir.getDirectoryHandle(seg);
-        const fh = await dir.getFileHandle(fileName);
-        const file = await fh.getFile();
-        url = URL.createObjectURL(file);
-        mime = file.type;
-      }
-
-      dlBtn.href = url;
-      dlBtn.download = fileName;
-
-      if (mime.startsWith('image/')) {
-        area.innerHTML = `<img src="${url}" class="max-w-full max-h-full object-contain rounded shadow" />`;
-      } else if (mime === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf')) {
-        area.innerHTML = `<iframe src="${url}" class="w-full h-full rounded border bg-white"></iframe>`;
-      } else {
-        area.innerHTML = `<div class="text-center p-8 bg-white rounded-xl shadow"><p class="font-bold text-slate-700 mb-2">${fileName}</p><p class="text-xs text-slate-500 mb-4">브라우저에서 직접 미리보기를 지원하지 않는 형식입니다.</p><a href="${url}" download="${fileName}" class="px-4 py-2 bg-sky-600 text-white rounded-lg text-xs font-bold">파일 다운로드하여 열기</a></div>`;
-      }
+      area.innerHTML = `<div class="text-center"><div class="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full spinner mx-auto mb-2"></div><p class="text-xs text-slate-600">구글 드라이브에서 파일을 불러오는 중...</p></div>`;
       openModal('previewModal');
-    };
 
-    window.openRenameModal = (type, oldName) => {
+      try {
+        let url = '';
+        let mime = '';
+
+        if (appState.mode === 'gdrive') {
+          const res = await callGasApi({ action: 'getFileBase64', path: appState.currentPath, name: fileName });
+          url = res.dataUrl;
+          mime = res.mimeType || '';
+          if (res.url) {
+            driveBtn.href = res.url;
+            driveBtn.classList.remove('hidden');
+          } else {
+            driveBtn.classList.add('hidden');
+          }
+        } else {
+          driveBtn.classList.add('hidden');
+          let dir = appState.localRootHandle;
+          for (const seg of appState.currentPath) dir = await dir.getDirectoryHandle(seg);
+          const fh = await dir.getFileHandle(fileName);
+          const file = await fh.getFile();
+          url = URL.createObjectURL(file);
+          mime = file.type;
+        }
+
+        dlBtn.href = url;
+        dlBtn.download = fileName;
+
+        if (mime.startsWith('image/')) {
+          area.innerHTML = `<img src="${url}" class="max-w-full max-h-full object-contain rounded shadow" />`;
+        } else if (mime === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf')) {
+          area.innerHTML = `<iframe src="${url}" class="w-full h-full rounded border bg-white"></iframe>`;
+        } else {
+          area.innerHTML = `<div class="text-center p-8 bg-white rounded-xl shadow"><p class="font-bold text-slate-700 mb-2">${fileName}</p><p class="text-xs text-slate-500 mb-4">상단 [다운로드] 또는 [구글 드라이브에서 열기] 버튼을 이용해 주세요.</p></div>`;
+        }
+      } catch (err) {
+        area.innerHTML = `<p class="text-xs text-rose-600 font-bold">미리보기 불러오기 오류: ${err.message}</p>`;
+      }
+    }
+
+    function openRenameModal(type, oldName) {
       document.getElementById('actionModalTitle').textContent = `${type === 'folder' ? '폴더' : '파일'} 이름 수정`;
       document.getElementById('actionModalBody').innerHTML = `
         <label class="block font-semibold text-slate-700 mb-1">새 이름 입력:</label>
@@ -1221,158 +1137,91 @@
       `;
       document.getElementById('actionModalConfirmBtn').onclick = async () => {
         const newName = document.getElementById('renameInputVal').value.trim();
-        if (!newName || newName === oldName) { closeModal('actionModal'); return; }
-        await executeRename(type, oldName, newName);
         closeModal('actionModal');
-      };
-      openModal('actionModal');
-    };
+        if (!newName || newName === oldName) return;
 
-    async function executeRename(type, oldName, newName) {
-      if (window.appState.mode === 'cloud') {
-        const currentStr = window.appState.currentPath.join('/');
-        if (type === 'file') {
-          const oldId = pathToDocId(window.appState.currentPath, oldName);
-          const item = window.appState.cloudItems.find(i => i.id === oldId);
-          if (!item) return;
-          const newId = pathToDocId(window.appState.currentPath, newName);
-          await setDoc(doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, newId), { ...item, name: newName, updatedAt: Date.now() });
-          await deleteDoc(doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, oldId));
-        } else {
-          const oldPrefix = currentStr ? `${currentStr}/${oldName}` : oldName;
-          const newPrefix = currentStr ? `${currentStr}/${newName}` : newName;
-          const targets = window.appState.cloudItems.filter(i => {
-            const full = i.parentPath ? `${i.parentPath}/${i.name}` : i.name;
-            return full === oldPrefix || full.startsWith(oldPrefix + '/');
-          });
-          for (const item of targets) {
-            const full = item.parentPath ? `${item.parentPath}/${item.name}` : item.name;
-            const updatedFull = newPrefix + full.slice(oldPrefix.length);
-            const parts = updatedFull.split('/');
-            const uName = parts.pop();
-            const uParent = parts.join('/');
-            const newId = pathToDocId(parts, uName);
-            await setDoc(doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, newId), { ...item, name: uName, parentPath: uParent, updatedAt: Date.now() });
-            await deleteDoc(doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, item.id));
+        if (appState.mode === 'gdrive') {
+          setLoading(true, "구글 드라이브에서 이름을 변경하는 중...");
+          try {
+            await callGasApi({ action: 'rename', type, path: appState.currentPath, oldName, newName });
+            await refreshCurrentView(type === 'folder');
+          } catch (err) {
+            alert("이름 변경 오류: " + err.message);
+            setLoading(false);
           }
         }
-      } else {
-        let dir = window.appState.localRootHandle;
-        for (const seg of window.appState.currentPath) dir = await dir.getDirectoryHandle(seg);
-        if (type === 'file') {
-          const oldFh = await dir.getFileHandle(oldName);
-          const file = await oldFh.getFile();
-          const newFh = await dir.getFileHandle(newName, { create: true });
-          const w = await newFh.createWritable();
-          await w.write(file);
-          await w.close();
-          await dir.removeEntry(oldName);
-        } else {
-          alert("로컬 PC 폴더의 이름 변경은 윈도우 탐색기에서 직접 변경해 주세요.");
-        }
-        await renderFileList();
-      }
+      };
+      openModal('actionModal');
     }
 
-    window.openMoveFileModal = (fileName) => {
-      if (window.appState.mode !== 'cloud') {
-        alert("파일 폴더 이동은 클라우드 실시간 모드에서 지원됩니다.");
-        return;
-      }
-      const folders = window.appState.cloudItems.filter(i => i.type === 'folder');
+    function openMoveFileModal(fileName) {
+      if (appState.mode !== 'gdrive') { alert("Google Drive 연동 모드에서 지원됩니다."); return; }
       const paths = [''];
-      folders.forEach(f => paths.push(f.parentPath ? `${f.parentPath}/${f.name}` : f.name));
-      paths.sort();
+      appState.cachedTree.forEach(n => paths.push(n.path.join('/')));
+      paths.sort((a, b) => a.localeCompare(b, 'ko'));
 
       document.getElementById('actionModalTitle').textContent = `서류 이동: ${fileName}`;
       document.getElementById('actionModalBody').innerHTML = `
-        <label class="block font-semibold text-slate-700 mb-1">이동할 대상 폴더 선택:</label>
+        <label class="block font-semibold text-slate-700 mb-1">이동할 구글 드라이브 폴더 선택:</label>
         <select id="moveTargetSelect" class="w-full border border-slate-300 rounded-lg px-2.5 py-2">
-          ${paths.map(p => `<option value="${p}">/${p || '최상위 폴더'}</option>`).join('')}
+          ${paths.map(p => `<option value="${p}">/부동산업무/${p}</option>`).join('')}
         </select>
       `;
       document.getElementById('actionModalConfirmBtn').onclick = async () => {
         const destStr = document.getElementById('moveTargetSelect').value;
-        const oldId = pathToDocId(window.appState.currentPath, fileName);
-        const item = window.appState.cloudItems.find(i => i.id === oldId);
-        if (item) {
-          const destArr = destStr ? destStr.split('/') : [];
-          const newId = pathToDocId(destArr, fileName);
-          await setDoc(doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, newId), {
-            ...item,
-            parentPath: destStr,
-            updatedAt: Date.now()
-          });
-          await deleteDoc(doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, oldId));
-        }
         closeModal('actionModal');
+        setLoading(true, "서류를 대상 폴더로 이동하는 중...");
+        try {
+          const destPath = destStr ? destStr.split('/') : [];
+          await callGasApi({ action: 'move', type: 'file', path: appState.currentPath, name: fileName, destPath });
+          await refreshCurrentView(false);
+        } catch (err) {
+          alert("파일 이동 오류: " + err.message);
+          setLoading(false);
+        }
       };
       openModal('actionModal');
-    };
+    }
 
-    window.deleteItem = async (type, name) => {
-      if (!confirm(`정말 '${name}' ${type === 'folder' ? '폴더(하위 항목 포함)' : '파일'}을 삭제하시겠습니까?`)) return;
+    async function deleteItem(type, name) {
+      if (!confirm(`정말 '${name}' ${type === 'folder' ? '폴더(하위 항목 포함)' : '파일'}을 구글 드라이브 휴지통으로 이동하시겠습니까?`)) return;
 
-      if (window.appState.mode === 'cloud') {
-        const currentStr = window.appState.currentPath.join('/');
-        if (type === 'file') {
-          const id = pathToDocId(window.appState.currentPath, name);
-          await deleteDoc(doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, id));
-        } else {
-          const prefix = currentStr ? `${currentStr}/${name}` : name;
-          const targets = window.appState.cloudItems.filter(i => {
-            const full = i.parentPath ? `${i.parentPath}/${i.name}` : i.name;
-            return full === prefix || full.startsWith(prefix + '/');
-          });
-          for (const t of targets) {
-            await deleteDoc(doc(window.appState.db, `workspaces/${window.appState.workspaceId}/items`, t.id));
-          }
+      if (appState.mode === 'gdrive') {
+        setLoading(true, "구글 드라이브에서 항목을 삭제하는 중...");
+        try {
+          await callGasApi({ action: 'delete', type, path: appState.currentPath, name });
+          await refreshCurrentView(type === 'folder');
+        } catch (err) {
+          alert("삭제 오류: " + err.message);
+          setLoading(false);
         }
       } else {
-        let dir = window.appState.localRootHandle;
-        for (const seg of window.appState.currentPath) dir = await dir.getDirectoryHandle(seg);
+        let dir = appState.localRootHandle;
+        for (const seg of appState.currentPath) dir = await dir.getDirectoryHandle(seg);
         await dir.removeEntry(name, { recursive: true });
-        await renderSidebarTree();
-        await renderFileList();
+        await refreshCurrentView(type === 'folder');
       }
-    };
+    }
 
-    // 9. 모바일/공유 코드 모달 제어
-    window.openCloudInfoModal = () => {
-      document.getElementById('workspaceCodeInput').value = window.appState.workspaceId;
-      openModal('cloudInfoModal');
-    };
-
-    window.applyWorkspaceCode = () => {
-      const code = document.getElementById('workspaceCodeInput').value.trim();
-      if (!code) return;
-      window.appState.workspaceId = code;
-      localStorage.setItem('doosan_workspace_id', code);
-      window.appState.currentPath = [];
-      subscribeCloudWorkspace();
-      closeModal('cloudInfoModal');
-    };
-
-    window.toggleMobileSidebar = () => {
+    function openCloudInfoModal() { openModal('cloudInfoModal'); }
+    function toggleMobileSidebar() {
       document.getElementById('sidebarDrawer').classList.toggle('-translate-x-full');
       document.getElementById('mobileBackdrop').classList.toggle('hidden');
-    };
-
-    window.openModal = (id) => {
+    }
+    function openModal(id) {
       const m = document.getElementById(id);
       m.classList.remove('hidden');
       m.classList.add('flex');
-    };
-
-    window.closeModal = (id) => {
+    }
+    function closeModal(id) {
       const m = document.getElementById(id);
       m.classList.add('hidden');
       m.classList.remove('flex');
-    };
+    }
 
     // 앱 시작 시 자동 실행
     checkSavedLocalHandle();
-    initFirebaseCloud();
+    refreshCurrentView(true);
   </script>
 </body>
 </html>
