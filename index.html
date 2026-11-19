@@ -210,14 +210,14 @@
               <input type="radio" name="wizardType" value="property" checked class="mt-0.5" />
               <div>
                 <div class="font-bold text-slate-800">🏠 신규 매물 · 계약 물건</div>
-                <div class="text-[11px] text-slate-500 mt-0.5">[접수일] 단지명_동호수_유형_금액 + 5단계 서류폴더 자동생성</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">YYYYMMDD_단지명_동 호수_유형 + 5단계 서류폴더 자동생성</div>
               </div>
             </label>
             <label class="border border-slate-200 hover:border-blue-300 rounded-xl p-3 cursor-pointer flex items-start gap-2.5" onclick="selectWizardType('loan', this)">
               <input type="radio" name="wizardType" value="loan" class="mt-0.5" />
               <div>
                 <div class="font-bold text-slate-800">🏦 담보·전세대출 상담 고객</div>
-                <div class="text-[11px] text-slate-500 mt-0.5">[상담일] 고객명_단지명_은행 + 3단계 대출서류폴더</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">YYYYMMDD_고객명_단지명_은행 + 3단계 대출서류폴더</div>
               </div>
             </label>
             <label class="border border-slate-200 hover:border-blue-300 rounded-xl p-3 cursor-pointer flex items-start gap-2.5" onclick="selectWizardType('period', this)">
@@ -241,8 +241,8 @@
           <div id="wizardFieldsProperty" class="space-y-3">
             <div class="grid grid-cols-2 gap-2.5">
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">접수일 (YYMMDD) *</label>
-                <input type="text" id="wizPropDate" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+                <label class="block font-semibold text-slate-700 mb-1">접수일 (YYYYMMDD) *</label>
+                <input type="text" id="wizPropDate" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono" />
               </div>
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">거래 유형 *</label>
@@ -257,31 +257,25 @@
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">단지명 / 건물명 *</label>
-              <input type="text" id="wizPropComplex" placeholder="예: 꿈마을건영, 목련두산, 한가람세경" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+              <input type="text" id="wizPropComplex" placeholder="예: 목련두산, 꿈마을건영, 한가람세경" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
               <div class="flex flex-wrap gap-1 mt-1.5">
-                <button type="button" onclick="document.getElementById('wizPropComplex').value='꿈마을건영'" class="px-2 py-0.5 bg-slate-100 hover:bg-blue-100 rounded text-[11px]">꿈마을건영</button>
                 <button type="button" onclick="document.getElementById('wizPropComplex').value='목련두산'" class="px-2 py-0.5 bg-slate-100 hover:bg-blue-100 rounded text-[11px]">목련두산</button>
+                <button type="button" onclick="document.getElementById('wizPropComplex').value='꿈마을건영'" class="px-2 py-0.5 bg-slate-100 hover:bg-blue-100 rounded text-[11px]">꿈마을건영</button>
                 <button type="button" onclick="document.getElementById('wizPropComplex').value='한가람세경'" class="px-2 py-0.5 bg-slate-100 hover:bg-blue-100 rounded text-[11px]">한가람세경</button>
                 <button type="button" onclick="document.getElementById('wizPropComplex').value='귀인마을현대'" class="px-2 py-0.5 bg-slate-100 hover:bg-blue-100 rounded text-[11px]">귀인마을현대</button>
               </div>
             </div>
-            <div class="grid grid-cols-2 gap-2.5">
-              <div>
-                <label class="block font-semibold text-slate-700 mb-1">동 · 호수 *</label>
-                <input type="text" id="wizPropUnit" placeholder="예: 302동1201호" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-700 mb-1">금액 *</label>
-                <input type="text" id="wizPropPrice" placeholder="예: 8억5천, 5억-50" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
-              </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">동 · 호수 *</label>
+              <input type="text" id="wizPropUnit" placeholder="예: 601동 601호" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
             </div>
           </div>
 
           <div id="wizardFieldsLoan" class="hidden space-y-3">
             <div class="grid grid-cols-2 gap-2.5">
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">상담일 (YYMMDD) *</label>
-                <input type="text" id="wizLoanDate" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+                <label class="block font-semibold text-slate-700 mb-1">상담일 (YYYYMMDD) *</label>
+                <input type="text" id="wizLoanDate" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono" />
               </div>
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">고객 성함 *</label>
@@ -291,7 +285,7 @@
             <div class="grid grid-cols-2 gap-2.5">
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">담보 물건지 *</label>
-                <input type="text" id="wizLoanComplex" placeholder="예: 목련두산_705동" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+                <input type="text" id="wizLoanComplex" placeholder="예: 목련두산_601동 601호" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
               </div>
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">진행 금융기관</label>
@@ -352,7 +346,7 @@
     </div>
   </div>
 
-  <!-- 모달 2: 서류 등록 · 표준 파일명 지정 -->
+  <!-- 모달 2: 서류 등록 · 표준 파일명 지정 (YYYYMMDD_법정동_단지명_동 호수_서류명) -->
   <div id="uploadModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
       <div class="bg-blue-700 text-white px-5 py-3.5 flex items-center justify-between">
@@ -360,15 +354,15 @@
         <button onclick="closeModal('uploadModal')" class="text-blue-200 hover:text-white text-lg leading-none">&times;</button>
       </div>
 
-      <div class="p-5 overflow-y-auto custom-scrollbar space-y-4 text-xs">
+      <div class="p-5 overflow-y-auto custom-scrollbar space-y-3.5 text-xs">
         <div>
           <label class="block font-semibold text-slate-700 mb-1">1. 등록할 파일 선택 (PDF, 이미지, 문서 등) *</label>
           <input type="file" id="fileInputElem" onchange="handleFileSelected(this.files)" class="w-full border border-slate-300 rounded-lg p-2 bg-slate-50 text-xs" />
           <p id="selectedFileInfo" class="text-[11px] text-slate-500 mt-1"></p>
         </div>
 
-        <div class="space-y-2">
-          <label class="block font-semibold text-slate-700">2. 표준 서류명 퀵 선택 (클릭 시 파일명 자동 완성)</label>
+        <div class="space-y-1.5">
+          <label class="block font-semibold text-slate-700">2. 표준 서류명 퀵 선택 (클릭 시 서류명 자동 입력)</label>
           <div class="flex flex-wrap gap-1.5">
             <button type="button" onclick="applyQuickDocName('등기부등본_계약당일')" class="px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 rounded font-medium">등기부(계약당일)</button>
             <button type="button" onclick="applyQuickDocName('등기부등본_잔금당일')" class="px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 rounded font-medium">등기부(잔금당일)</button>
@@ -383,19 +377,51 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">날짜 접두사</label>
-            <input type="text" id="docDatePrefix" oninput="updateFinalFileNamePreview()" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono" />
+        <!-- 3. 물건 소재지 및 날짜 세부 구성 (자동 폴더 인식) -->
+        <div class="bg-blue-50/60 border border-blue-200/80 rounded-xl p-3 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-blue-900">3. 파일명 구성요소 (현재 폴더명에서 자동 추출됨)</span>
+            <span class="text-[10px] text-blue-600">비워둔 칸은 자동 생략</span>
           </div>
-          <div class="col-span-2">
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">발급·등록일 (YYYYMMDD)</label>
+              <input type="text" id="docDatePrefix" oninput="updateFinalFileNamePreview()" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono bg-white" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">법정동</label>
+              <div class="flex gap-1">
+                <input type="text" id="docDong" oninput="updateFinalFileNamePreview()" placeholder="예: 호계동" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
+              </div>
+              <div class="flex gap-1 mt-1">
+                <button type="button" onclick="document.getElementById('docDong').value='호계동';updateFinalFileNamePreview();" class="px-1.5 py-0.5 bg-white border border-slate-200 hover:bg-blue-100 rounded text-[10px]">호계동</button>
+                <button type="button" onclick="document.getElementById('docDong').value='평촌동';updateFinalFileNamePreview();" class="px-1.5 py-0.5 bg-white border border-slate-200 hover:bg-blue-100 rounded text-[10px]">평촌동</button>
+                <button type="button" onclick="document.getElementById('docDong').value='비산동';updateFinalFileNamePreview();" class="px-1.5 py-0.5 bg-white border border-slate-200 hover:bg-blue-100 rounded text-[10px]">비산동</button>
+                <button type="button" onclick="document.getElementById('docDong').value='관양동';updateFinalFileNamePreview();" class="px-1.5 py-0.5 bg-white border border-slate-200 hover:bg-blue-100 rounded text-[10px]">관양동</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">단지명 / 건물명</label>
+              <input type="text" id="docComplex" oninput="updateFinalFileNamePreview()" placeholder="예: 목련두산" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">동 · 호수</label>
+              <input type="text" id="docUnit" oninput="updateFinalFileNamePreview()" placeholder="예: 601동 601호" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
+            </div>
+          </div>
+
+          <div>
             <label class="block font-semibold text-slate-700 mb-1">서류명 · 구분 (확장자 제외) *</label>
-            <input type="text" id="docBaseName" oninput="updateFinalFileNamePreview()" placeholder="예: 등기부등본_계약당일" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+            <input type="text" id="docBaseName" oninput="updateFinalFileNamePreview()" placeholder="예: 등기부등본_계약당일" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
           </div>
         </div>
 
         <div class="bg-slate-100 p-2.5 rounded-lg border border-slate-200">
-          <div class="text-[11px] text-slate-500">구글 드라이브에 저장될 최종 파일명:</div>
+          <div class="text-[11px] text-slate-500">구글 드라이브에 저장될 최종 표준 파일명:</div>
           <div id="finalFileNamePreview" class="font-mono font-bold text-blue-800 mt-0.5 break-all">-</div>
         </div>
       </div>
@@ -488,7 +514,6 @@
       wizardCreateInCurrent: false
     };
 
-    // 선형(Outline) 폴더 SVG 아이콘 생성기 (닫힌 폴더 / 열린 폴더)
     function getOutlineFolderSvg(colorClass, isOpen = false, sizeClass = "w-4 h-4") {
       if (isOpen) {
         return `<svg class="${sizeClass} ${colorClass} shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/></svg>`;
@@ -496,84 +521,36 @@
       return `<svg class="${sizeClass} ${colorClass} shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>`;
     }
 
-    // 폴더별 고유 색상 테마 매핑 (00 ~ 06 구분)
     function getFolderTheme(pathArr, folderName) {
       const rootName = pathArr.length > 0 ? pathArr[0] : folderName;
       if (rootName.startsWith('00_')) {
-        return {
-          iconColor: 'text-purple-600',
-          iconBg: 'bg-purple-50 border-purple-200',
-          cardBorder: 'border-purple-200/80 hover:border-purple-400',
-          badge: 'bg-purple-50 text-purple-700',
-          tag: '공통서식'
-        };
+        return { iconColor: 'text-purple-600', iconBg: 'bg-purple-50 border-purple-200', cardBorder: 'border-purple-200/80 hover:border-purple-400', badge: 'bg-purple-50 text-purple-700', tag: '공통서식' };
       }
       if (rootName.startsWith('01_')) {
-        return {
-          iconColor: 'text-emerald-600',
-          iconBg: 'bg-emerald-50 border-emerald-200',
-          cardBorder: 'border-emerald-200/80 hover:border-emerald-400',
-          badge: 'bg-emerald-50 text-emerald-700',
-          tag: '매물·임장'
-        };
+        return { iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50 border-emerald-200', cardBorder: 'border-emerald-200/80 hover:border-emerald-400', badge: 'bg-emerald-50 text-emerald-700', tag: '매물·임장' };
       }
       if (rootName.startsWith('02_')) {
-        return {
-          iconColor: 'text-sky-600',
-          iconBg: 'bg-sky-50 border-sky-200',
-          cardBorder: 'border-sky-200/80 hover:border-sky-400',
-          badge: 'bg-sky-50 text-sky-700',
-          tag: '계약·잔금'
-        };
+        return { iconColor: 'text-sky-600', iconBg: 'bg-sky-50 border-sky-200', cardBorder: 'border-sky-200/80 hover:border-sky-400', badge: 'bg-sky-50 text-sky-700', tag: '계약·잔금' };
       }
       if (rootName.startsWith('03_')) {
-        return {
-          iconColor: 'text-slate-600',
-          iconBg: 'bg-slate-100 border-slate-200',
-          cardBorder: 'border-slate-200 hover:border-slate-400',
-          badge: 'bg-slate-100 text-slate-700',
-          tag: '거래완료'
-        };
+        return { iconColor: 'text-slate-600', iconBg: 'bg-slate-100 border-slate-200', cardBorder: 'border-slate-200 hover:border-slate-400', badge: 'bg-slate-100 text-slate-700', tag: '거래완료' };
       }
       if (rootName.startsWith('04_')) {
-        return {
-          iconColor: 'text-indigo-600',
-          iconBg: 'bg-indigo-50 border-indigo-200',
-          cardBorder: 'border-indigo-200/80 hover:border-indigo-400',
-          badge: 'bg-indigo-50 text-indigo-700',
-          tag: '대출·금융'
-        };
+        return { iconColor: 'text-indigo-600', iconBg: 'bg-indigo-50 border-indigo-200', cardBorder: 'border-indigo-200/80 hover:border-indigo-400', badge: 'bg-indigo-50 text-indigo-700', tag: '대출·금융' };
       }
       if (rootName.startsWith('05_')) {
-        return {
-          iconColor: 'text-amber-500',
-          iconBg: 'bg-amber-50 border-amber-200',
-          cardBorder: 'border-amber-200/80 hover:border-amber-400',
-          badge: 'bg-amber-50 text-amber-700',
-          tag: '행정·세무'
-        };
+        return { iconColor: 'text-amber-500', iconBg: 'bg-amber-50 border-amber-200', cardBorder: 'border-amber-200/80 hover:border-amber-400', badge: 'bg-amber-50 text-amber-700', tag: '행정·세무' };
       }
       if (rootName.startsWith('06_')) {
-        return {
-          iconColor: 'text-rose-500',
-          iconBg: 'bg-rose-50 border-rose-200',
-          cardBorder: 'border-rose-200/80 hover:border-rose-400',
-          badge: 'bg-rose-50 text-rose-700',
-          tag: '홍보·마케팅'
-        };
+        return { iconColor: 'text-rose-500', iconBg: 'bg-rose-50 border-rose-200', cardBorder: 'border-rose-200/80 hover:border-rose-400', badge: 'bg-rose-50 text-rose-700', tag: '홍보·마케팅' };
       }
-      return {
-        iconColor: 'text-amber-500',
-        iconBg: 'bg-amber-50 border-amber-200',
-        cardBorder: 'border-slate-200 hover:border-blue-400',
-        badge: 'bg-slate-100 text-slate-600',
-        tag: '하위폴더'
-      };
+      return { iconColor: 'text-amber-500', iconBg: 'bg-amber-50 border-amber-200', cardBorder: 'border-slate-200 hover:border-blue-400', badge: 'bg-slate-100 text-slate-600', tag: '하위폴더' };
     }
 
-    function getTodayYYMMDD() {
+    // 8자리 날짜 YYYYMMDD 반환
+    function getTodayYYYYMMDD() {
       const d = new Date();
-      return `${String(d.getFullYear()).slice(-2)}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+      return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
     }
 
     function formatDateShort(ts) {
@@ -924,7 +901,7 @@
           });
           let finalName = folderName;
           if (targetRootFolder === '03_거래완료_보관함' && !folderName.includes('완료_')) {
-            finalName = `${getTodayYYMMDD()}완료_${folderName}`;
+            finalName = `${getTodayYYYYMMDD()}완료_${folderName}`;
             await callGasApi({
               action: 'rename',
               type: 'folder',
@@ -1024,7 +1001,6 @@
       }
     }
 
-    // 기본 표준폴더 일괄 생성 (05_사무소행정_세무 및 06_홍보_마케팅 분리 반영)
     async function initializeStandardStructure() {
       const standardFolders = [
         { path: [], name: '00_공통서식_마스터' },
@@ -1067,11 +1043,12 @@
       }
     }
 
+    // 3단계 폴더 생성 마법사 (YYYYMMDD_단지명_동 호수_유형, 금액 배제)
     function openFolderWizard(inCurrent = false) {
       appState.wizardCreateInCurrent = inCurrent;
       appState.wizardStep = 1;
-      document.getElementById('wizPropDate').value = getTodayYYMMDD();
-      document.getElementById('wizLoanDate').value = getTodayYYMMDD();
+      document.getElementById('wizPropDate').value = getTodayYYYYMMDD();
+      document.getElementById('wizLoanDate').value = getTodayYYYYMMDD();
       updateWizardUI();
       openModal('wizardModal');
     }
@@ -1114,8 +1091,8 @@
       if (appState.wizardStep === 2) {
         const t = appState.wizardType;
         if (t === 'property') {
-          if (!document.getElementById('wizPropComplex').value.trim() || !document.getElementById('wizPropUnit').value.trim() || !document.getElementById('wizPropPrice').value.trim()) {
-            alert("단지명, 동·호수, 금액을 모두 입력해 주세요."); return;
+          if (!document.getElementById('wizPropComplex').value.trim() || !document.getElementById('wizPropUnit').value.trim()) {
+            alert("단지명과 동·호수를 모두 입력해 주세요."); return;
           }
         } else if (t === 'loan') {
           if (!document.getElementById('wizLoanClient').value.trim() || !document.getElementById('wizLoanComplex').value.trim()) {
@@ -1139,20 +1116,20 @@
 
       if (t === 'property') {
         if (!appState.wizardCreateInCurrent) targetParent = ['01_매물접수_임장관리'];
-        const d = document.getElementById('wizPropDate').value.trim() || getTodayYYMMDD();
+        const d = document.getElementById('wizPropDate').value.trim() || getTodayYYYYMMDD();
         const c = document.getElementById('wizPropComplex').value.trim().replace(/\s+/g, '');
-        const u = document.getElementById('wizPropUnit').value.trim().replace(/\s+/g, '');
+        const u = document.getElementById('wizPropUnit').value.trim().replace(/\s+/g, ' ');
         const deal = document.getElementById('wizPropDeal').value;
-        const p = document.getElementById('wizPropPrice').value.trim().replace(/\s+/g, '');
-        folderName = `[${d}] ${c}_${u}_${deal}_${p}`;
+        // 20261119_목련두산_601동 601호_매매 (금액 제외)
+        folderName = `${d}_${c}_${u}_${deal}`;
         subs = ['01_공적장부_발급본', '02_신분증_위임_자격서류', '03_계약서_확인설명서', '04_신고필증_확정일자', '05_영수증_정산내역'];
       } else if (t === 'loan') {
         if (!appState.wizardCreateInCurrent) targetParent = ['04_대출상담_금융서류'];
-        const d = document.getElementById('wizLoanDate').value.trim() || getTodayYYMMDD();
+        const d = document.getElementById('wizLoanDate').value.trim() || getTodayYYYYMMDD();
         const cl = document.getElementById('wizLoanClient').value.trim();
-        const cx = document.getElementById('wizLoanComplex').value.trim().replace(/\s+/g, '');
+        const cx = document.getElementById('wizLoanComplex').value.trim();
         const bk = document.getElementById('wizLoanBank').value.trim();
-        folderName = `[${d}] ${cl}_${cx}${bk ? '_' + bk : ''}`;
+        folderName = `${d}_${cl}_${cx}${bk ? '_' + bk : ''}`;
         subs = ['01_신분_소득재직서류', '02_등기_계약_담보서류', '03_은행심사_자서서류'];
       } else if (t === 'period') {
         if (!appState.wizardCreateInCurrent) targetParent = ['03_거래완료_보관함'];
@@ -1208,9 +1185,40 @@
       }
     }
 
+    // 현재 폴더 경로에서 단지명, 동·호수 자동 파싱
+    function extractPropertyInfoFromPath(pathArr) {
+      let complex = '';
+      let unit = '';
+      // 상위 경로 중 물건 폴더(예: "20261119_목련두산_601동 601호_매매" 또는 "[261119] 목련두산_601동 601호_매매") 탐색
+      for (const seg of pathArr) {
+        const cleaned = seg.replace(/^\[?\d{6,8}\]?\s*_?/, '');
+        const parts = cleaned.split('_');
+        if (parts.length >= 2 && (parts[1].includes('동') || parts[1].includes('호') || parts[1].includes('층'))) {
+          complex = parts[0].trim();
+          unit = parts[1].trim();
+          break;
+        }
+      }
+      return { complex, unit };
+    }
+
+    // 서류 등록 및 표준 파일명 생성 (YYYYMMDD_법정동_단지명_동 호수_서류명.확장자)
     function openUploadModal(preloadedFile = null) {
       appState.selectedFileObj = preloadedFile;
-      document.getElementById('docDatePrefix').value = getTodayYYMMDD();
+      document.getElementById('docDatePrefix').value = getTodayYYYYMMDD();
+
+      const extracted = extractPropertyInfoFromPath(appState.currentPath);
+      const isPropertyContext = appState.currentPath.length >= 1 && (
+        appState.currentPath[0].startsWith('01_') ||
+        appState.currentPath[0].startsWith('02_') ||
+        appState.currentPath[0].startsWith('03_') ||
+        appState.currentPath[0].startsWith('04_')
+      );
+
+      document.getElementById('docDong').value = (extracted.complex || isPropertyContext) ? '호계동' : '';
+      document.getElementById('docComplex').value = extracted.complex || '';
+      document.getElementById('docUnit').value = extracted.unit || '';
+
       if (preloadedFile) {
         const dotIdx = preloadedFile.name.lastIndexOf('.');
         const rawBase = dotIdx > -1 ? preloadedFile.name.slice(0, dotIdx) : preloadedFile.name;
@@ -1247,8 +1255,14 @@
       const f = appState.selectedFileObj;
       const ext = f && f.name.includes('.') ? f.name.slice(f.name.lastIndexOf('.')) : '.pdf';
       const prefix = document.getElementById('docDatePrefix').value.trim();
+      const dong = document.getElementById('docDong').value.trim();
+      const complex = document.getElementById('docComplex').value.trim();
+      const unit = document.getElementById('docUnit').value.trim();
       const base = document.getElementById('docBaseName').value.trim() || '서류명';
-      const finalName = prefix ? `${prefix}_${base}${ext}` : `${base}${ext}`;
+
+      // 비어있지 않은 항목만 언더바(_)로 연결: 20261120_호계동_목련두산_601동 601호_등기부등본_계약당일.pdf
+      const segments = [prefix, dong, complex, unit, base].filter(Boolean);
+      const finalName = `${segments.join('_')}${ext}`;
       document.getElementById('finalFileNamePreview').textContent = finalName;
       return finalName;
     }
