@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>토지거래허가신청서 자동생성</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background: #e9ecef; display: flex; }
+
+  /* 좌측 입력 패널 (인쇄 시 숨김) */
+  .editor-panel {
+    width: 420px; height: 100vh; overflow-y: auto; background: #fff;
+    padding: 20px; border-right: 1px solid #ccc; position: sticky; top: 0;
+  }
+  .editor-panel h2 { font-size: 16px; margin-bottom: 12px; color: #1e293b; border-bottom: 2px solid #2563eb; padding-bottom: 6px; }
+  .form-group { margin-bottom: 10px; }
+  .form-group label { display: block; font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 3px; }
+  .form-group input, .form-group select {
+    width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;
+  }
+  .btn-print {
+    width: 100%; padding: 12px; background: #2563eb; color: #fff; border: none;
+    border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 10px;
+  }
+  .btn-print:hover { background: #1d4ed8; }
+
+  /* 우측 A4 미리보기 영역 */
+  .preview-panel { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .a4-page {
+    width: 210mm; height: 297mm; position: relative; background-color: #fff;
+    background-size: 210mm 297mm; background-repeat: no-repeat;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden;
+  }
+
+  /* 배경 이미지 매핑 */
+  #page-1 { background-image: url('bg/page_1.png'); }
+  #page-2 { background-image: url('bg/page_2.png'); }
+  #page-3 { background-image: url('bg/page_3.png'); }
+  #page-4 { background-image: url('bg/page_4.png'); }
+  #page-5 { background-image: url('bg/page_5.png'); }
+  #page-6 { background-image: url('bg/page_6.png'); }
+  #page-7 { background-image: url('bg/page_7.png'); }
+  #page-8 { background-image: url('bg/page_8.png'); }
+
+  /* 데이터 오버레이 공통 스타일 */
+  .field {
+    position: absolute; font-size: 10pt; font-weight: 500; color: #000;
+    line-height: 1.2; white-space: nowrap;
+  }
+  .field.wrap { white-space: normal; word-break: keep-all; }
+  .field.center { text-align: center; }
+  .field.right { text-align: right; }
+
+  /* 페이지 선택 토글용 (필요 없는 별지 제외 인쇄) */
+  .a4-page.excluded { display: none; }
+
+  /* 인쇄 전용 스타일 */
+  @media print {
+    @page { size: A4 portrait; margin: 0; }
+    body { background: #fff; display: block; }
+    .editor-panel { display: none !important; }
+    .preview-panel { padding: 0; gap: 0; display: block; }
+    .a4-page {
+      box-shadow: none; margin: 0; page-break-after: always;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .a4-page:last-child { page-break-after: auto; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- 좌측 데이터 입력폼 -->
+  <div class="editor-panel">
+    <h2>📄 안양시 동안구 토지거래허가신청서</h2>
+
+    <div class="form-group">
+      <label>신청일자 (파일명 기준일)</label>
+      <input type="date" id="in_date" value="2026-11-20" oninput="syncAll()">
+    </div>
+    <div class="form-group">
+      <label>소재지 / 단지명 / 동·호수 (파일명 및 서식 연동)</label>
+      <input type="text" id="in_dong" placeholder="법정동 (예: 호계동)" value="호계동" oninput="syncAll()">
+      <input type="text" id="in_complex" placeholder="단지명 (예: 목련두산)" value="목련두산" style="margin-top:4px;" oninput="syncAll()">
+      <input type="text" id="in_unit" placeholder="동·호수 (예: 601동 601호)" value="601동 601호" style="margin-top:4px;" oninput="syncAll()">
+      <input type="text" id="in_addr_full" placeholder="전체 지번주소" value="경기도 안양시 동안구 호계동 1054 목련마을두산아파트 제601동 제601호" style="margin-top:4px;" oninput="syncAll()">
+    </div>
+
+    <div class="form-group">
+      <label>매도인 정보 (성명 / 주민번호 / 연락처 / 주소)</label>
+      <input type="text" id="in_seller_name" placeholder="매도인 성명" oninput="syncAll()">
+      <input type="text" id="in_seller_rrn" placeholder="주민등록번호" style="margin-top:4px;" oninput="syncAll()">
+      <input type="text" id="in_seller_tel" placeholder="전화번호" style="margin-top:4px;" oninput="syncAll()">
+      <input type="text" id="in_seller_addr" placeholder="매도인 주소" style="margin-top:4px;" oninput="syncAll()">
+    </div>
+
+    <div class="form-group">
+      <label>매수인 정보 (성명 / 주민번호 / 연락처 / 주소)</label>
+      <input type="text" id="in_buyer_name" placeholder="매수인 성명" oninput="syncAll()">
+      <input type="text" id="in_buyer_rrn" placeholder="주민등록번호" style="margin-top:4px;" oninput="syncAll()">
+      <input type="text" id="in_buyer_tel" placeholder="전화번호" style="margin-top:4px;" oninput="syncAll()">
+      <input type="text" id="in_buyer_addr" placeholder="매수인 주소" style="margin-top:4px;" oninput="syncAll()">
+    </div>
+
+    <div class="form-group">
+      <label>선택 서식 포함 여부</label>
+      <label style="font-weight:normal;"><input type="checkbox" onchange="togglePage('page-2', this.checked)"> 2p. 허가신청서 별지목록 (공동명의 다수 시)</label>
+      <label style="font-weight:normal;"><input type="checkbox" onchange="togglePage('page-5', this.checked)"> 5p. 토지이용계획서 B (26.5.12 실거주 유예)</label>
+      <label style="font-weight:normal;"><input type="checkbox" onchange="togglePage('page-6', this.checked)"> 6p. 주택 임대차 계약 확인서 (묵시적 갱신)</label>
+    </div>
+
+    <button class="btn-print" onclick="printWithFileName()">🖨️ PDF 저장 / 인쇄하기 (자동 파일명)</button>
+  </div>
+
+  <!-- 우측 8페이지 A4 시트 -->
+  <div class="preview-panel" id="preview-container">
+    <!-- 1페이지: 토지거래계약 허가 신청서 -->
+    <div class="a4-page" id="page-1">
+      <div class="field" data-bind="seller_name" style="top: 47.5mm; left: 48mm;"></div>
+      <div class="field" data-bind="seller_rrn"  style="top: 47.5mm; left: 142mm;"></div>
+      <div class="field wrap" data-bind="seller_addr" style="top: 56.5mm; left: 48mm; width: 75mm;"></div>
+      <div class="field" data-bind="seller_tel"  style="top: 57.5mm; left: 142mm;"></div>
+
+      <div class="field" data-bind="buyer_name"  style="top: 67.5mm; left: 48mm;"></div>
+      <div class="field" data-bind="buyer_rrn"   style="top: 67.5mm; left: 142mm;"></div>
+      <div class="field wrap" data-bind="buyer_addr"  style="top: 76.5mm; left: 48mm; width: 75mm;"></div>
+      <div class="field" data-bind="buyer_tel"   style="top: 77.5mm; left: 142mm;"></div>
+      <!-- 나머지 좌표는 coords.js에서 자동 주입 -->
+    </div>
+
+    <!-- 2~7페이지 (기본 제외 서식은 excluded 클래스 부여) -->
+    <div class="a4-page excluded" id="page-2"></div>
+    <div class="a4-page" id="page-3"></div>
+    <div class="a4-page" id="page-4"></div>
+    <div class="a4-page excluded" id="page-5"></div>
+    <div class="a4-page excluded" id="page-6"></div>
+    <div class="a4-page" id="page-7"></div>
+
+    <!-- 8페이지: 위임장 (수임인: 백근영 대표 기본 고정값) -->
+    <div class="a4-page" id="page-8">
+      <div class="field" data-bind="seller_name" style="top: 45mm; left: 45mm;"></div>
+      <div class="field" data-bind="buyer_name"  style="top: 68mm; left: 45mm;"></div>
+      <!-- 수임인(개업공인중개사) 고정 데이터 -->
+      <div class="field" style="top: 93mm; left: 45mm;">백근영</div>
+      <div class="field" style="top: 102mm; left: 45mm;">경기도 안양시 동안구 평촌대로179번길 39, 상가 104호 (부동산이즈 두산공인중개사사무소)</div>
+      <div class="field wrap" data-bind="addr_full" style="top: 118mm; left: 45mm; width: 140mm;"></div>
+    </div>
+  </div>
+
+<script>
+  // 입력값 -> 모든 페이지의 동일 data-bind 필드에 일괄 동기화
+  function syncAll() {
+    const map = {
+      seller_name: document.getElementById('in_seller_name').value,
+      seller_rrn:  document.getElementById('in_seller_rrn').value,
+      seller_tel:  document.getElementById('in_seller_tel').value,
+      seller_addr: document.getElementById('in_seller_addr').value,
+      buyer_name:  document.getElementById('in_buyer_name').value,
+      buyer_rrn:   document.getElementById('in_buyer_rrn').value,
+      buyer_tel:   document.getElementById('in_buyer_tel').value,
+      buyer_addr:  document.getElementById('in_buyer_addr').value,
+      addr_full:   document.getElementById('in_addr_full').value
+    };
+
+    document.querySelectorAll('[data-bind]').forEach(el => {
+      const key = el.getAttribute('data-bind');
+      if (map[key] !== undefined) el.textContent = map[key];
+    });
+  }
+
+  // 별지(2p, 5p, 6p) 인쇄 포함/제외 토글
+  function togglePage(pageId, show) {
+    document.getElementById(pageId).classList.toggle('excluded', !show);
+  }
+
+  // 표준 파일명 규칙(YYYYMMDD_법정동_단지명_동호수_토지거래허가신청서)으로 PDF 저장 유도
+  function printWithFileName() {
+    const rawDate = document.getElementById('in_date').value.replace(/-/g, '');
+    const dong    = document.getElementById('in_dong').value.trim();
+    const complex = document.getElementById('in_complex').value.trim();
+    const unit    = document.getElementById('in_unit').value.trim();
+
+    const standardTitle = `${rawDate}_${dong}_${complex}_${unit}_토지거래허가신청서`;
+    const prevTitle = document.title;
+    document.title = standardTitle;
+    window.print();
+    setTimeout(() => { document.title = prevTitle; }, 1000);
+  }
+</script>
+</body>
+</html>
