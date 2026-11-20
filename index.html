@@ -199,7 +199,7 @@
     </main>
   </div>
 
-  <!-- 모달 0: 신규 사용자 초기 환영 설정 팝업 (첫 방문 시 자동 실행) -->
+  <!-- 모달 0: 신규 사용자 초기 환영 설정 팝업 -->
   <div id="welcomeModal" class="fixed inset-0 bg-slate-900/75 z-50 hidden items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[92vh]">
       <div class="bg-gradient-to-r from-[#0b1b36] to-blue-900 text-white px-5 py-4 flex items-center justify-between">
@@ -487,7 +487,7 @@
     </div>
   </div>
 
-  <!-- 모달 3: 사무소 맞춤형 환경설정 (기존 Google Drive 폴더 URL/ID 지정 포함) -->
+  <!-- 모달 3: 사무소 맞춤형 환경설정 -->
   <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
       <div class="bg-[#0b1b36] text-white px-5 py-3.5 flex items-center justify-between">
@@ -503,7 +503,6 @@
           <input type="text" id="cfgAgencyName" placeholder="예: 부동산이즈 두산공인중개사사무소" class="w-full border border-slate-300 rounded-lg px-3 py-2 font-semibold" />
         </div>
 
-        <!-- 구글 드라이브 최상위 작업 폴더 지정 방식 선택 -->
         <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-3.5 space-y-2.5">
           <label class="block font-bold text-blue-950">2. Google Drive 작업 폴더 위치 지정 *</label>
           <div class="flex flex-wrap gap-4">
@@ -552,7 +551,6 @@
           </div>
         </div>
 
-        <!-- 설정 백업 및 복원 -->
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
           <div class="text-[11px] text-slate-600 font-semibold">📦 설정 백업 · 타 PC/사무소 이관:</div>
           <div class="flex items-center gap-2">
@@ -664,7 +662,6 @@
       ]
     };
 
-    // 구글 드라이브 URL 또는 순수 폴더 ID에서 ID만 추출
     function parseDriveFolderId(inputStr) {
       if (!inputStr) return "";
       const trimmed = inputStr.trim();
@@ -681,7 +678,6 @@
         const saved = localStorage.getItem(CONFIG_STORAGE_KEY);
         if (saved) return { isNewUser: false, config: Object.assign({}, DEFAULT_CONFIG, JSON.parse(saved)) };
 
-        // 이전 버전 설정이나 기존 OAuth 로그인 기록이 있으면 기존 사용자로 간주
         const legacy = localStorage.getItem(LEGACY_CONFIG_KEY);
         if (legacy) {
           const merged = Object.assign({}, DEFAULT_CONFIG, JSON.parse(legacy));
@@ -718,7 +714,6 @@
       ).join('');
     }
 
-    // 신규 사용자 초기 환영 설정 처리
     function skipWelcomeSetup() {
       localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(agencyConfig));
       closeModal('welcomeModal');
@@ -760,7 +755,6 @@
       handleGoogleAuthClick();
     }
 
-    // 환경설정 모달 제어
     function toggleCfgRootModeUI() {
       const mode = document.querySelector('input[name="cfgRootMode"]:checked').value;
       document.getElementById('cfgRootAutoBox').classList.toggle('hidden', mode !== 'auto');
@@ -867,7 +861,6 @@
       openSettingsModal();
     }
 
-    // Google OAuth 2.0 인증 상태
     let tokenClient = null;
     let accessToken = null;
     let tokenExpiresAt = 0;
@@ -967,7 +960,6 @@
       return res;
     }
 
-    // 루트 폴더 연결 (직접 지정된 폴더 ID가 있으면 해당 폴더 메타데이터 검증 후 연결, 없으면 내 드라이브에서 검색/생성)
     async function bootstrapDriveRoot() {
       setBackgroundSyncing(true, !localStorage.getItem(CACHE_KEY_TREE), "Google Drive 작업 폴더를 연결하는 중...");
       try {
@@ -1433,6 +1425,7 @@
       return await createRes.json();
     }
 
+    // 표준폴더 일괄 생성 (00_공통서식_마스터 하위에 00_토지거래허가 포함)
     async function initializeStandardStructure() {
       if (!appState.rootFolderId) {
         alert("먼저 상단 [Google Drive 로그인 연결] 버튼을 눌러 구글 계정을 연결해 주세요.");
@@ -1440,7 +1433,15 @@
       }
 
       const structure = [
-        { root: '00_공통서식_마스터', subs: ['01_계약서_확인설명서', '02_접수_위임_동의서', '03_특약_정산표_체크리스트'] },
+        {
+          root: '00_공통서식_마스터',
+          subs: [
+            '00_토지거래허가',
+            '01_계약서_확인설명서',
+            '02_접수_위임_동의서',
+            '03_특약_정산표_체크리스트'
+          ]
+        },
         { root: '01_매물접수_임장관리', subs: [] },
         { root: '02_계약진행_잔금관리', subs: [] },
         { root: '03_거래완료_보관함', subs: ['2026년_거래완료'] },
@@ -1465,7 +1466,6 @@
       }
     }
 
-    // 3단계 폴더 생성 마법사
     function openFolderWizard(inCurrent = false) {
       if (!appState.rootFolderId) {
         alert("먼저 상단 [Google Drive 로그인 연결] 버튼을 눌러 구글 계정을 연결해 주세요.");
@@ -1902,12 +1902,10 @@
       m.classList.remove('flex');
     }
 
-    // 초기 실행
     applyConfigToUI();
     renderBreadcrumb();
     renderSidebarTree();
 
-    // 처음 접속한 신규 브라우저인 경우 초기 환영 설정 팝업 자동 실행
     if (initLoadResult.isNewUser) {
       openModal('welcomeModal');
     }
