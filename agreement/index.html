@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>부동산 매매약정서(가계약서) 작성시스템 | 부동산이즈두산공인중개사사무소</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" />
+  <script src="../shared/deal-store.js"></script>
+    <style>
+    :root {
+      /* [기본: 밝고 화사한 오피스 테마] */
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-app: #f1f5f9;
+      --panel-bg: #ffffff;
+      --panel-border: #e2e8f0;
+      --header-bg: #f8fafc;
+      --action-bg: #f8fafc;
+      --section-bg: #ffffff;
+      --section-border: #e2e8f0;
+      --section-header: #1e40af;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --input-text: #0f172a;
+      --input-focus: #2563eb;
+      --input-hl-bg: #f0f9ff;
+      --input-hl-border: #38bdf8;
+      --input-hl-text: #0369a1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --preview-bg: #94a3b8;
+      --chip-bg: #eff6ff;
+      --chip-border: #bfdbfe;
+      --chip-text: #1d4ed8;
+      --btn-sec-bg: #f1f5f9;
+      --btn-sec-text: #334155;
+      --btn-sec-border: #cbd5e1;
+      --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -2px rgba(0,0,0,0.05);
+    }
+
+    body.dark-theme {
+      /* [선택: 다크 모드] */
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --bg-app: #0b1120;
+      --panel-bg: #1e293b;
+      --panel-border: #334155;
+      --header-bg: #0b132b;
+      --action-bg: #111e38;
+      --section-bg: #182234;
+      --section-border: #334155;
+      --section-header: #60a5fa;
+      --input-bg: #0f172a;
+      --input-border: #3b4252;
+      --input-text: #f8fafc;
+      --input-focus: #3b82f6;
+      --input-hl-bg: #092c4c;
+      --input-hl-border: #38bdf8;
+      --input-hl-text: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --preview-bg: #334155;
+      --chip-bg: #25334d;
+      --chip-border: #3b82f6;
+      --chip-text: #93c5fd;
+      --btn-sec-bg: #334155;
+      --btn-sec-text: #cbd5e1;
+      --btn-sec-border: #475569;
+      --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', 'Dotum', sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* =========================================
+       좌측: 에디터 패널 (no-print)
+       ========================================= */
+    .editor-panel {
+      width: 500px;
+      min-width: 460px;
+      max-width: 540px;
+      background-color: var(--panel-bg);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--panel-border);
+      box-shadow: 4px 0 15px rgba(0,0,0,0.08);
+      z-index: 10;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .editor-header {
+      padding: 12px 16px;
+      background-color: var(--header-bg);
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .editor-header-left h1 {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* 상단 액션 툴바 */
+    .action-bar {
+      padding: 10px 14px;
+      background: var(--action-bg);
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .deal-select-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .deal-select-row select {
+      flex: 1;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--input-text);
+      padding: 6px 8px;
+      font-size: 11.5px;
+      border-radius: 5px;
+      outline: none;
+    }
+    .btn-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn {
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 11.5px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-primary { background: #2563eb; color: #fff; border-color: #1d4ed8; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-permit { background: #059669; color: #fff; font-weight: 700; border-color: #047857; }
+    .btn-permit:hover { background: #047857; }
+    .btn-secondary {
+      background: var(--btn-sec-bg);
+      color: var(--btn-sec-text);
+      border: 1px solid var(--btn-sec-border);
+    }
+    .btn-secondary:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    body.dark-theme .btn-secondary:hover {
+      background: #475569;
+      color: #fff;
+    }
+    .btn-sms { background: #f59e0b; color: #fff; border-color: #d97706; }
+    .btn-sms:hover { background: #d97706; }
+    .btn-theme-toggle {
+      background: var(--btn-sec-bg);
+      color: var(--btn-sec-text);
+      border: 1px solid var(--btn-sec-border);
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 600;
+    }
+    .btn-sm { padding: 4px 7px; font-size: 11px; }
+
+    /* 폼 스크롤 바디 */
+    .editor-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+    }
+    .editor-body::-webkit-scrollbar { width: 6px; }
+    .editor-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    body.dark-theme .editor-body::-webkit-scrollbar-thumb { background: #475569; }
+
+    .form-section {
+      background: var(--section-bg);
+      border: 1px solid var(--section-border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: var(--card-shadow);
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    .section-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--section-header);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--section-border);
+      padding-bottom: 5px;
+    }
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin-bottom: 6px;
+    }
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 6px;
+    }
+    .form-group label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .form-control {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--input-text);
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      outline: none;
+      transition: border 0.15s, box-shadow 0.15s;
+      width: 100%;
+    }
+    .form-control:focus {
+      border-color: var(--input-focus);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+    .form-control-highlight {
+      background: var(--input-hl-bg);
+      border-color: var(--input-hl-border);
+      color: var(--input-hl-text);
+      font-weight: 600;
+    }
+    .korean-amt {
+      font-size: 10.5px;
+      color: #2563eb;
+      font-weight: 600;
+      margin-top: 1px;
+    }
+    body.dark-theme .korean-amt {
+      color: #38bdf8;
+    }
+
+    /* 칩 버튼 */
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .tag-chip {
+      background: var(--chip-bg);
+      color: var(--chip-text);
+      border: 1px solid var(--chip-border);
+      border-radius: 12px;
+      font-size: 10px;
+      padding: 2px 7px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-weight: 500;
+    }
+    .tag-chip:hover {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+
+    /* =========================================
+       우측: A4 실시간 프리뷰 (엑셀 서식 2페이지 정밀 구현)
+       ========================================= */
+    .preview-panel {
+      flex: 1;
+      background-color: var(--preview-bg);
+      overflow-y: auto;
+      padding: 25px 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 25px;
+      transition: background-color 0.2s ease;
+    }
+    .preview-panel::-webkit-scrollbar { width: 8px; }
+    .preview-panel::-webkit-scrollbar-thumb { background: #64748b; border-radius: 4px; }
+
+    /* A4 시트 레이아웃 */
+    .sheet-page {
+      width: 210mm;
+      min-height: 297mm;
+      background: #ffffff !important;
+      color: #000000 !important;
+      padding: 13mm 14mm 12mm 14mm;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.18);
+      position: relative;
+      font-family: 'Malgun Gothic', 'Dotum', 'Noto Sans KR', sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.45;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* 약정서 타이틀 */
+    .sheet-title {
+      text-align: center;
+      font-size: 21pt;
+      font-weight: 700;
+      letter-spacing: 5px;
+      margin-bottom: 8px;
+      color: #000;
+      font-family: 'Batang', 'Noto Serif KR', serif;
+    }
+    .sheet-intro {
+      font-size: 8.5pt;
+      text-align: justify;
+      color: #111;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    /* 섹션 제목 */
+    .sec-header {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #000;
+      margin: 6px 0 4px 0;
+    }
+
+    /* 엑셀 서식 격자 테이블 (검정 실선 테두리) */
+    .excel-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.5px solid #000;
+      margin-bottom: 7px;
+      font-size: 8.5pt;
+    }
+    .excel-table th, .excel-table td {
+      border: 1px solid #000;
+      padding: 4px 5px;
+      vertical-align: middle;
+      color: #000;
+    }
+    .excel-table th {
+      background-color: #f8fafc;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .center { text-align: center; }
+    .right { text-align: right; }
+    .bold { font-weight: 700; }
+
+    /* 제3조 이행약정 조항 텍스트 */
+    .clause-text-box {
+      font-size: 8.5pt;
+      line-height: 1.5;
+      text-align: justify;
+      color: #000;
+      margin-bottom: 6px;
+    }
+    .clause-item {
+      margin-bottom: 3.5px;
+    }
+
+    /* 날짜 및 서명 확인 헤더 */
+    .sign-date-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9.5pt;
+      font-weight: 700;
+      margin: 6px 0 4px 0;
+    }
+
+    /* 영수증 박스 (별지 하단) */
+    .receipt-box {
+      border: 1.5px solid #000;
+      padding: 10px 14px;
+      margin-top: 8px;
+      background: #fff;
+    }
+    .receipt-title {
+      text-align: center;
+      font-size: 13pt;
+      font-weight: 700;
+      letter-spacing: 4px;
+      margin-bottom: 6px;
+      font-family: 'Batang', serif;
+    }
+    .receipt-amount-row {
+      text-align: center;
+      font-size: 11pt;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .receipt-desc {
+      text-align: center;
+      font-size: 9pt;
+      margin-bottom: 4px;
+    }
+    .receipt-sub-desc {
+      text-align: center;
+      font-size: 8.5pt;
+      color: #222;
+      margin-bottom: 8px;
+    }
+    .receipt-sign-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 15px;
+      font-size: 9pt;
+      font-weight: 700;
+    }
+
+    /* =========================================
+       인쇄 미디어 쿼리 (A4 2페이지 분할 완벽 대응)
+       ========================================= */
+    @media print {
+      body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .preview-panel {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+        gap: 0 !important;
+      }
+      .sheet-page {
+        box-shadow: none !important;
+        margin: 0 !important;
+        width: 100% !important;
+        min-height: 275mm !important;
+        padding: 11mm 13mm 11mm 13mm !important;
+        page-break-after: always !important;
+      }
+      .sheet-page:last-child {
+        page-break-after: avoid !important;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 9mm 10mm 9mm 10mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= 좌측: 입력 에디터 패널 ================= -->
+  <div class="editor-panel no-print">
+    <div class="editor-header">
+      <div class="editor-header-left">
+        <h1>
+          <span>📝</span>
+          <span>부동산 매매약정서 작성</span>
+        </h1>
+        <div class="header-sub">엑셀 서식 완벽 대응 · 1P 약정서 본문 + 2P 별지 자동완성</div>
+      </div>
+      <div>
+        <button type="button" class="btn-theme-toggle" onclick="toggleTheme()" id="btn_theme_toggle" title="화면 테마 변경">
+          <span id="theme_icon">🌙</span>
+          <span id="theme_text">다크</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 상단 거래 제어바 -->
+    <div class="action-bar">
+      <!-- 거래 진행 상태 및 제어바 -->
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; background:var(--input-bg); border:1px solid var(--input-border); border-radius:5px; padding:4px 8px;">
+        <span style="font-size:11px; font-weight:700; color:var(--text-muted); display:flex; align-items:center; gap:4px;">
+          <span>📌</span> <span>진행 단계:</span>
+        </span>
+        <select id="sel_deal_stage" onchange="onDealStageChange()" style="flex:1; background:transparent; border:none; color:var(--text-main); font-size:11.5px; font-weight:700; outline:none; cursor:pointer;">
+          <option value="agreement_signed">🟡 1단계: 가계약(약정) 체결</option>
+          <option value="permit_submitted">🔵 2단계: 토지거래허가 구청 접수</option>
+          <option value="permit_approved">🟢 3단계: 허가증 교부 (7일내 본계약 기한!)</option>
+          <option value="contract_signed">🟣 4단계: 본매매계약 체결</option>
+          <option value="deal_completed">🏁 5단계: 잔금 및 소유권이전 완료</option>
+        </select>
+        <span id="badge_stage_guide" style="font-size:10px; background:rgba(37,99,235,0.1); color:#2563eb; padding:2px 6px; border-radius:3px; font-weight:600;">약정서 단계</span>
+      </div>
+
+      <div class="deal-select-row">
+        <select id="sel_deal_list" onchange="onDealSelectChange()">
+          <option value="">-- [불러오기] 저장된 거래 선택 --</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="startNewDeal()" title="새 약정서 작성">
+          <span>✨ 신규</span>
+        </button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveAndPrint()" style="flex:1.1;" title="표준 파일명으로 2페이지 인쇄">
+          <span>💾 저장 및 인쇄</span>
+        </button>
+        <button class="btn btn-permit" onclick="goToPermitApplication()" style="flex:1.2;" title="저장 후 8페이지 토지거래허가신청서로 연동 이동">
+          <span>🏛️ 토지거래허가서 작성</span>
+        </button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-sms" onclick="copySmsSummary()" style="flex:1.1;" title="고객 발송용 카카오톡/문자 계약안내문 즉시 복사">
+          <span>💬 카톡/문자 요약 복사</span>
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="printReceiptOnly()" style="flex:0.9;" title="별지 2페이지의 약정금 영수증만 인쇄">
+          <span>🧾 영수증만 인쇄</span>
+        </button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary btn-sm" onclick="loadSampleDeal('sample_basic')" style="flex:1;" title="단독명의 기본 샘플 (홍길동 / 9.5억)">
+          <span>🧪 엑셀 기본 샘플</span>
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="loadSampleDeal('sample_joint')" style="flex:1;" title="공동명의 샘플 (홍길동·강감찬 / 17.85억)">
+          <span>🧪 공동명의 샘플</span>
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="exportCurrentDealJson()" title="JSON 백업">
+          <span>⬇️ 백업</span>
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="triggerImportJson()" title="JSON 복원">
+          <span>⬆️ 복원</span>
+        </button>
+        <input type="file" id="file_json_import" accept=".json" style="display:none;" onchange="handleFileImport(event)" />
+      </div>
+    </div>
+
+    <!-- 에디터 폼 스크롤 바디 -->
+    <div class="editor-body">
+
+      <!-- 1. 부동산의 표시 -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>1. 부동산의 표시 (등기부등본 기준)</span>
+          <span style="font-size:10px; color:var(--text-muted);">제 1조 약정한 부동산</span>
+        </div>
+
+        <!-- 단지 원클릭 퀵선택 칩 -->
+        <div style="margin-bottom:8px;">
+          <div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:4px;">🏢 평촌 목련마을 주요단지 원클릭 선택:</div>
+          <div class="tag-container" style="margin-bottom:6px;">
+            <button type="button" class="tag-chip" onclick="applyComplexPreset('mokryeon_2')">목련두산 2단지 (1056)</button>
+            <button type="button" class="tag-chip" onclick="applyComplexPreset('mokryeon_3')">목련우성 3단지 (1052-3)</button>
+            <button type="button" class="tag-chip" onclick="applyComplexPreset('mokryeon_5')">목련선경 5단지 (1053)</button>
+            <button type="button" class="tag-chip" onclick="applyComplexPreset('mokryeon_6')">목련두산 6단지 (1054-6)</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>토지 소재지</label>
+          <input type="text" id="f_land_addr" class="form-control" value="경기도 안양시 동안구 호계동 1052-3" oninput="onAddressFieldChange()" />
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>토지 면적(대지권비율)</label>
+            <input type="text" id="f_land_ratio_str" class="form-control" value="30467.9분의 35.376" oninput="onAddressFieldChange()" />
+          </div>
+          <div class="form-group">
+            <label>공부상 지목</label>
+            <input type="text" id="f_jimok_legal" class="form-control" value="대" oninput="syncPreview()" />
+          </div>
+          <div class="form-group">
+            <label>실제 이용</label>
+            <input type="text" id="f_jimok_actual" class="form-control" value="대" oninput="syncPreview()" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>건축물 소재지 (단지·동·호수 포함)</label>
+          <input type="text" id="f_bld_addr" class="form-control" value="경기도 안양시 동안구 호계동 1052-3 목련아파트 308동 506호" oninput="onAddressFieldChange()" />
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>전용면적(㎡)</label>
+            <input type="text" id="f_exclusive_area" class="form-control" value="56.7" oninput="syncPreview()" />
+          </div>
+          <div class="form-group">
+            <label>건축물 구조</label>
+            <input type="text" id="f_bld_structure" class="form-control" value="철근콘크리트조" oninput="syncPreview()" />
+          </div>
+          <div class="form-group">
+            <label>건축물 용도</label>
+            <input type="text" id="f_bld_usage" class="form-control" value="아파트" oninput="syncPreview()" />
+          </div>
+        </div>
+
+        <!-- 스마트 주소 자동 분해 및 허가서(8P) 연동 검증 카드 -->
+        <div style="background:var(--input-hl-bg); border:1px solid var(--input-hl-border); border-radius:6px; padding:8px 10px; margin-top:6px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+            <span style="font-size:11px; font-weight:700; color:var(--input-hl-text); display:flex; align-items:center; gap:4px;">
+              <span>🧩</span> <span>토지거래허가(8P) 자동 분해 연동 데이터</span>
+            </span>
+            <span style="font-size:10px; background:rgba(3,105,161,0.1); color:var(--input-hl-text); padding:1px 5px; border-radius:3px; font-weight:600;">실시간 검증</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; font-size:10.5px;">
+            <div><span style="color:var(--text-muted);">법정동:</span> <strong id="lbl_parsed_dong">호계동</strong></div>
+            <div><span style="color:var(--text-muted);">지번:</span> <strong id="lbl_parsed_jibun">1052-3</strong></div>
+            <div><span style="color:var(--text-muted);">단지명:</span> <strong id="lbl_parsed_complex">목련아파트</strong></div>
+            <div><span style="color:var(--text-muted);">동·호수:</span> <strong id="lbl_parsed_unit">308동 506호</strong></div>
+            <div><span style="color:var(--text-muted);">대지권 분모:</span> <strong id="lbl_parsed_ratio_den">30467.9</strong></div>
+            <div><span style="color:var(--text-muted);">대지권 분자:</span> <strong id="lbl_parsed_ratio_num">35.376</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 계약내용 및 대금 지급조건 -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>2. 계약내용 및 대금 지급방법</span>
+          <span style="font-size:10px; color:#94a3b8;">제 2조 & 별지 대금표</span>
+        </div>
+
+        <!-- 매매약정금 -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>매매약정금 (원)</label>
+            <input type="number" id="f_temp_deposit" class="form-control form-control-highlight" value="30000000" oninput="onTempDepositChange()" />
+            <div id="lbl_temp_kr" class="korean-amt">삼천만원</div>
+          </div>
+          <div class="form-group">
+            <label>약정일자 (기준일)</label>
+            <input type="date" id="f_deal_date" class="form-control" oninput="syncPreview()" />
+          </div>
+        </div>
+
+        <!-- 분할입금 토글 -->
+        <div style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:7px 10px; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+            <label style="font-size:11px; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:5px; cursor:pointer;">
+              <input type="checkbox" id="chk_split_temp" onchange="toggleTempSplitUI()" />
+              <span>약정금 1차·2차 분할 입금</span>
+            </label>
+          </div>
+          <div id="split_temp_box" style="display:none; padding-top:4px;">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>1차 약정금 (원)</label>
+                <input type="number" id="f_temp_deposit_1" class="form-control" value="30000000" oninput="calcSplitTemp()" />
+              </div>
+              <div class="form-group">
+                <label>1차 입금일</label>
+                <input type="date" id="f_temp_date_1" class="form-control" oninput="syncPreview()" />
+              </div>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>2차 약정금 (원)</label>
+                <input type="number" id="f_temp_deposit_2" class="form-control" value="0" oninput="calcSplitTemp()" />
+              </div>
+              <div class="form-group">
+                <label>2차 입금일</label>
+                <input type="date" id="f_temp_date_2" class="form-control" oninput="syncPreview()" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 매매대금 -->
+        <div class="form-group">
+          <label>총 매매대금 (원)</label>
+          <input type="number" id="f_total_price" class="form-control form-control-highlight" value="950000000" oninput="calcBalance()" />
+          <div id="lbl_total_kr" class="korean-amt">구억오천만원</div>
+        </div>
+
+        <!-- 계약금 -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>계약금 (원)</label>
+            <input type="number" id="f_contract_deposit" class="form-control" value="100000000" oninput="calcBalance()" />
+            <div id="lbl_contract_kr" class="korean-amt">일억원</div>
+          </div>
+          <div class="form-group">
+            <label>계약 예정일 / 지급조건</label>
+            <input type="text" id="f_contract_schedule" class="form-control" value="토지거래허가후 7일이내" oninput="syncPreview()" />
+          </div>
+        </div>
+
+        <!-- 중도금 1차 -->
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>중도금 1차 (원)</label>
+            <input type="number" id="f_mid_payment_1" class="form-control" value="200000000" oninput="calcBalance()" />
+          </div>
+          <div class="form-group">
+            <label>1차 중도금일</label>
+            <input type="date" id="f_mid_date_1" class="form-control" oninput="syncPreview()" />
+          </div>
+          <div class="form-group">
+            <label>비고</label>
+            <input type="text" id="f_mid_note_1" class="form-control" value="예정" oninput="syncPreview()" />
+          </div>
+        </div>
+
+        <!-- 중도금 2차 (선택) -->
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>중도금 2차 (선택)</label>
+            <input type="number" id="f_mid_payment_2" class="form-control" value="0" oninput="calcBalance()" />
+          </div>
+          <div class="form-group">
+            <label>2차 중도금일</label>
+            <input type="date" id="f_mid_date_2" class="form-control" oninput="syncPreview()" />
+          </div>
+          <div class="form-group">
+            <label>비고</label>
+            <input type="text" id="f_mid_note_2" class="form-control" placeholder="예정" oninput="syncPreview()" />
+          </div>
+        </div>
+
+        <!-- 잔금 -->
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>잔금 (원, 자동계산)</label>
+            <input type="number" id="f_balance" class="form-control form-control-highlight" value="650000000" oninput="syncPreview()" />
+          </div>
+          <div class="form-group">
+            <label>잔금 예정일</label>
+            <input type="date" id="f_balance_date" class="form-control" oninput="syncPreview()" />
+          </div>
+          <div class="form-group">
+            <label>비고</label>
+            <input type="text" id="f_balance_note" class="form-control" value="이내로 협의" oninput="syncPreview()" />
+          </div>
+        </div>
+        <div id="lbl_balance_kr" class="korean-amt" style="margin-bottom:6px;">육억오천만원</div>
+
+      </div>
+
+      <!-- 3. 계약자 정보 (부동산 소유자 & 매수 약정인) -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>3. 당사자 정보 (소유자 & 매수약정인)</span>
+          <span style="font-size:10px; color:#94a3b8;">공동명의 완벽 대응</span>
+        </div>
+
+        <!-- 부동산 소유자 (매도인) -->
+        <div style="font-size:11.5px; font-weight:700; color:#38bdf8; margin-bottom:3px;">
+          [부동산 소유자 (매도인)]
+        </div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>성명 1</label>
+            <input type="text" id="f_seller1_name" class="form-control" value="홍길동" oninput="syncPreview()" />
+          </div>
+          <div class="form-group">
+            <label>주민번호 1</label>
+            <input type="text" id="f_seller1_rrn" class="form-control" placeholder="예: 750101-1234567" oninput="syncPreview()" />
+          </div>
+          <div class="form-group">
+            <label>전화번호 1</label>
+            <input type="text" id="f_seller1_tel" class="form-control" value="010-1234-5678" oninput="syncPreview()" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>소유자 1 주소</label>
+          <input type="text" id="f_seller1_addr" class="form-control" value="경기도 안양시 동안구 동안로 120, 101동 202호" oninput="syncPreview()" />
+        </div>
+
+        <!-- 소유자 2 (공동소유) -->
+        <div style="margin-top:6px; padding-top:6px; border-top:1px dashed #334155;">
+          <label style="font-size:11px; font-weight:600; color:#94a3b8; display:flex; align-items:center; gap:5px; margin-bottom:4px; cursor:pointer;">
+            <input type="checkbox" id="chk_seller2" onchange="toggleSeller2UI()" />
+            <span>+ 공동소유자(매도인 2) 추가</span>
+          </label>
+          <div id="seller2_box" style="display:none;">
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>성명 2</label>
+                <input type="text" id="f_seller2_name" class="form-control" oninput="syncPreview()" />
+              </div>
+              <div class="form-group">
+                <label>주민번호 2</label>
+                <input type="text" id="f_seller2_rrn" class="form-control" oninput="syncPreview()" />
+              </div>
+              <div class="form-group">
+                <label>전화번호 2</label>
+                <input type="text" id="f_seller2_tel" class="form-control" oninput="syncPreview()" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>소유자 2 주소</label>
+              <input type="text" id="f_seller2_addr" class="form-control" oninput="syncPreview()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 매수 약정인 (매수인) -->
+        <div style="font-size:11.5px; font-weight:700; color:#34d399; margin:10px 0 3px 0;">
+          [매수 약정인 (매수인)]
+        </div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>성명 1</label>
+            <input type="text" id="f_buyer1_name" class="form-control" value="김철수" oninput="syncPreview()" />
+          </div>
+          <div class="form-group">
+            <label>주민번호 1</label>
+            <input type="text" id="f_buyer1_rrn" class="form-control" placeholder="예: 750101-1234567" oninput="syncPreview()" />
+          </div>
+          <div class="form-group">
+            <label>전화번호 1</label>
+            <input type="text" id="f_buyer1_tel" class="form-control" value="010-9876-5432" oninput="syncPreview()" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>매수약정인 1 주소</label>
+          <input type="text" id="f_buyer1_addr" class="form-control" value="서울특별시 서초구 서초대로 50, 203동 501호" oninput="syncPreview()" />
+        </div>
+
+        <!-- 매수약정인 2 (공동매수) -->
+        <div style="margin-top:6px; padding-top:6px; border-top:1px dashed #334155;">
+          <label style="font-size:11px; font-weight:600; color:#94a3b8; display:flex; align-items:center; gap:5px; margin-bottom:4px; cursor:pointer;">
+            <input type="checkbox" id="chk_buyer2" onchange="toggleBuyer2UI()" />
+            <span>+ 공동매수인(매수약정인 2) 추가</span>
+          </label>
+          <div id="buyer2_box" style="display:none;">
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>성명 2</label>
+                <input type="text" id="f_buyer2_name" class="form-control" oninput="syncPreview()" />
+              </div>
+              <div class="form-group">
+                <label>주민번호 2</label>
+                <input type="text" id="f_buyer2_rrn" class="form-control" oninput="syncPreview()" />
+              </div>
+              <div class="form-group">
+                <label>전화번호 2</label>
+                <input type="text" id="f_buyer2_tel" class="form-control" oninput="syncPreview()" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>매수약정인 2 주소</label>
+              <input type="text" id="f_buyer2_addr" class="form-control" oninput="syncPreview()" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 4. 특약사항 (엑셀 서식 템플릿 완비) -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>4. 특약사항 (별지 출력용)</span>
+        </div>
+
+        <div class="tag-container">
+          <button type="button" class="tag-chip" onclick="applyClausePreset('clean')">템플릿 1: 권리하자없음 기본</button>
+          <button type="button" class="tag-chip" onclick="applyClausePreset('mortgage')">템플릿 2: 근저당권 말소조건</button>
+          <button type="button" class="tag-chip" onclick="applyClausePreset('seizure')">템플릿 3: 가압류 공탁해지</button>
+        </div>
+
+        <div class="form-group">
+          <textarea id="f_special_terms" class="form-control" rows="9" style="font-size:11px; line-height:1.45;" oninput="syncPreview()"></textarea>
+        </div>
+      </div>
+
+      <!-- 5. 토지거래허가 사전 정보 (3P 자금조달 & 4~5P 실거주계획 연계) -->
+      <div class="form-section">
+        <div class="section-title">
+          <span style="display:flex; align-items:center; gap:5px;">
+            <span>🏛️</span> <span>토지거래허가 사전 정보 (3P & 4~5P 연계)</span>
+          </span>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="togglePermitPreInputUI()" id="btn_toggle_permit_pre">
+            <span id="btn_permit_pre_text">+ 사전입력 펼치기</span>
+          </button>
+        </div>
+        <div style="font-size:10.5px; color:var(--text-muted); margin-bottom:6px;">
+          약정 단계에서 매수인의 자금조달 및 실거주 계획을 미리 기재해 두면, 토지거래허가신청서(8P) 이동 시 100% 완전 자동 작성됩니다.
+        </div>
+
+        <div id="permit_pre_input_box" style="display:none; padding-top:4px;">
+          <!-- 자금조달계획 개요 (3P 연동) -->
+          <div style="font-size:11px; font-weight:700; color:#0284c7; margin-bottom:4px;">[3P 자금조달계획서 개요]</div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>자기자금 (예금/처분대금 등, 원)</label>
+              <input type="number" id="f_permit_fund_self" class="form-control" placeholder="예: 450000000" oninput="syncPreview()" />
+            </div>
+            <div class="form-group">
+              <label>차입금 (금융기관 대출예정액, 원)</label>
+              <input type="number" id="f_permit_fund_loan" class="form-control" placeholder="예: 500000000" oninput="syncPreview()" />
+            </div>
+          </div>
+
+          <!-- 토지이용계획 개요 (4~5P 연동) -->
+          <div style="font-size:11px; font-weight:700; color:#059669; margin:8px 0 4px 0;">[4~5P 토지이용계획서 개요]</div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>이용목적</label>
+              <input type="text" id="f_permit_purpose" class="form-control" value="주거용 (세대원 전원 실거주 자가주택 취득)" oninput="syncPreview()" />
+            </div>
+            <div class="form-group">
+              <label>입주예정시기</label>
+              <input type="text" id="f_permit_movein" class="form-control" placeholder="예: 2026년 12월 (잔금 즉시 입주)" oninput="syncPreview()" />
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>거주예정자 (등본상 세대원)</label>
+              <input type="text" id="f_permit_residents" class="form-control" placeholder="예: 본인 및 배우자, 자녀 2명 (세대원 전원)" oninput="syncPreview()" />
+            </div>
+            <div class="form-group">
+              <label>주택 보유 현황 및 처분계획</label>
+              <input type="text" id="f_permit_plan" class="form-control" value="무주택 세대 (실거주 목적 신규 취득)" oninput="syncPreview()" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. 개업공인중개사 (고정 및 공동중개) -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>5. 개업공인중개사 정보</span>
+        </div>
+
+        <div style="font-size:11px; line-height:1.5; color:#cbd5e1; margin-bottom:8px;">
+          <div><strong>[주관 중개사]</strong> 부동산이즈두산공인중개사사무소 | 대표: 백 근 영 (인)</div>
+          <div>등록번호: 41173-2025-00028 | 전화: 031-388-7704</div>
+          <div>소재지: 경기도 안양시 동안구 평촌대로179번길 39 104호</div>
+        </div>
+
+        <!-- 공동중개사 토글 -->
+        <div style="padding-top:6px; border-top:1px dashed #334155;">
+          <label style="font-size:11px; font-weight:600; color:#38bdf8; display:flex; align-items:center; gap:5px; margin-bottom:4px; cursor:pointer;">
+            <input type="checkbox" id="chk_co_agent" onchange="toggleCoAgentUI()" />
+            <span>+ 공동중개사 추가 (상대방 중개사무소)</span>
+          </label>
+          <div id="co_agent_box" style="display:none;">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>상호</label>
+                <input type="text" id="f_co_office" class="form-control" placeholder="예: 행복공인중개사사무소" oninput="syncPreview()" />
+              </div>
+              <div class="form-group">
+                <label>대표자 성명</label>
+                <input type="text" id="f_co_name" class="form-control" placeholder="예: 김행복" oninput="syncPreview()" />
+              </div>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>등록번호</label>
+                <input type="text" id="f_co_reg" class="form-control" placeholder="예: 41173-2020-00001" oninput="syncPreview()" />
+              </div>
+              <div class="form-group">
+                <label>전화번호</label>
+                <input type="text" id="f_co_tel" class="form-control" placeholder="예: 031-388-0000" oninput="syncPreview()" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>사업소재지</label>
+              <input type="text" id="f_co_addr" class="form-control" placeholder="예: 경기도 안양시 동안구 평촌대로211번길 35, B동 103호" oninput="syncPreview()" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ================= 우측: A4 실시간 프리뷰 (엑셀 서식 2페이지 정밀 구현) ================= -->
+  <div class="preview-panel">
+    
+    <!-- ==================== 1페이지: 부동산 매매 약정서 ==================== -->
+    <div class="sheet-page" id="sheet_page_1">
+      <div>
+        <!-- 타이틀 -->
+        <div class="sheet-title">부동산 매매 약정서</div>
+
+        <!-- 머리말 법적 근거 문구 -->
+        <div class="sheet-intro">
+          「부동산 거래신고 등에 관한 법률」제11조제1항에 의하여 토지거래허가구역 등에서 토지거래허가를 득하고<br>
+          매매계약을 하기 위해 상호 합의하고 아래의 내용을 약정한다.
+        </div>
+
+        <!-- 제 1조 약정한 부동산의 표시 -->
+        <div class="sec-header">제 1조 약정한 부동산의 표시</div>
+        <table class="excel-table">
+          <colgroup>
+            <col style="width: 7%;" />
+            <col style="width: 10%;" />
+            <col style="width: 13%;" />
+            <col style="width: 28%;" />
+            <col style="width: 8%;" />
+            <col style="width: 16%;" />
+            <col style="width: 18%;" />
+          </colgroup>
+          <!-- 토지 -->
+          <tr>
+            <th rowspan="4" class="center">대<br>상<br>물<br>건</th>
+            <th rowspan="2" class="center">토 지</th>
+            <th class="center">소재지</th>
+            <td colspan="4" id="pv_p1_land_addr" class="bold">경기도 안양시 동안구 호계동 1052-3</td>
+          </tr>
+          <tr>
+            <th class="center">면적(㎡)</th>
+            <td id="pv_p1_land_ratio" class="center bold">30467.9분의 35.376</td>
+            <th class="center">지목</th>
+            <td class="center">공부상지목: <span id="pv_p1_jimok_legal" class="bold">대</span></td>
+            <td class="center">실제이용: <span id="pv_p1_jimok_actual" class="bold">대</span></td>
+          </tr>
+          <!-- 건축물 -->
+          <tr>
+            <th rowspan="2" class="center">건축물</th>
+            <th class="center">소재지</th>
+            <td colspan="4" id="pv_p1_bld_addr" class="bold">경기도 안양시 동안구 호계동 1052-3 목련아파트 308동 506호</td>
+          </tr>
+          <tr>
+            <th class="center">면적(㎡)</th>
+            <td class="center"><span id="pv_p1_exclusive_area" class="bold">56.7</span> ㎡</td>
+            <th class="center">구 조</th>
+            <td id="pv_p1_bld_structure" class="center">철근콘크리트조</td>
+            <td class="center">용도: <span id="pv_p1_bld_usage" class="bold">아파트</span></td>
+          </tr>
+        </table>
+
+        <!-- 제 2조 약정내용 -->
+        <div class="sec-header">제 2조 약정내용</div>
+        <div style="font-size: 8.5pt; margin-bottom: 3px;">
+          1. 위 부동산 소유자 및 매수 희망자가 쌍방 합의 하에 아래와 같이 매매계약을 위한 매매약정을 체결한다.<br>
+          2. 위 부동산의 매매약정금은 아래와 같이 정한다
+        </div>
+        <table class="excel-table" style="margin-bottom: 7px;">
+          <colgroup>
+            <col style="width: 18%;" />
+            <col style="width: 32%;" />
+            <col style="width: 25%;" />
+            <col style="width: 13%;" />
+            <col style="width: 12%;" />
+          </colgroup>
+          <tr>
+            <th class="center" style="font-size: 9pt;">매매약정금</th>
+            <td class="center bold" style="font-size: 9.5pt; color: #1e3a8a;">
+              금 <span id="pv_p1_temp_kr">삼천만원</span>정
+            </td>
+            <td class="center bold" style="font-size: 9.5pt;">
+              (₩<span id="pv_p1_temp_num">30,000,000</span>)
+            </td>
+            <th class="center">영수인</th>
+            <td class="center"><span id="pv_p1_receipt_name" class="bold">홍길동</span> &nbsp;(인)</td>
+          </tr>
+        </table>
+
+        <!-- 제 3조 이행약정 -->
+        <div class="sec-header">제 3조 이행약정</div>
+        <div class="clause-text-box">
+          <div class="clause-item">1. 쌍방이 협력하여 부동산거래허가 신청을 한다. 또한 위 부동산의 매매 계약은 본 약정 내용을 토대로 체결한다.</div>
+          <div class="clause-item">
+            2. 쌍방 어느 한쪽이 협조하지 않아 부동산거래허가를 득하지 못할 경우, 협조하지 않은 측은 손해배상으로 
+            <strong>금 <span id="pv_p1_clause_temp1">삼천만원</span>원</strong>을 상대방에게 변상해야 한다. 또한 약정내용을 위반한 때에는 위반한 측에서 
+            <strong>금 <span id="pv_p1_clause_temp2">삼천만원</span>원</strong>을 상환하기로 하며 매매약정을 취소한 경우에는 취소를 원하는 측에서 
+            <strong>금 <span id="pv_p1_clause_temp3">삼천만원</span>원</strong>을 상환해야 한다.(취소를 원하는 자가 부동산소유자인 경우에는 배액을 상환하고, 매수약정인은 약정금을 포기한다.)<br>
+            다만, 쌍방이 적극 협력했음에도 불구하고 부동산거래허가를 득하지 못한 경우에 본 약정은 무효로 하며 조건없이 약정금을 반환하고, 약정관련 모든 서류는 즉시 파기한다.
+          </div>
+          <div class="clause-item">3. 본 매매약정의 효력은 매매계약 체결시까지 유효하고, 본 약정서에 기재되지 않은 사항은 관련 법률 규정에 의한다.</div>
+          <div class="clause-item">4. 중개보수는 토지거래허가를 득한 후 매매 계약후 잔금시에 약정당사자 쌍방이 각각 지불한다</div>
+        </div>
+
+        <!-- 제 4조 특약사항 -->
+        <div class="sec-header">제4조 특약사항</div>
+        <div style="font-size: 9pt; font-weight: 700; color: #1e3a8a; margin-bottom: 7px; padding-left: 2px;">
+          뒷면 별지 참조
+        </div>
+      </div>
+
+      <!-- 당사자 서명 날인 테이블 (페이지 1 하단 고정) -->
+      <div>
+        <div class="sign-date-row">
+          <span>◉ 위 매매약정을 확인하고 당사자 쌍방이 확인하고 날인한다.</span>
+          <span id="pv_p1_sign_date" class="bold">2026년 08월 19일</span>
+        </div>
+
+        <table class="excel-table" style="margin-bottom: 0;">
+          <colgroup>
+            <col style="width: 12%;" />
+            <col style="width: 12%;" />
+            <col style="width: 26%;" />
+            <col style="width: 9%;" />
+            <col style="width: 18%;" />
+            <col style="width: 9%;" />
+            <col style="width: 14%;" />
+          </colgroup>
+          <!-- 부동산 소유자 -->
+          <tr>
+            <th rowspan="4" class="center">부동산<br>소유자</th>
+            <th class="center">주민등록번호</th>
+            <td id="pv_p1_s1_rrn" class="center">-</td>
+            <th class="center">전 화</th>
+            <td id="pv_p1_s1_tel" class="center">010-1234-5678</td>
+            <th class="center">성 명</th>
+            <td class="center"><span id="pv_p1_s1_name" class="bold">홍길동</span> &nbsp;(인)</td>
+          </tr>
+          <tr>
+            <th class="center">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</th>
+            <td colspan="5" id="pv_p1_s1_addr">경기도 안양시 동안구 호계동 1052-3</td>
+          </tr>
+          <tr>
+            <th class="center">주민등록번호</th>
+            <td id="pv_p1_s2_rrn" class="center">-</td>
+            <th class="center">전 화</th>
+            <td id="pv_p1_s2_tel" class="center">-</td>
+            <th class="center">성 명</th>
+            <td class="center"><span id="pv_p1_s2_name" class="bold">-</span> &nbsp;(인)</td>
+          </tr>
+          <tr>
+            <th class="center">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</th>
+            <td colspan="5" id="pv_p1_s2_addr">-</td>
+          </tr>
+
+          <!-- 매수 약정인 -->
+          <tr>
+            <th rowspan="4" class="center">매&nbsp;&nbsp;&nbsp;&nbsp;수<br>약정인</th>
+            <th class="center">주민등록번호</th>
+            <td id="pv_p1_b1_rrn" class="center">-</td>
+            <th class="center">전 화</th>
+            <td id="pv_p1_b1_tel" class="center">010-9876-5432</td>
+            <th class="center">성 명</th>
+            <td class="center"><span id="pv_p1_b1_name" class="bold">김철수</span> &nbsp;(인)</td>
+          </tr>
+          <tr>
+            <th class="center">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</th>
+            <td colspan="5" id="pv_p1_b1_addr">서울특별시 서초구 반포대로 45</td>
+          </tr>
+          <tr>
+            <th class="center">주민등록번호</th>
+            <td id="pv_p1_b2_rrn" class="center">-</td>
+            <th class="center">전 화</th>
+            <td id="pv_p1_b2_tel" class="center">-</td>
+            <th class="center">성 명</th>
+            <td class="center"><span id="pv_p1_b2_name" class="bold">-</span> &nbsp;(인)</td>
+          </tr>
+          <tr>
+            <th class="center">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</th>
+            <td colspan="5" id="pv_p1_b2_addr">-</td>
+          </tr>
+
+          <!-- 개업공인중개사 1 -->
+          <tr>
+            <th rowspan="3" class="center">개업공인<br>중 개 사</th>
+            <th class="center">사업소재지</th>
+            <td colspan="5">경기도 안양시 동안구 평촌대로179번길 39 104호</td>
+          </tr>
+          <tr>
+            <th class="center">상 호</th>
+            <td colspan="2" class="bold">부동산이즈두산공인중개사사무소</td>
+            <th class="center">등록번호</th>
+            <td colspan="2">41173-2025-00028</td>
+          </tr>
+          <tr>
+            <th class="center">대 표</th>
+            <td colspan="2"><span class="bold" style="letter-spacing:2px;">백 근 영</span> &nbsp;(인)</td>
+            <th class="center">전 화</th>
+            <td colspan="2">031-388-7704</td>
+          </tr>
+
+          <!-- 개업공인중개사 2 (공동중개) -->
+          <tr id="pv_p1_co_row1" style="display:none;">
+            <th rowspan="3" class="center">개업공인<br>중 개 사</th>
+            <th class="center">사업소재지</th>
+            <td colspan="5" id="pv_p1_co_addr">-</td>
+          </tr>
+          <tr id="pv_p1_co_row2" style="display:none;">
+            <th class="center">상 호</th>
+            <td colspan="2" class="bold" id="pv_p1_co_office">-</td>
+            <th class="center">등록번호</th>
+            <td colspan="2" id="pv_p1_co_reg">-</td>
+          </tr>
+          <tr id="pv_p1_co_row3" style="display:none;">
+            <th class="center">대 표</th>
+            <td colspan="2"><span class="bold" id="pv_p1_co_name" style="letter-spacing:2px;">-</span> &nbsp;(인)</td>
+            <th class="center">전 화</th>
+            <td colspan="2" id="pv_p1_co_tel">-</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+
+    <!-- ==================== 2페이지: 부동산 매매 약정서 별지 ==================== -->
+    <div class="sheet-page" id="sheet_page_2">
+      <div>
+        <!-- 별지 타이틀 -->
+        <div class="sheet-title">부동산 매매 약정서 별지</div>
+
+        <!-- 대상물건의 표시 -->
+        <table class="excel-table" style="margin-top: 4px; margin-bottom: 7px;">
+          <colgroup>
+            <col style="width: 7%;" />
+            <col style="width: 10%;" />
+            <col style="width: 13%;" />
+            <col style="width: 28%;" />
+            <col style="width: 8%;" />
+            <col style="width: 16%;" />
+            <col style="width: 18%;" />
+          </colgroup>
+          <tr>
+            <th rowspan="4" class="center">대<br>상<br>물<br>건</th>
+            <th rowspan="2" class="center">토 지</th>
+            <th class="center">소재지</th>
+            <td colspan="4" id="pv_p2_land_addr" class="bold">경기도 안양시 동안구 호계동 1052-3</td>
+          </tr>
+          <tr>
+            <th class="center">면적(㎡)</th>
+            <td id="pv_p2_land_ratio" class="center bold">30467.9분의 35.376</td>
+            <th class="center">지목</th>
+            <td class="center">공부상지목: <span id="pv_p2_jimok_legal" class="bold">대</span></td>
+            <td class="center">실제이용: <span id="pv_p2_jimok_actual" class="bold">대</span></td>
+          </tr>
+          <tr>
+            <th rowspan="2" class="center">건축물</th>
+            <th class="center">소재지</th>
+            <td colspan="4" id="pv_p2_bld_addr" class="bold">경기도 안양시 동안구 호계동 1052-3 목련아파트 308동 506호</td>
+          </tr>
+          <tr>
+            <th class="center">면적(㎡)</th>
+            <td class="center"><span id="pv_p2_exclusive_area" class="bold">56.7</span> ㎡</td>
+            <th class="center">구 조</th>
+            <td id="pv_p2_bld_structure" class="center">철근콘크리트조</td>
+            <td class="center">용도: <span id="pv_p2_bld_usage" class="bold">아파트</span></td>
+          </tr>
+        </table>
+
+        <!-- 제4조 특약사항 -->
+        <div class="sec-header">제4조 특약사항</div>
+        <div style="font-size: 8.5pt; margin-bottom: 4px;">
+          1. 위 부동산 소유자와 매수 약정자가 쌍방합의로 아래와 같이 매매약정을 체결한다
+        </div>
+
+        <!-- 대금 지급표 -->
+        <table class="excel-table" style="margin-bottom: 9px;">
+          <colgroup>
+            <col style="width: 18%;" />
+            <col style="width: 32%;" />
+            <col style="width: 25%;" />
+            <col style="width: 25%;" />
+          </colgroup>
+          <tr>
+            <th class="center">매 매 대 금</th>
+            <td class="center bold" style="color: #1e3a8a;">
+              금 <span id="pv_p2_total_kr">구억오천만원</span>정
+            </td>
+            <td class="center bold" colspan="2">
+              (₩<span id="pv_p2_total_num">950,000,000</span>)
+            </td>
+          </tr>
+          <tr>
+            <th class="center">계&nbsp;&nbsp;약&nbsp;&nbsp;금</th>
+            <td class="center bold">
+              금 <span id="pv_p2_contract_kr">일억원</span>정
+            </td>
+            <td class="center">
+              (₩<span id="pv_p2_contract_num">100,000,000</span>)
+            </td>
+            <td class="center" id="pv_p2_contract_sched">토지거래허가후 7일이내</td>
+          </tr>
+          <tr>
+            <th class="center">중도금(1차)</th>
+            <td class="center bold">
+              금 <span id="pv_p2_mid1_kr">이억원</span>정
+            </td>
+            <td class="center">
+              (₩<span id="pv_p2_mid1_num">200,000,000</span>)
+            </td>
+            <td class="center">
+              <span id="pv_p2_mid1_date">2026-10-16</span> &nbsp;<span id="pv_p2_mid1_note">예정</span>
+            </td>
+          </tr>
+          <tr id="pv_p2_mid2_row" style="display:none;">
+            <th class="center">중도금(2차)</th>
+            <td class="center bold">
+              금 <span id="pv_p2_mid2_kr">영원</span>정
+            </td>
+            <td class="center">
+              (₩<span id="pv_p2_mid2_num">0</span>)
+            </td>
+            <td class="center">
+              <span id="pv_p2_mid2_date">-</span> &nbsp;<span id="pv_p2_mid2_note">예정</span>
+            </td>
+          </tr>
+          <tr>
+            <th class="center">잔&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;금</th>
+            <td class="center bold">
+              금 <span id="pv_p2_balance_kr">육억오천만원</span>정
+            </td>
+            <td class="center bold">
+              (₩<span id="pv_p2_balance_num">650,000,000</span>)
+            </td>
+            <td class="center">
+              <span id="pv_p2_balance_date">2026-12-04</span> &nbsp;<span id="pv_p2_balance_note">이내로 협의</span>
+            </td>
+          </tr>
+        </table>
+
+        <!-- 상세 특약 본문 (2번부터 10번까지) -->
+        <div id="pv_p2_clauses_container" style="font-size: 8.5pt; line-height: 1.55; text-align: justify; white-space: pre-wrap; word-break: break-all; min-height: 140px; padding: 2px;">
+          <!-- JS 동적 바인딩 -->
+        </div>
+      </div>
+
+      <!-- 하단 영수증 박스 (별지 하단 고정) -->
+      <div class="receipt-box">
+        <div class="receipt-title">약정금 영수증</div>
+        <div class="receipt-amount-row">
+          금 <span id="pv_rcpt_amt_kr" style="color:#1e3a8a;">삼천만원</span>정 &nbsp;&nbsp;(₩<span id="pv_rcpt_amt_num">30,000,000</span>)
+        </div>
+        <div class="receipt-desc bold">상기금액을 매매약정금으로 정히 영수함</div>
+        <div class="receipt-sub-desc" id="pv_rcpt_detail_text">
+          (2026년 08월 19일 삼천만원을 현 소유자 홍길동님 계좌로 입금함)
+        </div>
+        <div class="receipt-sign-row">
+          <span>영수자</span>
+          <span>(부동산소유자)</span>
+          <span id="pv_rcpt_seller_name" style="font-size: 10pt; letter-spacing: 2px;">홍길동</span>
+          <span>(인)</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    let currentDealId = null;
+
+    // 평촌 목련마을 주요 단지 프리셋 정의
+    const COMPLEX_PRESETS = {
+      mokryeon_2: {
+        landAddr: '경기도 안양시 동안구 호계동 1056',
+        bldAddr: '경기도 안양시 동안구 평촌대로 180번길 27 목련두산아파트 201동 1502호',
+        landRatioStr: '34567.8분의 48.25',
+        exclusiveArea: '84.95',
+        dong: '호계동',
+        jibunMain: '1056',
+        jibunSub: '',
+        complex: '목련두산아파트',
+        dongNum: '201',
+        hoNum: '1502',
+        bldStructure: '철근콘크리트조',
+        bldUsage: '아파트'
+      },
+      mokryeon_3: {
+        landAddr: '경기도 안양시 동안구 호계동 1052-3',
+        bldAddr: '경기도 안양시 동안구 호계동 1052-3 목련아파트 308동 506호',
+        landRatioStr: '30467.9분의 35.376',
+        exclusiveArea: '56.7',
+        dong: '호계동',
+        jibunMain: '1052',
+        jibunSub: '3',
+        complex: '목련아파트',
+        dongNum: '308',
+        hoNum: '506',
+        bldStructure: '철근콘크리트조',
+        bldUsage: '아파트'
+      },
+      mokryeon_5: {
+        landAddr: '경기도 안양시 동안구 호계동 1053',
+        bldAddr: '경기도 안양시 동안구 동안로 110 목련선경아파트 502동 801호',
+        landRatioStr: '31245.0분의 42.15',
+        exclusiveArea: '74.2',
+        dong: '호계동',
+        jibunMain: '1053',
+        jibunSub: '',
+        complex: '목련선경아파트',
+        dongNum: '502',
+        hoNum: '801',
+        bldStructure: '철근콘크리트조',
+        bldUsage: '아파트'
+      },
+      mokryeon_6: {
+        landAddr: '경기도 안양시 동안구 호계동 1054-6',
+        bldAddr: '경기도 안양시 동안구 평촌대로179번길 27 목련두산아파트 603동 402호',
+        landRatioStr: '29263.2분의 54.395',
+        exclusiveArea: '101.94',
+        dong: '호계동',
+        jibunMain: '1054',
+        jibunSub: '6',
+        complex: '목련두산아파트',
+        dongNum: '603',
+        hoNum: '402',
+        bldStructure: '철근콘크리트조',
+        bldUsage: '아파트'
+      }
+    };
+
+    function applyComplexPreset(key) {
+      const p = COMPLEX_PRESETS[key];
+      if (!p) return;
+      document.getElementById('f_land_addr').value = p.landAddr;
+      document.getElementById('f_bld_addr').value = p.bldAddr;
+      document.getElementById('f_land_ratio_str').value = p.landRatioStr;
+      document.getElementById('f_exclusive_area').value = p.exclusiveArea;
+      document.getElementById('f_bld_structure').value = p.bldStructure;
+      document.getElementById('f_bld_usage').value = p.bldUsage;
+      onAddressFieldChange();
+    }
+
+    function onAddressFieldChange() {
+      const landAddr = document.getElementById('f_land_addr').value.trim();
+      const bldAddr = document.getElementById('f_bld_addr').value.trim();
+      const ratioStr = document.getElementById('f_land_ratio_str').value.trim();
+
+      const parsed = window.DealStore ? window.DealStore.parseAddressAndRatio(landAddr, bldAddr, ratioStr) : {};
+      
+      const elDong = document.getElementById('lbl_parsed_dong');
+      const elJibun = document.getElementById('lbl_parsed_jibun');
+      const elCplx = document.getElementById('lbl_parsed_complex');
+      const elUnit = document.getElementById('lbl_parsed_unit');
+      const elRDen = document.getElementById('lbl_parsed_ratio_den');
+      const elRNum = document.getElementById('lbl_parsed_ratio_num');
+
+      if (elDong) elDong.textContent = parsed.dong || '-';
+      if (elJibun) elJibun.textContent = parsed.jibunMain ? (parsed.jibunMain + (parsed.jibunSub ? '-' + parsed.jibunSub : '')) : '-';
+      if (elCplx) elCplx.textContent = parsed.complex || '-';
+      if (elUnit) elUnit.textContent = (parsed.dongNum ? parsed.dongNum + '동 ' : '') + (parsed.hoNum ? parsed.hoNum + '호' : '') || '-';
+      if (elRDen) elRDen.textContent = parsed.ratioDen || '-';
+      if (elRNum) elRNum.textContent = parsed.ratioNum || '-';
+
+      syncPreview();
+    }
+
+    function togglePermitPreInputUI() {
+      const box = document.getElementById('permit_pre_input_box');
+      const btnText = document.getElementById('btn_permit_pre_text');
+      const isVisible = box.style.display !== 'none';
+      if (isVisible) {
+        box.style.display = 'none';
+        btnText.textContent = '+ 사전입력 펼치기';
+      } else {
+        box.style.display = 'block';
+        btnText.textContent = '- 사전입력 접기';
+        // 기본값 자동 제안
+        const total = parseFloat(document.getElementById('f_total_price').value) || 0;
+        if (!document.getElementById('f_permit_fund_loan').value && total > 0) {
+          const estLoan = Math.round(total * 0.4 / 10000000) * 10000000;
+          document.getElementById('f_permit_fund_loan').value = estLoan;
+          document.getElementById('f_permit_fund_self').value = total - estLoan;
+        }
+      }
+    }
+
+    function onDealStageChange() {
+      const stage = document.getElementById('sel_deal_stage').value;
+      const guide = document.getElementById('badge_stage_guide');
+      if (window.DealStore && window.DealStore.DEAL_STAGES && window.DealStore.DEAL_STAGES[stage]) {
+        const info = window.DealStore.DEAL_STAGES[stage];
+        guide.textContent = info.nextAction;
+        guide.style.color = info.color;
+        guide.style.background = info.bgColor;
+      }
+    }
+
+
+    // 테마 토글 및 로컬 저장
+    function initTheme() {
+      const savedTheme = localStorage.getItem('agreement_theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        document.getElementById('theme_icon').textContent = '☀️';
+        document.getElementById('theme_text').textContent = '밝게';
+      } else {
+        document.body.classList.remove('dark-theme');
+        document.getElementById('theme_icon').textContent = '🌙';
+        document.getElementById('theme_text').textContent = '다크';
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('dark-theme');
+      if (isDark) {
+        localStorage.setItem('agreement_theme', 'dark');
+        document.getElementById('theme_icon').textContent = '☀️';
+        document.getElementById('theme_text').textContent = '밝게';
+      } else {
+        localStorage.setItem('agreement_theme', 'light');
+        document.getElementById('theme_icon').textContent = '🌙';
+        document.getElementById('theme_text').textContent = '다크';
+      }
+    }
+
+    // 카카오톡 / 문자용 발송 메시지 클립보드 복사
+    function copySmsSummary() {
+      const deal = gatherDealFromForm();
+      const p = deal.property;
+      const f = deal.financial;
+      const s1 = deal.parties.sellers[0] || {};
+      const b1 = deal.parties.buyers[0] || {};
+      const sCount = deal.parties.sellers.length > 1 ? ` 외 ${deal.parties.sellers.length - 1}명` : '';
+      const bCount = deal.parties.buyers.length > 1 ? ` 외 ${deal.parties.buyers.length - 1}명` : '';
+
+      const msg = `[부동산이즈두산] 부동산 매매약정(가계약) 체결 안내
+━━━━━━━━━━━━━━━━━━━━
+■ 대상물건: ${p.bldAddr || p.landAddr}
+■ 총 매매대금: 금 ${window.DealStore.numToKorean(f.totalPrice)} (₩${window.DealStore.formatNumber(f.totalPrice)})
+■ 매매약정금: 금 ${window.DealStore.numToKorean(f.tempDeposit)} (₩${window.DealStore.formatNumber(f.tempDeposit)})
+  - 입금일자: ${window.DealStore.formatDateKorean(deal.dealDate)}
+■ 계  약  금: 금 ${window.DealStore.numToKorean(f.contractDeposit)} (₩${window.DealStore.formatNumber(f.contractDeposit)})
+  - 계약일정: ${f.contractSchedule || '토지거래허가 취득 후 7일 이내'}
+■ 중도금(1차): 금 ${window.DealStore.numToKorean(f.midPayment)} (₩${window.DealStore.formatNumber(f.midPayment)}) [${f.midDate || '협의'}]
+■ 잔      금: 금 ${window.DealStore.numToKorean(f.balance)} (₩${window.DealStore.formatNumber(f.balance)}) [${f.balanceDate || '협의'}]
+────────────────────
+■ 거래 당사자:
+  - 매도인(소유자): ${s1.name || '-'}${sCount}
+  - 매수약정인: ${b1.name || '-'}${bCount}
+────────────────────
+■ 핵심 특약 (토지거래허가 조건부):
+1. 본 약정은 안양시 동안구청 토지거래계약허가를 정지조건으로 하며, 불허가 처분 시 본 약정은 조건 없이 무효로 하고 매도인은 수령한 약정금 전액을 매수인에게 즉시 반환합니다.
+2. 매수인은 실거주 목적 취득(2년 실거주 의무) 및 자금조달계획서 작성에 성실히 협조합니다.
+3. 허가증 수령일로부터 7일 이내 본 매매계약을 체결하며, 기지급된 약정금은 계약금의 일부로 자동 대체 충당합니다.
+━━━━━━━━━━━━━━━━━━━━
+부동산이즈두산공인중개사사무소 (대표: 백근영)
+문의전화: 031-388-7704 / 010-5851-2693`;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).then(() => {
+          alert('카카오톡/문자 발송용 약정 요약문이 클립보드에 복사되었습니다!\n고객 카톡창이나 문자에 [붙여넣기(Ctrl+V)] 하시면 됩니다.');
+        }).catch(() => fallbackCopy(msg));
+      } else {
+        fallbackCopy(msg);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      alert('카카오톡/문자 발송용 약정 요약문이 클립보드에 복사되었습니다!\n고객 카톡창이나 문자에 [붙여넣기(Ctrl+V)] 하시면 됩니다.');
+    }
+
+    // 2페이지 영수증만 인쇄
+    function printReceiptOnly() {
+      const p1 = document.getElementById('sheet_page_1');
+      if (!p1) return;
+      p1.style.display = 'none';
+      const deal = gatherDealFromForm();
+      const printTitle = window.DealStore.generateStandardFileName(deal, '약정금영수증');
+      const oldTitle = document.title;
+      document.title = printTitle;
+
+      window.print();
+
+      setTimeout(() => {
+        p1.style.display = 'flex';
+        document.title = oldTitle;
+      }, 1000);
+    }
+
+
+    // 엑셀 서식 기반 기본 특약 템플릿 모음
+    const CLAUSE_PRESETS = {
+      clean: 
+`2. 등기사항전부증명서상 을구 기재내용 없음으로 권리상 하자없음을 확인하였으며, 매도인은 잔금일까지 소유권의 행사를 제한하는 일체의 제한물권을 설정하지 않기로 한다.
+
+3. 현 시설물 상태의 약정이며, 매수인 직접 현장방문하여 확인한 후 토지거래허가를 득하기 위한 약정임을 인지하고 쌍방 합의하에 진행하는 약정이다.
+
+4. 본 매매약정금은 계약금이 아니므로, 매매계약 체결 시 기지급한 약정금 전액을 반환한 후 계약금을 별도로 지급한다.
+
+5. 토지거래 허가 후 매수약정인은 허가일로부터 4개월 이내 취득(등기)하고 취득일로부터 이용의무(2년 실거주)를 이행해야함을 인지하고 진행하는 약정이다. 다만, 주택 취득일이 그보다 빠를 경우 해당 토지 취득일로부터 이용의무를 이행하여야 한다.
+
+6. 계약서는 부동산거래허가를 득한후 협의된 날 작성하며, 확인설명서도 계약서 작성시 함께 작성, 교부하기로 한다.
+
+7. 기타사항은 계약시 협의하기로 하며, 일방 변심에 의해 계약파기시 중개보수는 지불하기로 한다.`,
+
+      mortgage:
+`2. 본 약정은 목적 부동산의 공부 및 현 시설물 상태를 현장에서 확인하고, 관련 제반 사항을 포괄적으로 인지한 상태에서 현존하는 상태 그대로를 인도하는 조건의 매매약정이다. (매수약정인이 소재지 직접 방문 확인함)
+
+3. 등기사항전부증명서상 을구 근저당권(채권최고액 등) 설정된 상태로 약정하며, 매도약정인은 잔금일까지 전액 상환 및 말소하기로 하고, 소유권의 행사를 제한하는 일체의 제한물권을 추가로 설정하지 않기로 한다.
+
+4. 본 약정 대상 아파트의 하자담보책임은 잔금 당일까지는 매도약정인 책임, 잔금 익일부터는 매수약정인 책임으로 협의한다. (단, 노후화로 인한 가벼운 결로 및 곰팡이 등은 매매약정금액에 반영된 것으로 보고 하자로 보지 아니한다.)
+
+5. 토지거래 허가 후 매수약정인은 허가일로부터 4개월 이내 취득(등기)하고 취득일로부터 이용의무(2년 실거주)를 이행해야함을 인지하고 진행하는 약정이다.
+
+6. 본 매매계약(전자계약) 체결 시에 매수 약정인은 계약금 전액을 지급하고, 매도 약정인은 수령한 약정금 전액을 매수 약정인에게 반환하기로 한다.
+
+7. 양 당사자는 토지거래허가 신청 및 본계약 체결을 위한 개인정보 수집·이용에 동의한다.`,
+
+      seizure:
+`2. 본 약정은 목적 부동산의 공부 및 현 시설물 상태를 현장에서 확인하고, 관련 제반 사항을 포괄적으로 인지한 상태에서 현존하는 상태 그대로를 인도하는 조건의 매매약정이다. (매수약정인이 소재지 직접 방문 확인함)
+
+3. 등기사항전부증명서상 갑구 가압류 및 을구 근저당권 설정 상태를 확인함. 매도약정인은 중도금 지급일에 갑구 가압류 해지를 위한 지정계좌(또는 법원 공탁계좌)를 매수약정인에게 제공하고, 중도금 중 가압류 해지 필요금액을 매수약정인이 직접 해당 계좌에 입금하여 완납 처리 후 10일 이내 말소등기를 완료하기로 한다. 을구 근저당권은 잔금일까지 전액 상환 말소한다.
+
+4. 본 약정 대상 아파트의 중대한 하자(누수 등) 발생 시 잔금일 기준 매도약정인 책임, 잔금일 이후 매수약정인 책임으로 협의한다.
+
+5. 토지거래 허가 후 매수약정인은 허가일로부터 4개월 이내 취득(등기)하고 취득일로부터 이용의무(2년 실거주)를 성실히 이행한다.
+
+6. 본 매매계약 체결 시 매수 약정인은 계약금 전액을 지급하고, 매도 약정인은 수령한 약정금 전액을 매수 약정인에게 반환하기로 한다.
+
+7. 추가사항은 본계약 체결 시 상호 협의하여 정하기로 한다.`
+    };
+
+    // 초기 로딩
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      refreshDealDropdown();
+
+      // URL 파라미터 확인
+      const params = new URLSearchParams(window.location.search);
+      const urlDealId = params.get('dealId');
+
+      if (urlDealId && window.DealStore) {
+        const loaded = window.DealStore.getDeal(urlDealId);
+        if (loaded) {
+          loadDealIntoForm(loaded);
+          return;
+        }
+      }
+
+      // 기존 저장된 첫 거래 또는 엑셀 기본 샘플
+      const list = window.DealStore ? window.DealStore.listDeals() : [];
+      if (list.length > 0) {
+        loadDealIntoForm(list[0]);
+      } else {
+        loadSampleDeal('sample_basic');
+      }
+    });
+
+    // 드롭다운 갱신
+    function refreshDealDropdown() {
+      const sel = document.getElementById('sel_deal_list');
+      if (!sel || !window.DealStore) return;
+      sel.innerHTML = '<option value="">-- [불러오기] 저장된 거래 선택 --</option>';
+      const list = window.DealStore.listDeals();
+      list.forEach(deal => {
+        const opt = document.createElement('option');
+        opt.value = deal.id;
+        const p = deal.property || {};
+        const title = deal.title || `${deal.dealDate}_${p.dong || ''}_${p.complex || ''}`;
+        opt.textContent = title;
+        if (deal.id === currentDealId) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    function onDealSelectChange() {
+      const sel = document.getElementById('sel_deal_list');
+      const id = sel.value;
+      if (!id) return;
+      const deal = window.DealStore.getDeal(id);
+      if (deal) loadDealIntoForm(deal);
+    }
+
+    function startNewDeal() {
+      if (confirm('새 매매약정서를 작성하시겠습니까?')) {
+        currentDealId = null;
+        document.getElementById('sel_deal_list').value = '';
+        const empty = window.DealStore.createEmptyDeal();
+        loadDealIntoForm(empty);
+      }
+    }
+
+    // 엑셀 기반 샘플 데이터 로딩
+    function loadSampleDeal(type) {
+      const deal = window.DealStore.createEmptyDeal();
+      if (type === 'sample_basic') {
+        // 단독명의 기본 샘플 (홍길동 / 9.5억)
+        deal.dealDate = '2026-08-19';
+        deal.property.landAddr = '경기도 안양시 동안구 호계동 1052-3';
+        deal.property.landRatioStr = '30467.9분의 35.376';
+        deal.property.landCategoryLegal = '대';
+        deal.property.landCategoryActual = '대';
+        deal.property.bldAddr = '경기도 안양시 동안구 호계동 1052-3 목련아파트 308동 506호';
+        deal.property.exclusiveArea = 56.7;
+        deal.property.bldStructure = '철근콘크리트조';
+        deal.property.bldUsage = '아파트';
+        deal.property.dong = '호계동';
+        deal.property.complex = '목련아파트';
+        deal.property.dongNum = '308';
+        deal.property.hoNum = '506';
+
+        deal.financial.tempDeposit = 30000000;
+        deal.financial.tempDepositDate = '2026-08-19';
+        deal.financial.totalPrice = 950000000;
+        deal.financial.contractDeposit = 100000000;
+        deal.financial.contractSchedule = '토지거래허가후 7일이내';
+        deal.financial.midPayment = 200000000;
+        deal.financial.midDate = '2026-10-16';
+        deal.financial.midNote = '예정';
+        deal.financial.balance = 650000000;
+        deal.financial.balanceDate = '2026-12-04';
+        deal.financial.balanceNote = '이내로 협의';
+        deal.financial.specialTerms = CLAUSE_PRESETS.clean;
+
+        deal.parties.sellers = [
+          { name: '홍길동', rrn: '', tel: '010-1234-5678', addr: '경기도 안양시 동안구 호계동 1052-3', share: '1/1' }
+        ];
+        deal.parties.buyers = [
+          { name: '김철수', rrn: '', tel: '010-9876-5432', addr: '서울특별시 서초구 반포대로 45', share: '1/1' }
+        ];
+        deal.coAgent = { enabled: false, office: '', name: '', regNo: '', tel: '', addr: '' };
+      } else if (type === 'sample_joint') {
+        // 공동명의 샘플 (홍길동·강감찬 / 17.85억)
+        deal.dealDate = '2026-07-07';
+        deal.property.landAddr = '경기도 안양시 동안구 호계동 1054-6';
+        deal.property.landRatioStr = '29263.2분의 54.395';
+        deal.property.landCategoryLegal = '대';
+        deal.property.landCategoryActual = '대';
+        deal.property.bldAddr = '경기도 안양시 동안구 호계동 1054-6 목련아파트 제603동 제4층 제402호';
+        deal.property.exclusiveArea = 101.94;
+        deal.property.bldStructure = '철근콘크리트조';
+        deal.property.bldUsage = '아파트';
+        deal.property.dong = '호계동';
+        deal.property.complex = '목련두산아파트';
+        deal.property.dongNum = '603';
+        deal.property.hoNum = '402';
+
+        deal.financial.tempDeposit = 50000000;
+        deal.financial.tempDepositDate = '2026-07-07';
+        deal.financial.totalPrice = 1785000000;
+        deal.financial.contractDeposit = 200000000;
+        deal.financial.contractSchedule = '토지거래허가후 7일이내';
+        deal.financial.midPayment = 400000000;
+        deal.financial.midDate = '2026-09-02';
+        deal.financial.midNote = '예정';
+        deal.financial.balance = 1185000000;
+        deal.financial.balanceDate = '2026-11-18';
+        deal.financial.balanceNote = '이내로 협의';
+        deal.financial.specialTerms = CLAUSE_PRESETS.mortgage;
+
+        deal.parties.sellers = [
+          { name: '홍길동', rrn: '750101-1234567', tel: '010-1234-5678', addr: '경기도 안양시 동안구 동안로 120, 101동 202호', share: '1/2' },
+          { name: '강감찬', rrn: '780202-1345678', tel: '010-2345-6789', addr: '경기도 안양시 동안구 동안로 120, 101동 202호', share: '1/2' }
+        ];
+        deal.parties.buyers = [
+          { name: '김철수', rrn: '850303-1456789', tel: '010-9876-5432', addr: '서울특별시 서초구 서초대로 50, 203동 501호', share: '1/2' },
+          { name: '이영희', rrn: '880404-2567890', tel: '010-8765-4321', addr: '서울특별시 서초구 서초대로 50, 203동 501호', share: '1/2' }
+        ];
+
+        deal.coAgent = {
+          enabled: true,
+          office: '행복공인중개사사무소',
+          name: '김행복',
+          regNo: '41173-2020-00001',
+          tel: '031-388-0000',
+          addr: '경기도 안양시 동안구 평촌대로211번길 35, B동 103호 (호계동, 목련@분산상가)'
+        };
+      }
+      loadDealIntoForm(deal);
+    }
+
+    // 폼에 데이터 바인딩
+    function loadDealIntoForm(deal) {
+      if (!deal) return;
+      currentDealId = deal.id;
+
+      // 1. 부동산
+      const p = deal.property || {};
+      document.getElementById('f_land_addr').value = p.landAddr || p.addrFull || '';
+      document.getElementById('f_land_ratio_str').value = p.landRatioStr || (p.landRatioDen ? `${p.landRatioDen}분의 ${p.landRatioNum}` : '');
+      document.getElementById('f_jimok_legal').value = p.landCategoryLegal || '대';
+      document.getElementById('f_jimok_actual').value = p.landCategoryActual || '대';
+      document.getElementById('f_bld_addr').value = p.bldAddr || p.addrFull || '';
+      document.getElementById('f_exclusive_area').value = p.exclusiveArea || '';
+      document.getElementById('f_bld_structure').value = p.bldStructure || '철근콘크리트조';
+      document.getElementById('f_bld_usage').value = p.bldUsage || '아파트';
+
+      // 2. 금액 및 일정
+      const f = deal.financial || {};
+      document.getElementById('f_deal_date').value = deal.dealDate || '';
+      document.getElementById('f_temp_deposit').value = f.tempDeposit || '';
+      
+      const isSplit = Boolean(f.isTempSplit);
+      document.getElementById('chk_split_temp').checked = isSplit;
+      document.getElementById('split_temp_box').style.display = isSplit ? 'block' : 'none';
+      document.getElementById('f_temp_deposit_1').value = f.tempDeposit1 || f.tempDeposit || '';
+      document.getElementById('f_temp_date_1').value = f.tempDeposit1Date || deal.dealDate || '';
+      document.getElementById('f_temp_deposit_2').value = f.tempDeposit2 || 0;
+      document.getElementById('f_temp_date_2').value = f.tempDeposit2Date || '';
+
+      document.getElementById('f_total_price').value = f.totalPrice || '';
+      document.getElementById('f_contract_deposit').value = f.contractDeposit || '';
+      document.getElementById('f_contract_schedule').value = f.contractSchedule || '토지거래허가후 7일이내';
+      document.getElementById('f_mid_payment_1').value = f.midPayment || '';
+      document.getElementById('f_mid_date_1').value = f.midDate || '';
+      document.getElementById('f_mid_note_1').value = f.midNote || '예정';
+      document.getElementById('f_mid_payment_2').value = f.midPayment2 || 0;
+      document.getElementById('f_mid_date_2').value = f.midDate2 || '';
+      document.getElementById('f_mid_note_2').value = f.midNote2 || '예정';
+      document.getElementById('f_balance').value = f.balance || '';
+      document.getElementById('f_balance_date').value = f.balanceDate || '';
+      document.getElementById('f_balance_note').value = f.balanceNote || '이내로 협의';
+      document.getElementById('f_special_terms').value = f.specialTerms || CLAUSE_PRESETS.clean;
+
+      // 3. 당사자 (소유자 1/2)
+      const sellers = (deal.parties && deal.parties.sellers) ? deal.parties.sellers : (deal.sellers || []);
+      const s1 = sellers[0] || {};
+      const s2 = sellers[1] || null;
+      document.getElementById('f_seller1_name').value = s1.name || '';
+      document.getElementById('f_seller1_rrn').value = s1.rrn || '';
+      document.getElementById('f_seller1_tel').value = s1.tel || '';
+      document.getElementById('f_seller1_addr').value = s1.addr || '';
+
+      const hasS2 = Boolean(s2 && (s2.name || s2.rrn || s2.tel || s2.addr));
+      document.getElementById('chk_seller2').checked = hasS2;
+      document.getElementById('seller2_box').style.display = hasS2 ? 'block' : 'none';
+      document.getElementById('f_seller2_name').value = hasS2 ? (s2.name || '') : '';
+      document.getElementById('f_seller2_rrn').value = hasS2 ? (s2.rrn || '') : '';
+      document.getElementById('f_seller2_tel').value = hasS2 ? (s2.tel || '') : '';
+      document.getElementById('f_seller2_addr').value = hasS2 ? (s2.addr || '') : '';
+
+      // 당사자 (매수인 1/2)
+      const buyers = (deal.parties && deal.parties.buyers) ? deal.parties.buyers : (deal.buyers || []);
+      const b1 = buyers[0] || {};
+      const b2 = buyers[1] || null;
+      document.getElementById('f_buyer1_name').value = b1.name || '';
+      document.getElementById('f_buyer1_rrn').value = b1.rrn || '';
+      document.getElementById('f_buyer1_tel').value = b1.tel || '';
+      document.getElementById('f_buyer1_addr').value = b1.addr || '';
+
+      const hasB2 = Boolean(b2 && (b2.name || b2.rrn || b2.tel || b2.addr));
+      document.getElementById('chk_buyer2').checked = hasB2;
+      document.getElementById('buyer2_box').style.display = hasB2 ? 'block' : 'none';
+      document.getElementById('f_buyer2_name').value = hasB2 ? (b2.name || '') : '';
+      document.getElementById('f_buyer2_rrn').value = hasB2 ? (b2.rrn || '') : '';
+      document.getElementById('f_buyer2_tel').value = hasB2 ? (b2.tel || '') : '';
+      document.getElementById('f_buyer2_addr').value = hasB2 ? (b2.addr || '') : '';
+
+      // 4. 공동중개사
+      const co = deal.coAgent || {};
+      const hasCo = Boolean(co.enabled || co.office);
+      document.getElementById('chk_co_agent').checked = hasCo;
+      document.getElementById('co_agent_box').style.display = hasCo ? 'block' : 'none';
+      document.getElementById('f_co_office').value = co.office || '';
+      document.getElementById('f_co_name').value = co.name || '';
+      document.getElementById('f_co_reg').value = co.regNo || '';
+      document.getElementById('f_co_tel').value = co.tel || '';
+      document.getElementById('f_co_addr').value = co.addr || '';
+
+      
+      // 진행 단계 로딩
+      const stage = deal.status || 'agreement_signed';
+      const selStage = document.getElementById('sel_deal_stage');
+      if (selStage) {
+        selStage.value = stage;
+        onDealStageChange();
+      }
+
+      // 허가서 사전 입력 데이터 로딩
+      const permit = deal.permit || {};
+      const b1Fund = permit.funding?.buyer1 || {};
+      document.getElementById('f_permit_fund_self').value = b1Fund.selfDeposit || '';
+      document.getElementById('f_permit_fund_loan').value = b1Fund.loanAmount || '';
+      document.getElementById('f_permit_purpose').value = permit.purpose || '주거용 (세대원 전원 실거주 자가주택 취득)';
+      document.getElementById('f_permit_movein').value = permit.moveInDate || deal.financial?.balanceDate || '';
+      document.getElementById('f_permit_residents').value = permit.residents || '';
+      document.getElementById('f_permit_plan').value = permit.usagePlan?.dispositionPlan || '무주택 세대 (실거주 목적 신규 취득)';
+
+      refreshDealDropdown();
+      updateKoreanLabels();
+      onAddressFieldChange();
+      syncPreview();
+    }
+
+    // 폼 -> Deal 객체 수집
+    function gatherDealFromForm() {
+      const existing = currentDealId && window.DealStore ? window.DealStore.getDeal(currentDealId) : null;
+      const base = existing || window.DealStore.createEmptyDeal();
+
+      base.dealDate = document.getElementById('f_deal_date').value;
+
+      // 부동산
+      base.property.landAddr = document.getElementById('f_land_addr').value.trim();
+      base.property.landRatioStr = document.getElementById('f_land_ratio_str').value.trim();
+      base.property.landCategoryLegal = document.getElementById('f_jimok_legal').value.trim();
+      base.property.landCategoryActual = document.getElementById('f_jimok_actual').value.trim();
+      base.property.bldAddr = document.getElementById('f_bld_addr').value.trim();
+      base.property.exclusiveArea = parseFloat(document.getElementById('f_exclusive_area').value) || 0;
+      base.property.bldStructure = document.getElementById('f_bld_structure').value.trim();
+      base.property.bldUsage = document.getElementById('f_bld_usage').value.trim();
+
+      // 토지거래허가서 바인딩 호환용 지번/단지명 파싱 보조
+      const bldStr = base.property.bldAddr;
+      const mDong = bldStr.match(/([가-힣\d]+동)\s+(\d+(?:-\d+)?)/);
+      if (mDong) {
+        base.property.dong = mDong[1];
+        const jparts = mDong[2].split('-');
+        base.property.jibunMain = jparts[0];
+        base.property.jibunSub = jparts[1] || '';
+      }
+      const mUnit = bldStr.match(/([가-힣\w]+(?:아파트|마을|단지|빌라))\s*(?:제?(\d+)동)?\s*(?:제?(\d+)호)?/);
+      if (mUnit) {
+        base.property.complex = mUnit[1];
+        if (mUnit[2]) base.property.dongNum = mUnit[2];
+        if (mUnit[3]) base.property.hoNum = mUnit[3];
+      }
+      base.property.addrFull = base.property.bldAddr;
+
+      // 대지권 분모/분자 파싱
+      const mRatio = base.property.landRatioStr.match(/([\d\.]+)\s*분의\s*([\d\.]+)/);
+      if (mRatio) {
+        base.property.landRatioDen = parseFloat(mRatio[1]) || 0;
+        base.property.landRatioNum = parseFloat(mRatio[2]) || 0;
+        base.property.landShare = base.property.landRatioNum;
+      }
+
+      // 당사자 (소유자)
+      const sellers = [];
+      sellers.push({
+        name: document.getElementById('f_seller1_name').value.trim(),
+        rrn: document.getElementById('f_seller1_rrn').value.trim(),
+        tel: document.getElementById('f_seller1_tel').value.trim(),
+        addr: document.getElementById('f_seller1_addr').value.trim(),
+        share: document.getElementById('chk_seller2').checked ? '1/2' : '1/1'
+      });
+      if (document.getElementById('chk_seller2').checked) {
+        sellers.push({
+          name: document.getElementById('f_seller2_name').value.trim(),
+          rrn: document.getElementById('f_seller2_rrn').value.trim(),
+          tel: document.getElementById('f_seller2_tel').value.trim(),
+          addr: document.getElementById('f_seller2_addr').value.trim(),
+          share: '1/2'
+        });
+      }
+      base.parties.sellers = sellers;
+      base.sellers = sellers;
+
+      // 당사자 (매수인)
+      const buyers = [];
+      buyers.push({
+        name: document.getElementById('f_buyer1_name').value.trim(),
+        rrn: document.getElementById('f_buyer1_rrn').value.trim(),
+        tel: document.getElementById('f_buyer1_tel').value.trim(),
+        addr: document.getElementById('f_buyer1_addr').value.trim(),
+        share: document.getElementById('chk_buyer2').checked ? '1/2' : '1/1'
+      });
+      if (document.getElementById('chk_buyer2').checked) {
+        buyers.push({
+          name: document.getElementById('f_buyer2_name').value.trim(),
+          rrn: document.getElementById('f_buyer2_rrn').value.trim(),
+          tel: document.getElementById('f_buyer2_tel').value.trim(),
+          addr: document.getElementById('f_buyer2_addr').value.trim(),
+          share: '1/2'
+        });
+      }
+      base.parties.buyers = buyers;
+      base.buyers = buyers;
+
+      // 금액
+      base.financial.tempDeposit = parseFloat(document.getElementById('f_temp_deposit').value) || 0;
+      base.financial.tempDepositDate = base.dealDate;
+      base.financial.isTempSplit = document.getElementById('chk_split_temp').checked;
+      base.financial.tempDeposit1 = parseFloat(document.getElementById('f_temp_deposit_1').value) || 0;
+      base.financial.tempDeposit1Date = document.getElementById('f_temp_date_1').value;
+      base.financial.tempDeposit2 = parseFloat(document.getElementById('f_temp_deposit_2').value) || 0;
+      base.financial.tempDeposit2Date = document.getElementById('f_temp_date_2').value;
+
+      base.financial.totalPrice = parseFloat(document.getElementById('f_total_price').value) || 0;
+      base.financial.contractDeposit = parseFloat(document.getElementById('f_contract_deposit').value) || 0;
+      base.financial.contractSchedule = document.getElementById('f_contract_schedule').value.trim();
+      base.financial.contractDate = base.dealDate;
+      base.financial.midPayment = parseFloat(document.getElementById('f_mid_payment_1').value) || 0;
+      base.financial.midDate = document.getElementById('f_mid_date_1').value;
+      base.financial.midNote = document.getElementById('f_mid_note_1').value.trim();
+      base.financial.midPayment2 = parseFloat(document.getElementById('f_mid_payment_2').value) || 0;
+      base.financial.midDate2 = document.getElementById('f_mid_date_2').value;
+      base.financial.midNote2 = document.getElementById('f_mid_note_2').value.trim();
+      base.financial.balance = parseFloat(document.getElementById('f_balance').value) || 0;
+      base.financial.balanceDate = document.getElementById('f_balance_date').value;
+      base.financial.balanceNote = document.getElementById('f_balance_note').value.trim();
+      base.financial.specialTerms = document.getElementById('f_special_terms').value;
+
+      // 공동중개사
+      const isCo = document.getElementById('chk_co_agent').checked;
+      base.coAgent = {
+        enabled: isCo,
+        office: isCo ? document.getElementById('f_co_office').value.trim() : '',
+        name: isCo ? document.getElementById('f_co_name').value.trim() : '',
+        regNo: isCo ? document.getElementById('f_co_reg').value.trim() : '',
+        tel: isCo ? document.getElementById('f_co_tel').value.trim() : '',
+        addr: isCo ? document.getElementById('f_co_addr').value.trim() : ''
+      };
+
+      
+      // 진행 단계 및 허가 사전 입력 수집
+      const selStage = document.getElementById('sel_deal_stage');
+      if (selStage) base.status = selStage.value;
+
+      if (!base.permit) base.permit = {};
+      base.permit.purpose = document.getElementById('f_permit_purpose').value.trim();
+      base.permit.moveInDate = document.getElementById('f_permit_movein').value.trim() || base.financial.balanceDate;
+      base.permit.residents = document.getElementById('f_permit_residents').value.trim() || (base.parties.buyers[0]?.name || '');
+      
+      const selfAmt = parseFloat(document.getElementById('f_permit_fund_self').value) || 0;
+      const loanAmt = parseFloat(document.getElementById('f_permit_fund_loan').value) || 0;
+      if (!base.permit.funding) base.permit.funding = {};
+      base.permit.funding.buyer1 = {
+        name: base.parties.buyers[0]?.name || '',
+        selfDeposit: selfAmt,
+        loanAmount: loanAmt
+      };
+      if (!base.permit.usagePlan) base.permit.usagePlan = {};
+      base.permit.usagePlan.dispositionPlan = document.getElementById('f_permit_plan').value.trim();
+
+      return base;
+    }
+
+    // 금액 계산 및 동기화
+    function onTempDepositChange() {
+      const temp = parseFloat(document.getElementById('f_temp_deposit').value) || 0;
+      if (!document.getElementById('chk_split_temp').checked) {
+        document.getElementById('f_temp_deposit_1').value = temp;
+      }
+      updateKoreanLabels();
+      syncPreview();
+    }
+
+    function toggleTempSplitUI() {
+      const isChecked = document.getElementById('chk_split_temp').checked;
+      document.getElementById('split_temp_box').style.display = isChecked ? 'block' : 'none';
+      if (!isChecked) {
+        document.getElementById('f_temp_deposit_1').value = document.getElementById('f_temp_deposit').value;
+        document.getElementById('f_temp_deposit_2').value = 0;
+      } else {
+        calcSplitTemp();
+      }
+      syncPreview();
+    }
+
+    function calcSplitTemp() {
+      const totalTemp = parseFloat(document.getElementById('f_temp_deposit').value) || 0;
+      const t2 = parseFloat(document.getElementById('f_temp_deposit_2').value) || 0;
+      const t1 = totalTemp - t2;
+      document.getElementById('f_temp_deposit_1').value = t1 >= 0 ? t1 : totalTemp;
+      syncPreview();
+    }
+
+    function calcBalance() {
+      const total = parseFloat(document.getElementById('f_total_price').value) || 0;
+      let contract = parseFloat(document.getElementById('f_contract_deposit').value) || 0;
+      const mid1 = parseFloat(document.getElementById('f_mid_payment_1').value) || 0;
+      const mid2 = parseFloat(document.getElementById('f_mid_payment_2').value) || 0;
+
+      // 계약금이 비어있으면 매매가의 약 10% 자동 제안
+      if (!contract && total > 0) {
+        contract = Math.round(total * 0.1);
+        document.getElementById('f_contract_deposit').value = contract;
+      }
+
+      const balance = total - contract - mid1 - mid2;
+      if (balance >= 0) {
+        document.getElementById('f_balance').value = balance;
+      }
+
+      updateKoreanLabels();
+      syncPreview();
+    }
+
+    function updateKoreanLabels() {
+      const total = parseFloat(document.getElementById('f_total_price').value) || 0;
+      const temp = parseFloat(document.getElementById('f_temp_deposit').value) || 0;
+      const contract = parseFloat(document.getElementById('f_contract_deposit').value) || 0;
+      const balance = parseFloat(document.getElementById('f_balance').value) || 0;
+
+      document.getElementById('lbl_total_kr').textContent = window.DealStore.numToKorean(total);
+      document.getElementById('lbl_temp_kr').textContent = window.DealStore.numToKorean(temp);
+      document.getElementById('lbl_contract_kr').textContent = window.DealStore.numToKorean(contract);
+      document.getElementById('lbl_balance_kr').textContent = window.DealStore.numToKorean(balance);
+    }
+
+    function toggleSeller2UI() {
+      const isChecked = document.getElementById('chk_seller2').checked;
+      const box = document.getElementById('seller2_box');
+      if (box) {
+        box.style.display = isChecked ? 'block' : 'none';
+      }
+      if (isChecked) {
+        const inp = document.getElementById('f_seller2_name');
+        if (inp && !inp.value) inp.focus();
+      }
+      syncPreview();
+    }
+
+    function toggleBuyer2UI() {
+      const isChecked = document.getElementById('chk_buyer2').checked;
+      const box = document.getElementById('buyer2_box');
+      if (box) {
+        box.style.display = isChecked ? 'block' : 'none';
+      }
+      if (isChecked) {
+        const inp = document.getElementById('f_buyer2_name');
+        if (inp && !inp.value) inp.focus();
+      }
+      syncPreview();
+    }
+
+    function toggleCoAgentUI() {
+      const isChecked = document.getElementById('chk_co_agent').checked;
+      document.getElementById('co_agent_box').style.display = isChecked ? 'block' : 'none';
+      syncPreview();
+    }
+
+    function applyClausePreset(key) {
+      if (CLAUSE_PRESETS[key]) {
+        document.getElementById('f_special_terms').value = CLAUSE_PRESETS[key];
+        syncPreview();
+      }
+    }
+
+    // =========================================
+    // 우측 A4 실시간 프리뷰 렌더링
+    // =========================================
+    function syncPreview() {
+      const deal = gatherDealFromForm();
+      const p = deal.property;
+      const f = deal.financial;
+      const sellers = deal.parties.sellers || [];
+      const buyers = deal.parties.buyers || [];
+      const co = deal.coAgent || {};
+
+      // ----------------- 1페이지 프리뷰 -----------------
+      document.getElementById('pv_p1_land_addr').textContent = p.landAddr || '-';
+      document.getElementById('pv_p1_land_ratio').textContent = p.landRatioStr || '-';
+      document.getElementById('pv_p1_jimok_legal').textContent = p.landCategoryLegal || '대';
+      document.getElementById('pv_p1_jimok_actual').textContent = p.landCategoryActual || '대';
+      document.getElementById('pv_p1_bld_addr').textContent = p.bldAddr || '-';
+      document.getElementById('pv_p1_exclusive_area').textContent = p.exclusiveArea || '0';
+      document.getElementById('pv_p1_bld_structure').textContent = p.bldStructure || '-';
+      document.getElementById('pv_p1_bld_usage').textContent = p.bldUsage || '-';
+
+      // 제 2조 매매약정금
+      const tempKr = window.DealStore.numToKorean(f.tempDeposit);
+      const tempNum = window.DealStore.formatNumber(f.tempDeposit);
+      document.getElementById('pv_p1_temp_kr').textContent = tempKr;
+      document.getElementById('pv_p1_temp_num').textContent = tempNum;
+      const s1Name = (sellers[0] && sellers[0].name) ? sellers[0].name : '-';
+      document.getElementById('pv_p1_receipt_name').textContent = s1Name;
+
+      // 제 3조 손해배상/위약금 텍스트 내 한글 금액 바인딩
+      document.getElementById('pv_p1_clause_temp1').textContent = tempKr;
+      document.getElementById('pv_p1_clause_temp2').textContent = tempKr;
+      document.getElementById('pv_p1_clause_temp3').textContent = tempKr;
+
+      // 날짜
+      document.getElementById('pv_p1_sign_date').textContent = window.DealStore.formatDateKorean(deal.dealDate) || '    년   월   일';
+
+      // 서명날인표 (소유자 1, 2)
+      const s1 = sellers[0] || {};
+      const s2 = sellers[1] || {};
+      document.getElementById('pv_p1_s1_name').textContent = s1.name || '-';
+      document.getElementById('pv_p1_s1_rrn').textContent = formatRrnDisplay(s1.rrn);
+      document.getElementById('pv_p1_s1_tel').textContent = s1.tel || '-';
+      document.getElementById('pv_p1_s1_addr').textContent = s1.addr || '-';
+
+      document.getElementById('pv_p1_s2_name').textContent = s2.name || '-';
+      document.getElementById('pv_p1_s2_rrn').textContent = formatRrnDisplay(s2.rrn);
+      document.getElementById('pv_p1_s2_tel').textContent = s2.tel || '-';
+      document.getElementById('pv_p1_s2_addr').textContent = s2.addr || '-';
+
+      // 서명날인표 (매수약정인 1, 2)
+      const b1 = buyers[0] || {};
+      const b2 = buyers[1] || {};
+      document.getElementById('pv_p1_b1_name').textContent = b1.name || '-';
+      document.getElementById('pv_p1_b1_rrn').textContent = formatRrnDisplay(b1.rrn);
+      document.getElementById('pv_p1_b1_tel').textContent = b1.tel || '-';
+      document.getElementById('pv_p1_b1_addr').textContent = b1.addr || '-';
+
+      document.getElementById('pv_p1_b2_name').textContent = b2.name || '-';
+      document.getElementById('pv_p1_b2_rrn').textContent = formatRrnDisplay(b2.rrn);
+      document.getElementById('pv_p1_b2_tel').textContent = b2.tel || '-';
+      document.getElementById('pv_p1_b2_addr').textContent = b2.addr || '-';
+
+      // 공동중개사 행 토글
+      if (co.enabled && co.office) {
+        document.getElementById('pv_p1_co_row1').style.display = 'table-row';
+        document.getElementById('pv_p1_co_row2').style.display = 'table-row';
+        document.getElementById('pv_p1_co_row3').style.display = 'table-row';
+        document.getElementById('pv_p1_co_addr').textContent = co.addr || '-';
+        document.getElementById('pv_p1_co_office').textContent = co.office || '-';
+        document.getElementById('pv_p1_co_reg').textContent = co.regNo || '-';
+        document.getElementById('pv_p1_co_name').textContent = co.name || '-';
+        document.getElementById('pv_p1_co_tel').textContent = co.tel || '-';
+      } else {
+        document.getElementById('pv_p1_co_row1').style.display = 'none';
+        document.getElementById('pv_p1_co_row2').style.display = 'none';
+        document.getElementById('pv_p1_co_row3').style.display = 'none';
+      }
+
+      // ----------------- 2페이지 (별지) 프리뷰 -----------------
+      document.getElementById('pv_p2_land_addr').textContent = p.landAddr || '-';
+      document.getElementById('pv_p2_land_ratio').textContent = p.landRatioStr || '-';
+      document.getElementById('pv_p2_jimok_legal').textContent = p.landCategoryLegal || '대';
+      document.getElementById('pv_p2_jimok_actual').textContent = p.landCategoryActual || '대';
+      document.getElementById('pv_p2_bld_addr').textContent = p.bldAddr || '-';
+      document.getElementById('pv_p2_exclusive_area').textContent = p.exclusiveArea || '0';
+      document.getElementById('pv_p2_bld_structure').textContent = p.bldStructure || '-';
+      document.getElementById('pv_p2_bld_usage').textContent = p.bldUsage || '-';
+
+      // 대금표
+      document.getElementById('pv_p2_total_kr').textContent = window.DealStore.numToKorean(f.totalPrice);
+      document.getElementById('pv_p2_total_num').textContent = window.DealStore.formatNumber(f.totalPrice);
+
+      document.getElementById('pv_p2_contract_kr').textContent = window.DealStore.numToKorean(f.contractDeposit);
+      document.getElementById('pv_p2_contract_num').textContent = window.DealStore.formatNumber(f.contractDeposit);
+      document.getElementById('pv_p2_contract_sched').textContent = f.contractSchedule || '-';
+
+      document.getElementById('pv_p2_mid1_kr').textContent = window.DealStore.numToKorean(f.midPayment);
+      document.getElementById('pv_p2_mid1_num').textContent = window.DealStore.formatNumber(f.midPayment);
+      document.getElementById('pv_p2_mid1_date').textContent = f.midDate || '-';
+      document.getElementById('pv_p2_mid1_note').textContent = f.midNote || '';
+
+      if (f.midPayment2 > 0) {
+        document.getElementById('pv_p2_mid2_row').style.display = 'table-row';
+        document.getElementById('pv_p2_mid2_kr').textContent = window.DealStore.numToKorean(f.midPayment2);
+        document.getElementById('pv_p2_mid2_num').textContent = window.DealStore.formatNumber(f.midPayment2);
+        document.getElementById('pv_p2_mid2_date').textContent = f.midDate2 || '-';
+        document.getElementById('pv_p2_mid2_note').textContent = f.midNote2 || '';
+      } else {
+        document.getElementById('pv_p2_mid2_row').style.display = 'none';
+      }
+
+      document.getElementById('pv_p2_balance_kr').textContent = window.DealStore.numToKorean(f.balance);
+      document.getElementById('pv_p2_balance_num').textContent = window.DealStore.formatNumber(f.balance);
+      document.getElementById('pv_p2_balance_date').textContent = f.balanceDate || '-';
+      document.getElementById('pv_p2_balance_note').textContent = f.balanceNote || '';
+
+      // 상세 특약
+      document.getElementById('pv_p2_clauses_container').textContent = f.specialTerms || '';
+
+      // 영수증 박스
+      document.getElementById('pv_rcpt_amt_kr').textContent = tempKr;
+      document.getElementById('pv_rcpt_amt_num').textContent = tempNum;
+      document.getElementById('pv_rcpt_seller_name').textContent = s1Name;
+
+      // 영수증 상세 문구 (엑셀 E30 수식 완벽 대응)
+      let rcptText = '';
+      if (f.isTempSplit && f.tempDeposit2 > 0) {
+        const d1Str = window.DealStore.formatDateKorean(f.tempDeposit1Date);
+        const a1Str = window.DealStore.numToKorean(f.tempDeposit1);
+        const d2Str = window.DealStore.formatDateKorean(f.tempDeposit2Date);
+        const a2Str = window.DealStore.numToKorean(f.tempDeposit2);
+        rcptText = `(${d1Str} ${a1Str}을 입금하고 ${d2Str} ${a2Str}을 현 소유자 ${s1Name}님 계좌로 입금함)`;
+      } else {
+        const dStr = window.DealStore.formatDateKorean(deal.dealDate);
+        rcptText = `(${dStr} ${tempKr}을 현 소유자 ${s1Name}님 계좌로 입금함)`;
+      }
+      document.getElementById('pv_rcpt_detail_text').textContent = rcptText;
+    }
+
+    // 주민번호 표시 포맷팅
+    function formatRrnDisplay(rrn) {
+      if (!rrn) return '-';
+      const clean = rrn.trim();
+      if (clean.includes('-')) {
+        const parts = clean.split('-');
+        if (parts[1] && parts[1].length > 0) {
+          return parts[0] + '-' + parts[1].substring(0, 1) + '******';
+        }
+        return parts[0] + '-*******';
+      } else if (clean.length === 13) {
+        return clean.substring(0, 6) + '-' + clean.substring(6, 7) + '******';
+      }
+      return clean;
+    }
+
+    // 저장 및 인쇄
+    function saveAndPrint() {
+      const deal = gatherDealFromForm();
+      const saved = window.DealStore.saveDeal(deal);
+      currentDealId = saved.id;
+      refreshDealDropdown();
+
+      const printTitle = window.DealStore.generateStandardFileName(saved, '매매약정서');
+      const oldTitle = document.title;
+      document.title = printTitle;
+
+      window.print();
+
+      setTimeout(() => {
+        document.title = oldTitle;
+      }, 1000);
+    }
+
+    // 토지거래허가신청서로 연동 이동
+    function goToPermitApplication() {
+      const deal = gatherDealFromForm();
+      const saved = window.DealStore.saveDeal(deal);
+      currentDealId = saved.id;
+      refreshDealDropdown();
+
+      if (confirm(`현재 거래 데이터를 저장했습니다.\n[토지거래허가신청서 8페이지 자동완성 시스템]으로 이동하시겠습니까?`)) {
+        window.location.href = `../toji-permit/index.html?dealId=${encodeURIComponent(saved.id)}`;
+      }
+    }
+
+    function exportCurrentDealJson() {
+      const deal = gatherDealFromForm();
+      const saved = window.DealStore.saveDeal(deal);
+      currentDealId = saved.id;
+      refreshDealDropdown();
+      window.DealStore.exportJson(saved.id);
+    }
+
+    function triggerImportJson() {
+      document.getElementById('file_json_import').click();
+    }
+
+    function handleFileImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      window.DealStore.importJson(file)
+        .then(result => {
+          alert(`거래 데이터 ${result.total}건을 성공적으로 불러왔습니다.`);
+          refreshDealDropdown();
+          const list = window.DealStore.listDeals();
+          if (list.length > 0) loadDealIntoForm(list[0]);
+        })
+        .catch(err => {
+          alert('JSON 가져오기 오류: ' + err.message);
+        });
+      e.target.value = '';
+    }
+  </script>
+</body>
+</html>

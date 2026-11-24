@@ -1,24 +1,62 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>공인중개사 서류·폴더 통합 관리 시스템 | Google Drive Direct</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
   <style>
-    body { font-family: 'Noto Sans KR', sans-serif; background-color: #f4f7fb; }
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    .tree-row.active { background-color: #e8f1ff; color: #1d4ed8; font-weight: 700; }
-    .drop-zone-active { border: 2px dashed #2563eb !important; background-color: #eff6ff !important; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner { animation: spin 0.7s linear infinite; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f4f7fb;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .tree-row.active {
+      background-color: #e8f1ff;
+      color: #1d4ed8;
+      font-weight: 700;
+    }
+
+    .drop-zone-active {
+      border: 2px dashed #2563eb !important;
+      background-color: #eff6ff !important;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner {
+      animation: spin 0.7s linear infinite;
+    }
   </style>
+  <script src="shared/deal-store.js"></script>
 </head>
+
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
   <!-- 상단 진행 표시 바 -->
@@ -27,18 +65,26 @@
   </div>
 
   <!-- 1. 상단 네이비 헤더 -->
-  <header class="bg-[#0b1b36] text-white px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-md z-20 shrink-0">
+  <header
+    class="bg-[#0b1b36] text-white px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-md z-20 shrink-0">
     <div class="flex items-center gap-3">
-      <button onclick="toggleMobileSidebar()" class="md:hidden p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200" title="폴더 메뉴">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <button onclick="toggleMobileSidebar()"
+        class="md:hidden p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200" title="폴더 메뉴">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
       </button>
       <div class="bg-blue-600 p-2 rounded-xl hidden sm:flex items-center justify-center shadow-inner">
-        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
       </div>
       <div>
         <div class="flex items-center gap-2 flex-wrap">
           <h1 id="headerAgencyTitle" class="text-sm sm:text-base font-bold tracking-tight">부동산이즈 두산공인중개사사무소</h1>
-          <span id="headerStatusBadge" class="text-[11px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-700/70 px-2.5 py-0.5 rounded-full">
+          <span id="headerStatusBadge"
+            class="text-[11px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-700/70 px-2.5 py-0.5 rounded-full">
             Google Drive OAuth 연결 대기 중
           </span>
         </div>
@@ -47,88 +93,181 @@
     </div>
 
     <div class="flex items-center gap-2 flex-wrap">
-      <button onclick="handleGoogleAuthClick()" id="btnGoogleAuth" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 transition shadow-sm">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+      <!-- 원스톱 부동산 거래-토지거래허가 연동 버튼군 -->
+      <a href="./agreement/index.html" target="_blank"
+        class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition shadow-sm"
+        title="매매약정서(가계약서) 작성 및 인쇄">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+        <span>📝 매매약정서 작성</span>
+      </a>
+
+      <a href="./toji-permit/index.html" target="_blank"
+        class="px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-600 hover:bg-teal-500 text-white flex items-center gap-1.5 transition shadow-sm"
+        title="안양시 동안구 토지거래계약허가신청서 8페이지 자동완성">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span>🏛️ 토지거래허가서</span>
+      </a>
+
+      <button onclick="openDealManagerModal()"
+        class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 flex items-center gap-1.5 transition"
+        title="저장된 거래 데이터 목록 및 허가서 연동 관리">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+        </svg>
+        <span>📂 거래목록 (<span id="headerDealCountBadge">0</span>)</span>
+      </button>
+
+      <button onclick="handleGoogleAuthClick()" id="btnGoogleAuth"
+        class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 transition shadow-sm">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+        </svg>
         <span id="btnGoogleAuthText">Google Drive 로그인 연결</span>
       </button>
 
-      <button onclick="initializeStandardStructure()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center gap-1.5 transition">
+      <button onclick="initializeStandardStructure()"
+        class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center gap-1.5 transition">
         <span>✨ 표준폴더 생성</span>
       </button>
 
-      <button onclick="openSettingsModal()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 flex items-center gap-1.5 transition">
+      <button onclick="openSettingsModal()"
+        class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 flex items-center gap-1.5 transition">
         <span>⚙️ 사무소 설정</span>
       </button>
 
-      <button onclick="openCloudInfoModal()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 transition shadow-sm">
+      <button onclick="openCloudInfoModal()"
+        class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 transition shadow-sm">
         <span>📱 사용·배포 안내</span>
       </button>
     </div>
   </header>
 
-  <!-- 2. 미로그인 시 원클릭 로그인 안내 배너 -->
-  <div id="authPromptBanner" class="bg-blue-50 border-b border-blue-200 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-blue-900 shrink-0">
-    <div class="flex items-center gap-2">
-      <span>🔐 <strong>Google Drive API 직접 연동 모드:</strong> 구글 계정으로 로그인하면 지정한 작업 폴더(<code id="bannerRootFolderName">부동산업무</code>)에 즉시 연결됩니다.</span>
+  <!-- 원스톱 워크플로우 상단 런처 배너 -->
+  <div
+    class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs border-b border-indigo-900/60 shadow-inner shrink-0">
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="bg-blue-600 text-[10px] font-bold px-2 py-0.5 rounded text-white shadow-xs">원스톱 연동</span>
+      <span class="font-medium text-slate-200">
+        <strong>매매약정서(가계약서)</strong> 작성부터 <strong>안양시 동안구 토지거래허가신청서(8P)</strong>까지 하나의 거래 데이터로 자동 연동됩니다.
+      </span>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick="openSettingsModal()" class="px-2.5 py-1 bg-white border border-blue-300 hover:bg-blue-100 text-blue-800 rounded-lg font-semibold">⚙️ 사무소·폴더 설정</button>
-      <button onclick="handleGoogleAuthClick()" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-xs">지금 구글 계정으로 연결</button>
+      <a href="./agreement/index.html" target="_blank"
+        class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 rounded font-bold transition flex items-center gap-1 shadow-xs text-white">
+        <span>📝 새 약정서 작성</span>
+      </a>
+      <a href="./toji-permit/index.html" target="_blank"
+        class="px-2.5 py-1 bg-teal-600 hover:bg-teal-500 rounded font-bold transition flex items-center gap-1 shadow-xs text-white">
+        <span>🏛️ 토지거래허가 8P</span>
+      </a>
+      <button onclick="openDealManagerModal()"
+        class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded font-bold transition flex items-center gap-1">
+        <span>📂 저장된 거래 (<span id="rootDealCountBadge">0</span>건)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. 미로그인 시 원클릭 로그인 안내 배너 -->
+  <div id="authPromptBanner"
+    class="bg-blue-50 border-b border-blue-200 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-blue-900 shrink-0">
+    <div class="flex items-center gap-2">
+      <span>🔐 <strong>Google Drive API 직접 연동 모드:</strong> 구글 계정으로 로그인하면 지정한 작업 폴더(<code
+          id="bannerRootFolderName">부동산업무</code>)에 즉시 연결됩니다.</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="openSettingsModal()"
+        class="px-2.5 py-1 bg-white border border-blue-300 hover:bg-blue-100 text-blue-800 rounded-lg font-semibold">⚙️
+        사무소·폴더 설정</button>
+      <button onclick="handleGoogleAuthClick()"
+        class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-xs">지금 구글 계정으로 연결</button>
     </div>
   </div>
 
   <!-- 3. 메인 레이아웃 -->
   <div class="flex-1 flex overflow-hidden relative">
-    <div id="mobileBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/50 z-20 hidden md:hidden"></div>
+    <div id="mobileBackdrop" onclick="toggleMobileSidebar()"
+      class="fixed inset-0 bg-slate-900/50 z-20 hidden md:hidden"></div>
 
     <!-- 좌측 사이드바 (선형 폴더 아이콘 탐색기) -->
-    <aside id="sidebarDrawer" class="fixed md:static inset-y-0 left-0 w-72 bg-white border-r border-slate-200 flex flex-col z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out shrink-0">
+    <aside id="sidebarDrawer"
+      class="fixed md:static inset-y-0 left-0 w-72 bg-white border-r border-slate-200 flex flex-col z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out shrink-0">
       <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
         <div class="flex items-center gap-1.5 text-xs font-bold text-blue-700 truncate">
-          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+          </svg>
           <span id="sidebarRootTitle" class="truncate">GOOGLE DRIVE (부동산업무)</span>
         </div>
-        <button onclick="refreshCurrentView(true, true)" class="text-slate-400 hover:text-blue-600 p-1 rounded transition flex items-center gap-1 text-[11px] font-semibold shrink-0" title="구글 드라이브 최신 동기화">
-          <svg id="syncSpinIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <button onclick="refreshCurrentView(true, true)"
+          class="text-slate-400 hover:text-blue-600 p-1 rounded transition flex items-center gap-1 text-[11px] font-semibold shrink-0"
+          title="구글 드라이브 최신 동기화">
+          <svg id="syncSpinIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
         </button>
       </div>
 
       <div class="px-3 py-2.5 border-b border-slate-100">
-        <button onclick="openFolderWizard(false)" class="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition">
+        <button onclick="openFolderWizard(false)"
+          class="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition">
           <span>🪄 + 새 폴더 마법사 (순차생성)</span>
         </button>
       </div>
 
       <!-- 아코디언 폴더 트리 영역 -->
-      <div id="folderTreeContainer" class="flex-1 overflow-y-auto custom-scrollbar p-2.5 space-y-0.5 text-[13px] select-none"></div>
+      <div id="folderTreeContainer"
+        class="flex-1 overflow-y-auto custom-scrollbar p-2.5 space-y-0.5 text-[13px] select-none"></div>
     </aside>
 
     <!-- 우측 메인 작업 영역 -->
     <main id="mainDropZone" class="flex-1 flex flex-col overflow-hidden bg-[#f4f7fb]">
       <!-- 상단 경로 & 액션 바 -->
-      <div class="bg-white border-b border-slate-200 px-5 py-3 flex flex-wrap items-center justify-between gap-2 shrink-0">
-        <div id="breadcrumbContainer" class="flex items-center flex-wrap gap-1.5 text-sm font-bold text-slate-800"></div>
+      <div
+        class="bg-white border-b border-slate-200 px-5 py-3 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div id="breadcrumbContainer" class="flex items-center flex-wrap gap-1.5 text-sm font-bold text-slate-800">
+        </div>
 
         <div class="flex items-center gap-2 flex-wrap">
           <span id="syncIndicatorText" class="text-[11px] text-slate-400 hidden lg:inline"></span>
           <div class="relative">
-            <input type="text" id="searchInput" oninput="renderCachedItems()" placeholder="현재 폴더 내 검색..." class="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white w-40 sm:w-52 transition" />
-            <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="searchInput" oninput="renderCachedItems()" placeholder="현재 폴더 내 검색..."
+              class="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white w-40 sm:w-52 transition" />
+            <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
 
-          <button onclick="openFolderWizard(true)" class="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
+          <button onclick="openFolderWizard(true)"
+            class="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
             <span>📁 + 새 하위폴더 (마법사)</span>
           </button>
 
-          <button onclick="openUploadModal()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <button onclick="openUploadModal()"
+            class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
             <span>서류 등록 · 이름지정</span>
           </button>
         </div>
       </div>
 
       <!-- 물건 단계 원클릭 이동 바 -->
-      <div id="stageActionBar" class="hidden bg-amber-50 border-b border-amber-200 px-5 py-2 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
+      <div id="stageActionBar"
+        class="hidden bg-amber-50 border-b border-amber-200 px-5 py-2 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
         <div class="flex items-center gap-2 text-amber-900 font-medium">
           <span>📌 물건 진행단계 빠른 이관:</span>
           <span id="stageTargetLabel" class="font-bold"></span>
@@ -137,7 +276,8 @@
       </div>
 
       <!-- 물건 폴더 내 필수 서류 자동 체크바 -->
-      <div id="docChecklistBar" class="hidden bg-white border-b border-slate-200 px-5 py-2 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
+      <div id="docChecklistBar"
+        class="hidden bg-white border-b border-slate-200 px-5 py-2 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
         <div class="flex items-center gap-1.5 text-slate-600 font-bold">
           <span>📋 필수 서류 현황:</span>
         </div>
@@ -156,7 +296,10 @@
         <section id="subfoldersSection" class="space-y-2.5">
           <div class="flex items-center justify-between">
             <h2 class="text-xs font-bold text-slate-500 flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
               <span>하위 폴더</span>
               <span id="subfolderCountBadge" class="text-slate-600">(0)</span>
             </h2>
@@ -165,8 +308,10 @@
         </section>
 
         <!-- 섹션 2: 등록된 서류 및 파일 테이블 카드 -->
-        <section id="filesSection" class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-          <div class="px-4 py-3 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2 bg-slate-50/60">
+        <section id="filesSection"
+          class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+          <div
+            class="px-4 py-3 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2 bg-slate-50/60">
             <div class="flex items-center gap-1.5 text-xs font-bold text-slate-700">
               <span>📄 등록된 서류 및 파일</span>
               <span id="fileCountBadge" class="text-blue-600">(0)</span>
@@ -174,7 +319,8 @@
             <span class="text-[11px] text-slate-400">💡 대용량 PDF·사진도 제한 없이 화면으로 드래그하여 바로 등록할 수 있습니다</span>
           </div>
 
-          <div class="hidden sm:grid grid-cols-12 px-4 py-2.5 bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500">
+          <div
+            class="hidden sm:grid grid-cols-12 px-4 py-2.5 bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500">
             <div class="col-span-5">표준 파일명</div>
             <div class="col-span-2">서류 구분</div>
             <div class="col-span-1">크기</div>
@@ -184,11 +330,15 @@
 
           <div id="emptyFilesBox" class="hidden flex-col items-center justify-center py-14 px-4 text-center">
             <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-3">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
             </div>
             <p class="text-xs font-bold text-slate-600">이 폴더에 등록된 서류가 없습니다.</p>
             <p class="text-[11px] text-slate-400 mt-1">상단 [서류 등록 · 이름지정] 버튼을 누르거나 파일을 여기로 끌어다 놓으세요.</p>
-            <button onclick="openUploadModal()" class="mt-4 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition">
+            <button onclick="openUploadModal()"
+              class="mt-4 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition">
               ↑ 첫 서류 등록하기
             </button>
           </div>
@@ -204,47 +354,57 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[92vh]">
       <div class="bg-gradient-to-r from-[#0b1b36] to-blue-900 text-white px-5 py-4 flex items-center justify-between">
         <div>
-          <span class="text-[10px] font-bold uppercase tracking-wider bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded-full">처음 오셨네요! 30초 초기 세팅</span>
+          <span
+            class="text-[10px] font-bold uppercase tracking-wider bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded-full">처음
+            오셨네요! 30초 초기 세팅</span>
           <h2 class="text-base font-bold mt-1">🏢 우리 중개사무소 맞춤 환경 설정</h2>
         </div>
-        <button onclick="closeModal('welcomeModal')" class="text-slate-300 hover:text-white text-xl leading-none">&times;</button>
+        <button onclick="closeModal('welcomeModal')"
+          class="text-slate-300 hover:text-white text-xl leading-none">&times;</button>
       </div>
 
       <div class="p-5 overflow-y-auto custom-scrollbar space-y-3.5 text-xs">
         <p class="text-slate-600 leading-relaxed">
-          공인중개사 서류·폴더 통합 관리 웹앱에 오신 것을 환영합니다.<br/>
+          공인중개사 서류·폴더 통합 관리 웹앱에 오신 것을 환영합니다.<br />
           아래 항목을 입력하시면 <strong>서류 파일명 자동 완성</strong>과 <strong>구글 드라이브 폴더 구조</strong>가 우리 사무소에 맞게 즉시 세팅됩니다.
         </p>
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">1. 중개사무소 상호명 *</label>
-          <input type="text" id="welAgencyName" placeholder="예: 행복공인중개사사무소" class="w-full border border-slate-300 rounded-xl px-3 py-2 font-semibold focus:border-blue-500 focus:outline-none" />
+          <input type="text" id="welAgencyName" placeholder="예: 행복공인중개사사무소"
+            class="w-full border border-slate-300 rounded-xl px-3 py-2 font-semibold focus:border-blue-500 focus:outline-none" />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
             <label class="block font-bold text-slate-700 mb-1">2. 주력 법정동 (쉼표 구분) *</label>
-            <input type="text" id="welDongs" placeholder="예: 호계동, 평촌동, 비산동" class="w-full border border-slate-300 rounded-xl px-3 py-2 focus:border-blue-500 focus:outline-none" />
+            <input type="text" id="welDongs" placeholder="예: 호계동, 평촌동, 비산동"
+              class="w-full border border-slate-300 rounded-xl px-3 py-2 focus:border-blue-500 focus:outline-none" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">3. 주력 아파트·단지명 (쉼표 구분)</label>
-            <input type="text" id="welComplexes" placeholder="예: 목련두산, 꿈마을건영" class="w-full border border-slate-300 rounded-xl px-3 py-2 focus:border-blue-500 focus:outline-none" />
+            <input type="text" id="welComplexes" placeholder="예: 목련두산, 꿈마을건영"
+              class="w-full border border-slate-300 rounded-xl px-3 py-2 focus:border-blue-500 focus:outline-none" />
           </div>
         </div>
 
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
           <label class="block font-bold text-slate-800">4. Google Drive 작업 폴더 지정 (선택)</label>
           <p class="text-[11px] text-slate-500 leading-relaxed">
-            비워두시면 내 드라이브 최상위에 <strong>[부동산업무]</strong> 폴더가 자동 생성됩니다.<br/>
+            비워두시면 내 드라이브 최상위에 <strong>[부동산업무]</strong> 폴더가 자동 생성됩니다.<br />
             이미 사용 중인 특정 폴더를 연결하려면 구글 드라이브에서 해당 폴더를 연 뒤 <strong>주소창 URL 또는 폴더 ID</strong>를 붙여넣으세요.
           </p>
-          <input type="text" id="welCustomFolderInput" placeholder="예: https://drive.google.com/drive/folders/1AbCdEfG... (비우면 자동생성)" class="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-[11px] bg-white" />
+          <input type="text" id="welCustomFolderInput"
+            placeholder="예: https://drive.google.com/drive/folders/1AbCdEfG... (비우면 자동생성)"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-[11px] bg-white" />
         </div>
       </div>
 
       <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
-        <button onclick="skipWelcomeSetup()" class="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800">기본값으로 건너뛰기</button>
-        <button onclick="completeWelcomeSetup()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5">
+        <button onclick="skipWelcomeSetup()" class="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800">기본값으로
+          건너뛰기</button>
+        <button onclick="completeWelcomeSetup()"
+          class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5">
           <span>✓ 설정 저장 후 Google Drive 연결</span>
         </button>
       </div>
@@ -259,35 +419,43 @@
           <span>📁 표준 폴더 생성 마법사</span>
           <span id="wizardStepBadge" class="text-[11px] bg-blue-600 px-2 py-0.5 rounded-full">1 / 3 단계</span>
         </h2>
-        <button onclick="closeModal('wizardModal')" class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
+        <button onclick="closeModal('wizardModal')"
+          class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
       </div>
 
       <div class="p-5 overflow-y-auto custom-scrollbar space-y-4 text-xs">
         <div id="wizardStep1" class="space-y-3">
           <p class="font-bold text-slate-700 text-sm">어떤 용도의 폴더를 만드시겠습니까?</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <label class="border-2 border-blue-500 bg-blue-50/50 rounded-xl p-3 cursor-pointer flex items-start gap-2.5" onclick="selectWizardType('property', this)">
+            <label class="border-2 border-blue-500 bg-blue-50/50 rounded-xl p-3 cursor-pointer flex items-start gap-2.5"
+              onclick="selectWizardType('property', this)">
               <input type="radio" name="wizardType" value="property" checked class="mt-0.5" />
               <div>
                 <div class="font-bold text-slate-800">🏠 신규 매물 · 계약 물건</div>
                 <div class="text-[11px] text-slate-500 mt-0.5">YYYYMMDD_단지명_동 호수_유형 + 단계별 서류폴더 자동생성</div>
               </div>
             </label>
-            <label class="border border-slate-200 hover:border-blue-300 rounded-xl p-3 cursor-pointer flex items-start gap-2.5" onclick="selectWizardType('loan', this)">
+            <label
+              class="border border-slate-200 hover:border-blue-300 rounded-xl p-3 cursor-pointer flex items-start gap-2.5"
+              onclick="selectWizardType('loan', this)">
               <input type="radio" name="wizardType" value="loan" class="mt-0.5" />
               <div>
                 <div class="font-bold text-slate-800">🏦 담보·전세대출 상담 고객</div>
                 <div class="text-[11px] text-slate-500 mt-0.5">YYYYMMDD_고객명_단지명_은행 + 대출서류폴더 자동생성</div>
               </div>
             </label>
-            <label class="border border-slate-200 hover:border-blue-300 rounded-xl p-3 cursor-pointer flex items-start gap-2.5" onclick="selectWizardType('period', this)">
+            <label
+              class="border border-slate-200 hover:border-blue-300 rounded-xl p-3 cursor-pointer flex items-start gap-2.5"
+              onclick="selectWizardType('period', this)">
               <input type="radio" name="wizardType" value="period" class="mt-0.5" />
               <div>
                 <div class="font-bold text-slate-800">📅 연도 · 월별 보관 폴더</div>
                 <div class="text-[11px] text-slate-500 mt-0.5">거래완료 보관함이나 세무자료 연도별 정리용</div>
               </div>
             </label>
-            <label class="border border-slate-200 hover:border-blue-300 rounded-xl p-3 cursor-pointer flex items-start gap-2.5" onclick="selectWizardType('custom', this)">
+            <label
+              class="border border-slate-200 hover:border-blue-300 rounded-xl p-3 cursor-pointer flex items-start gap-2.5"
+              onclick="selectWizardType('custom', this)">
               <input type="radio" name="wizardType" value="custom" class="mt-0.5" />
               <div>
                 <div class="font-bold text-slate-800">📂 일반 표준 하위폴더</div>
@@ -302,7 +470,8 @@
             <div class="grid grid-cols-2 gap-2.5">
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">접수일 (YYYYMMDD) *</label>
-                <input type="text" id="wizPropDate" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono" />
+                <input type="text" id="wizPropDate"
+                  class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono" />
               </div>
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">거래 유형 *</label>
@@ -318,12 +487,14 @@
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">단지명 / 건물명 *</label>
-              <input type="text" id="wizPropComplex" placeholder="단지명 또는 건물명 입력" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+              <input type="text" id="wizPropComplex" placeholder="단지명 또는 건물명 입력"
+                class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
               <div id="wizComplexQuickBtns" class="flex flex-wrap gap-1 mt-1.5"></div>
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">동 · 호수 *</label>
-              <input type="text" id="wizPropUnit" placeholder="예: 601동 601호" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+              <input type="text" id="wizPropUnit" placeholder="예: 601동 601호"
+                class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
             </div>
           </div>
 
@@ -331,21 +502,25 @@
             <div class="grid grid-cols-2 gap-2.5">
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">상담일 (YYYYMMDD) *</label>
-                <input type="text" id="wizLoanDate" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono" />
+                <input type="text" id="wizLoanDate"
+                  class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono" />
               </div>
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">고객 성함 *</label>
-                <input type="text" id="wizLoanClient" placeholder="예: 홍길동" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+                <input type="text" id="wizLoanClient" placeholder="예: 홍길동"
+                  class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
               </div>
             </div>
             <div class="grid grid-cols-2 gap-2.5">
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">담보 물건지 *</label>
-                <input type="text" id="wizLoanComplex" placeholder="예: 목련두산_601동 601호" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+                <input type="text" id="wizLoanComplex" placeholder="예: 목련두산_601동 601호"
+                  class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
               </div>
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">진행 금융기관</label>
-                <input type="text" id="wizLoanBank" placeholder="예: 하나은행, 신한은행" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+                <input type="text" id="wizLoanBank" placeholder="예: 하나은행, 신한은행"
+                  class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
               </div>
             </div>
           </div>
@@ -354,11 +529,13 @@
             <div class="grid grid-cols-2 gap-2.5">
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">연도 *</label>
-                <input type="text" id="wizPeriodYear" value="2026년" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+                <input type="text" id="wizPeriodYear" value="2026년"
+                  class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
               </div>
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">구분명 *</label>
-                <input type="text" id="wizPeriodLabel" placeholder="예: 거래완료, 상반기_매매" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+                <input type="text" id="wizPeriodLabel" placeholder="예: 거래완료, 상반기_매매"
+                  class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
               </div>
             </div>
           </div>
@@ -367,11 +544,13 @@
             <div class="grid grid-cols-3 gap-2">
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">정렬번호</label>
-                <input type="text" id="wizCustomNum" placeholder="01" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+                <input type="text" id="wizCustomNum" placeholder="01"
+                  class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
               </div>
               <div class="col-span-2">
                 <label class="block font-semibold text-slate-700 mb-1">폴더 이름 *</label>
-                <input type="text" id="wizCustomName" placeholder="예: 특약모음집, 현장사진" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
+                <input type="text" id="wizCustomName" placeholder="예: 특약모음집, 현장사진"
+                  class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5" />
               </div>
             </div>
           </div>
@@ -392,11 +571,17 @@
       </div>
 
       <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-        <button id="btnWizPrev" onclick="wizardPrev()" class="hidden px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100">◀ 이전</button>
+        <button id="btnWizPrev" onclick="wizardPrev()"
+          class="hidden px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100">◀
+          이전</button>
         <div class="ml-auto flex items-center gap-2">
-          <button onclick="closeModal('wizardModal')" class="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800">취소</button>
-          <button id="btnWizNext" onclick="wizardNext()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold">다음 단계 ▶</button>
-          <button id="btnWizFinish" onclick="executeWizardCreate()" class="hidden px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold">✓ 구글 드라이브에 생성</button>
+          <button onclick="closeModal('wizardModal')"
+            class="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800">취소</button>
+          <button id="btnWizNext" onclick="wizardNext()"
+            class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold">다음 단계 ▶</button>
+          <button id="btnWizFinish" onclick="executeWizardCreate()"
+            class="hidden px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold">✓ 구글
+            드라이브에 생성</button>
         </div>
       </div>
     </div>
@@ -407,13 +592,15 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
       <div class="bg-blue-700 text-white px-5 py-3.5 flex items-center justify-between">
         <h2 class="text-sm font-bold">📄 서류 등록 및 표준 파일명 자동 지정</h2>
-        <button onclick="closeModal('uploadModal')" class="text-blue-200 hover:text-white text-lg leading-none">&times;</button>
+        <button onclick="closeModal('uploadModal')"
+          class="text-blue-200 hover:text-white text-lg leading-none">&times;</button>
       </div>
 
       <div class="p-5 overflow-y-auto custom-scrollbar space-y-3.5 text-xs">
         <div>
           <label class="block font-semibold text-slate-700 mb-1">1. 등록할 파일 선택 (PDF, 이미지, 문서 등) *</label>
-          <input type="file" id="fileInputElem" onchange="handleFileSelected(this.files)" class="w-full border border-slate-300 rounded-lg p-2 bg-slate-50 text-xs" />
+          <input type="file" id="fileInputElem" onchange="handleFileSelected(this.files)"
+            class="w-full border border-slate-300 rounded-lg p-2 bg-slate-50 text-xs" />
           <div class="flex items-center justify-between mt-1.5">
             <p id="selectedFileInfo" class="text-[11px] text-slate-500"></p>
             <label class="flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer">
@@ -426,16 +613,28 @@
         <div class="space-y-1.5">
           <label class="block font-semibold text-slate-700">2. 표준 서류명 퀵 선택 (클릭 시 서류명 자동 입력)</label>
           <div class="flex flex-wrap gap-1.5">
-            <button type="button" onclick="applyQuickDocName('등기부등본_계약당일')" class="px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 rounded font-medium">등기부(계약당일)</button>
-            <button type="button" onclick="applyQuickDocName('등기부등본_잔금당일')" class="px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 rounded font-medium">등기부(잔금당일)</button>
-            <button type="button" onclick="applyQuickDocName('건축물대장_전유부')" class="px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 rounded font-medium">건축물대장</button>
-            <button type="button" onclick="applyQuickDocName('매도인_신분증사본')" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded font-medium">매도인 신분증</button>
-            <button type="button" onclick="applyQuickDocName('매수인_신분증사본')" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded font-medium">매수인 신분증</button>
-            <button type="button" onclick="applyQuickDocName('매매계약서_날인본')" class="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded font-medium">매매계약서</button>
-            <button type="button" onclick="applyQuickDocName('임대차계약서_날인본')" class="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded font-medium">임대차계약서</button>
-            <button type="button" onclick="applyQuickDocName('중개대상물_확인설명서')" class="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded font-medium">확인·설명서</button>
-            <button type="button" onclick="applyQuickDocName('거래신고필증')" class="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded font-medium">거래신고필증</button>
-            <button type="button" onclick="applyQuickDocName('이체확인증_영수증')" class="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded font-medium">이체확인증</button>
+            <button type="button" onclick="applyQuickDocName('등기부등본_계약당일')"
+              class="px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 rounded font-medium">등기부(계약당일)</button>
+            <button type="button" onclick="applyQuickDocName('등기부등본_잔금당일')"
+              class="px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 rounded font-medium">등기부(잔금당일)</button>
+            <button type="button" onclick="applyQuickDocName('건축물대장_전유부')"
+              class="px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 rounded font-medium">건축물대장</button>
+            <button type="button" onclick="applyQuickDocName('매도인_신분증사본')"
+              class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded font-medium">매도인
+              신분증</button>
+            <button type="button" onclick="applyQuickDocName('매수인_신분증사본')"
+              class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded font-medium">매수인
+              신분증</button>
+            <button type="button" onclick="applyQuickDocName('매매계약서_날인본')"
+              class="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded font-medium">매매계약서</button>
+            <button type="button" onclick="applyQuickDocName('임대차계약서_날인본')"
+              class="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded font-medium">임대차계약서</button>
+            <button type="button" onclick="applyQuickDocName('중개대상물_확인설명서')"
+              class="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded font-medium">확인·설명서</button>
+            <button type="button" onclick="applyQuickDocName('거래신고필증')"
+              class="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded font-medium">거래신고필증</button>
+            <button type="button" onclick="applyQuickDocName('이체확인증_영수증')"
+              class="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded font-medium">이체확인증</button>
           </div>
         </div>
 
@@ -448,11 +647,13 @@
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block font-semibold text-slate-700 mb-1">발급·등록일 (YYYYMMDD)</label>
-              <input type="text" id="docDatePrefix" oninput="updateFinalFileNamePreview()" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono bg-white" />
+              <input type="text" id="docDatePrefix" oninput="updateFinalFileNamePreview()"
+                class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono bg-white" />
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">법정동</label>
-              <input type="text" id="docDong" oninput="updateFinalFileNamePreview()" placeholder="법정동 입력" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
+              <input type="text" id="docDong" oninput="updateFinalFileNamePreview()" placeholder="법정동 입력"
+                class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
               <div id="docDongQuickBtns" class="flex flex-wrap gap-1 mt-1"></div>
             </div>
           </div>
@@ -460,17 +661,20 @@
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block font-semibold text-slate-700 mb-1">단지명 / 건물명</label>
-              <input type="text" id="docComplex" oninput="updateFinalFileNamePreview()" placeholder="단지명" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
+              <input type="text" id="docComplex" oninput="updateFinalFileNamePreview()" placeholder="단지명"
+                class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">동 · 호수</label>
-              <input type="text" id="docUnit" oninput="updateFinalFileNamePreview()" placeholder="예: 601동 601호" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
+              <input type="text" id="docUnit" oninput="updateFinalFileNamePreview()" placeholder="예: 601동 601호"
+                class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
             </div>
           </div>
 
           <div>
             <label class="block font-semibold text-slate-700 mb-1">서류명 · 구분 (확장자 제외) *</label>
-            <input type="text" id="docBaseName" oninput="updateFinalFileNamePreview()" placeholder="예: 등기부등본_계약당일" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
+            <input type="text" id="docBaseName" oninput="updateFinalFileNamePreview()" placeholder="예: 등기부등본_계약당일"
+              class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white" />
           </div>
         </div>
 
@@ -481,8 +685,11 @@
       </div>
 
       <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
-        <button onclick="closeModal('uploadModal')" class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900">취소</button>
-        <button onclick="executeFileUpload()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm">구글 드라이브에 업로드</button>
+        <button onclick="closeModal('uploadModal')"
+          class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900">취소</button>
+        <button onclick="executeFileUpload()"
+          class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm">구글 드라이브에
+          업로드</button>
       </div>
     </div>
   </div>
@@ -494,35 +701,42 @@
         <h2 class="text-sm font-bold flex items-center gap-2">
           <span>⚙️ 사무소 맞춤형 환경설정 (상호 · 작업폴더 지정 · 템플릿)</span>
         </h2>
-        <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
+        <button onclick="closeModal('settingsModal')"
+          class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
       </div>
 
       <div class="p-5 overflow-y-auto custom-scrollbar space-y-4 text-xs">
         <div>
           <label class="block font-bold text-slate-700 mb-1">1. 중개사무소 상호명 *</label>
-          <input type="text" id="cfgAgencyName" placeholder="예: 부동산이즈 두산공인중개사사무소" class="w-full border border-slate-300 rounded-lg px-3 py-2 font-semibold" />
+          <input type="text" id="cfgAgencyName" placeholder="예: 부동산이즈 두산공인중개사사무소"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 font-semibold" />
         </div>
 
         <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-3.5 space-y-2.5">
           <label class="block font-bold text-blue-950">2. Google Drive 작업 폴더 위치 지정 *</label>
           <div class="flex flex-wrap gap-4">
             <label class="flex items-center gap-1.5 cursor-pointer font-semibold text-slate-700">
-              <input type="radio" name="cfgRootMode" value="auto" onchange="toggleCfgRootModeUI()" checked class="text-blue-600" />
+              <input type="radio" name="cfgRootMode" value="auto" onchange="toggleCfgRootModeUI()" checked
+                class="text-blue-600" />
               <span>내 드라이브 최상위에 폴더명 자동 생성/연결</span>
             </label>
             <label class="flex items-center gap-1.5 cursor-pointer font-semibold text-blue-800">
-              <input type="radio" name="cfgRootMode" value="customId" onchange="toggleCfgRootModeUI()" class="text-blue-600" />
+              <input type="radio" name="cfgRootMode" value="customId" onchange="toggleCfgRootModeUI()"
+                class="text-blue-600" />
               <span>기존 Google Drive 폴더 링크(URL) 또는 ID 직접 지정</span>
             </label>
           </div>
 
           <div id="cfgRootAutoBox">
-            <input type="text" id="cfgRootFolderName" placeholder="예: 부동산업무" class="w-full border border-slate-300 rounded-lg px-3 py-2 font-semibold bg-white" />
+            <input type="text" id="cfgRootFolderName" placeholder="예: 부동산업무"
+              class="w-full border border-slate-300 rounded-lg px-3 py-2 font-semibold bg-white" />
             <p class="text-[11px] text-slate-500 mt-1">구글 드라이브 루트(내 드라이브) 바로 아래에서 위 이름의 폴더를 찾고, 없으면 자동 생성합니다.</p>
           </div>
 
           <div id="cfgRootCustomBox" class="hidden space-y-1.5">
-            <input type="text" id="cfgCustomFolderUrl" placeholder="예: https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz 또는 폴더 ID" class="w-full border border-blue-300 rounded-lg px-3 py-2 font-mono text-[11px] bg-white" />
+            <input type="text" id="cfgCustomFolderUrl"
+              placeholder="예: https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz 또는 폴더 ID"
+              class="w-full border border-blue-300 rounded-lg px-3 py-2 font-mono text-[11px] bg-white" />
             <p class="text-[11px] text-blue-800 leading-relaxed">
               💡 구글 드라이브 웹에서 원하는 기존 폴더(깊은 하위폴더도 가능)에 들어간 뒤 <strong>브라우저 주소창의 URL을 그대로 복사해 붙여넣으세요.</strong>
             </p>
@@ -532,41 +746,53 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">3. 기본 법정동 (첫 번째가 기본값, 쉼표 구분)</label>
-            <input type="text" id="cfgDongs" placeholder="호계동, 평촌동, 비산동, 관양동" class="w-full border border-slate-300 rounded-lg px-3 py-2" />
+            <input type="text" id="cfgDongs" placeholder="호계동, 평촌동, 비산동, 관양동"
+              class="w-full border border-slate-300 rounded-lg px-3 py-2" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">4. 주력 단지명 퀵버튼 목록 (쉼표 구분)</label>
-            <input type="text" id="cfgComplexes" placeholder="목련두산, 꿈마을건영, 한가람세경, 귀인마을현대" class="w-full border border-slate-300 rounded-lg px-3 py-2" />
+            <input type="text" id="cfgComplexes" placeholder="목련두산, 꿈마을건영, 한가람세경, 귀인마을현대"
+              class="w-full border border-slate-300 rounded-lg px-3 py-2" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">5. 매물접수 시 자동 생성 하위폴더 (줄바꿈 구분)</label>
-            <textarea id="cfgPropSubfolders" rows="5" class="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-[11px] leading-relaxed"></textarea>
+            <textarea id="cfgPropSubfolders" rows="5"
+              class="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-[11px] leading-relaxed"></textarea>
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">6. 대출상담 시 자동 생성 하위폴더 (줄바꿈 구분)</label>
-            <textarea id="cfgLoanSubfolders" rows="5" class="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-[11px] leading-relaxed"></textarea>
+            <textarea id="cfgLoanSubfolders" rows="5"
+              class="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-[11px] leading-relaxed"></textarea>
           </div>
         </div>
 
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
+        <div
+          class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
           <div class="text-[11px] text-slate-600 font-semibold">📦 설정 백업 · 타 PC/사무소 이관:</div>
           <div class="flex items-center gap-2">
-            <button type="button" onclick="exportConfigJson()" class="px-2.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg font-semibold text-slate-700">설정 파일 내보내기 (.json)</button>
-            <label class="px-2.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg font-semibold text-slate-700 cursor-pointer">
+            <button type="button" onclick="exportConfigJson()"
+              class="px-2.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg font-semibold text-slate-700">설정
+              파일 내보내기 (.json)</button>
+            <label
+              class="px-2.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg font-semibold text-slate-700 cursor-pointer">
               <span>설정 불러오기</span>
               <input type="file" accept=".json" onchange="importConfigJson(this.files)" class="hidden" />
             </label>
-            <button type="button" onclick="resetDefaultConfig()" class="px-2.5 py-1.5 text-rose-600 hover:underline text-[11px]">초기값 복원</button>
+            <button type="button" onclick="resetDefaultConfig()"
+              class="px-2.5 py-1.5 text-rose-600 hover:underline text-[11px]">초기값 복원</button>
           </div>
         </div>
       </div>
 
       <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
-        <button onclick="closeModal('settingsModal')" class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900">취소</button>
-        <button onclick="saveSettingsFromModal()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm">설정 저장 및 즉시 적용</button>
+        <button onclick="closeModal('settingsModal')"
+          class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900">취소</button>
+        <button onclick="saveSettingsFromModal()"
+          class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm">설정 저장 및 즉시
+          적용</button>
       </div>
     </div>
   </div>
@@ -576,7 +802,8 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
       <div class="bg-indigo-700 text-white px-5 py-3.5 flex items-center justify-between">
         <h2 class="text-sm font-bold">📱 Google Drive API 연동 및 타 사무소 배포 안내</h2>
-        <button onclick="closeModal('cloudInfoModal')" class="text-indigo-200 hover:text-white text-lg leading-none">&times;</button>
+        <button onclick="closeModal('cloudInfoModal')"
+          class="text-indigo-200 hover:text-white text-lg leading-none">&times;</button>
       </div>
 
       <div class="p-5 overflow-y-auto custom-scrollbar space-y-4 text-xs">
@@ -590,15 +817,18 @@
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
           <div class="font-bold text-slate-800">🏢 다른 공인중개사사무소에 배포하는 방법</div>
           <ol class="list-decimal list-inside text-slate-600 space-y-1 leading-relaxed">
-            <li>Google Cloud Console의 <strong>OAuth 동의 화면 ➔ 대상</strong>에서 <strong>[앱 게시 (Publish App)]</strong>를 눌러 전체 사용자에게 오픈합니다.</li>
+            <li>Google Cloud Console의 <strong>OAuth 동의 화면 ➔ 대상</strong>에서 <strong>[앱 게시 (Publish App)]</strong>를 눌러 전체
+              사용자에게 오픈합니다.</li>
             <li>배포받을 사무소에 웹앱 주소(<code>https://sangho-yu.github.io/realty-manager/</code>)를 공유합니다.</li>
-            <li>처음 접속한 사용자에게는 <strong>초기 설정 팝업</strong>이 자동으로 열려 상호명·법정동·주력 단지 및 작업 폴더를 바로 지정하고 구글 로그인만으로 즉시 사용할 수 있습니다.</li>
+            <li>처음 접속한 사용자에게는 <strong>초기 설정 팝업</strong>이 자동으로 열려 상호명·법정동·주력 단지 및 작업 폴더를 바로 지정하고 구글 로그인만으로 즉시 사용할 수 있습니다.
+            </li>
           </ol>
         </div>
       </div>
 
       <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
-        <button onclick="closeModal('cloudInfoModal')" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold">확인</button>
+        <button onclick="closeModal('cloudInfoModal')"
+          class="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold">확인</button>
       </div>
     </div>
   </div>
@@ -608,12 +838,14 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden text-xs">
       <div class="bg-slate-800 text-white px-5 py-3 flex items-center justify-between">
         <h3 id="actionModalTitle" class="font-bold text-sm">항목 수정</h3>
-        <button onclick="closeModal('actionModal')" class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
+        <button onclick="closeModal('actionModal')"
+          class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
       </div>
       <div id="actionModalBody" class="p-5 space-y-3"></div>
       <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
         <button onclick="closeModal('actionModal')" class="px-3 py-1.5 text-slate-600">취소</button>
-        <button id="actionModalConfirmBtn" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold">확인</button>
+        <button id="actionModalConfirmBtn"
+          class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold">확인</button>
       </div>
     </div>
   </div>
@@ -624,9 +856,12 @@
       <div class="bg-[#0b1b36] text-white px-5 py-3 flex items-center justify-between shrink-0">
         <h3 id="previewFileName" class="text-sm font-bold truncate pr-4">파일 미리보기</h3>
         <div class="flex items-center gap-2 shrink-0">
-          <a id="previewDriveLinkBtn" href="#" target="_blank" class="hidden px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold">구글 드라이브에서 열기</a>
-          <a id="previewDownloadBtn" href="#" download class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold">다운로드</a>
-          <button onclick="closeModal('previewModal')" class="text-slate-400 hover:text-white text-xl leading-none px-1">&times;</button>
+          <a id="previewDriveLinkBtn" href="#" target="_blank"
+            class="hidden px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold">구글 드라이브에서 열기</a>
+          <a id="previewDownloadBtn" href="#" download
+            class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold">다운로드</a>
+          <button onclick="closeModal('previewModal')"
+            class="text-slate-400 hover:text-white text-xl leading-none px-1">&times;</button>
         </div>
       </div>
       <div id="previewContentArea" class="flex-1 bg-slate-100 flex items-center justify-center overflow-auto p-4"></div>
@@ -688,7 +923,7 @@
           localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(DEFAULT_CONFIG));
           return { isNewUser: false, config: { ...DEFAULT_CONFIG } };
         }
-      } catch (e) {}
+      } catch (e) { }
       return { isNewUser: true, config: { ...DEFAULT_CONFIG } };
     }
 
@@ -899,7 +1134,7 @@
       });
 
       if (localStorage.getItem('doosan_oauth_connected') === '1') {
-        try { tokenClient.requestAccessToken({ prompt: '' }); } catch (e) {}
+        try { tokenClient.requestAccessToken({ prompt: '' }); } catch (e) { }
       }
     }
 
@@ -996,6 +1231,7 @@
 
         appState.currentPath = [];
         await refreshCurrentView(true, false);
+        syncDealsWithGoogleDrive(true).catch(e => console.warn('Auto deal sync failed:', e));
       } catch (err) {
         alert("Google Drive 작업 폴더 연결 오류: " + err.message);
         setBackgroundSyncing(false, false);
@@ -1062,7 +1298,7 @@
       if (!appState.rootFolderId) {
         const cachedTreeRaw = localStorage.getItem(CACHE_KEY_TREE);
         if (cachedTreeRaw) {
-          try { appState.cachedTree = JSON.parse(cachedTreeRaw); renderSidebarTree(); } catch (e) {}
+          try { appState.cachedTree = JSON.parse(cachedTreeRaw); renderSidebarTree(); } catch (e) { }
         }
         return;
       }
@@ -1074,14 +1310,14 @@
 
       let hasInstant = false;
       if (cachedTreeRaw) {
-        try { appState.cachedTree = JSON.parse(cachedTreeRaw); renderSidebarTree(); } catch (e) {}
+        try { appState.cachedTree = JSON.parse(cachedTreeRaw); renderSidebarTree(); } catch (e) { }
       }
       if (cachedListRaw && !forceBlocking) {
         try {
           appState.cachedItems = JSON.parse(cachedListRaw);
           renderCachedItems();
           hasInstant = true;
-        } catch (e) {}
+        } catch (e) { }
       }
 
       setBackgroundSyncing(true, !hasInstant, "Google Drive API에서 목록을 불러오는 중...");
@@ -1200,8 +1436,8 @@
           const arrowHtml = hasKids
             ? `<span onclick="toggleTreeExpand('${idPathStr}', event)" class="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-800 rounded hover:bg-slate-200/70 transition">
                 ${isExpanded
-                  ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>'
-                  : '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>'}
+              ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>'
+              : '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>'}
                </span>`
             : `<span class="w-4 h-4 inline-block shrink-0"></span>`;
 
@@ -1902,9 +2138,473 @@
       m.classList.remove('flex');
     }
 
+    // =========================================================================
+    // 거래 관리 및 원스톱 파이프라인 (Step 3, Step 4, Step 5)
+    // =========================================================================
+    let currentDealStageFilter = 'all';
+
+    function updateDealCountBadges() {
+      if (!window.DealStore) return;
+      const deals = window.DealStore.listDeals();
+      const count = deals.length;
+
+      const headerBadge = document.getElementById('headerDealCountBadge');
+      if (headerBadge) headerBadge.textContent = count;
+      const rootBadge = document.getElementById('rootDealCountBadge');
+      if (rootBadge) rootBadge.textContent = count;
+
+      const counts = {
+        all: count,
+        agreement_signed: 0,
+        permit_submitted: 0,
+        permit_approved: 0,
+        contract_signed: 0,
+        deal_completed: 0
+      };
+
+      deals.forEach(d => {
+        const s = d.status || 'agreement_signed';
+        if (counts[s] !== undefined) counts[s]++;
+      });
+
+      for (const [k, v] of Object.entries(counts)) {
+        const el = document.getElementById(`filterCount_${k}`);
+        if (el) el.textContent = v;
+      }
+    }
+
+    function openDealManagerModal() {
+      updateDealCountBadges();
+      updateSyncStatusTextUI();
+      renderDealListInModal();
+      openModal('dealManagerModal');
+    }
+
+    function updateSyncStatusTextUI() {
+      const syncStatusEl = document.getElementById('dealModalSyncStatusText');
+      if (!syncStatusEl) return;
+      const lastSync = localStorage.getItem('realty_last_drive_sync');
+      if (lastSync) {
+        const timeStr = new Date(lastSync).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+        syncStatusEl.innerHTML = `<span class="text-emerald-600 font-bold">☁️ Drive 동기화됨 (${timeStr})</span>`;
+      } else {
+        syncStatusEl.innerHTML = `<span class="text-slate-500">💾 로컬 브라우저 저장됨</span>`;
+      }
+    }
+
+    function setDealStageFilter(filterKey) {
+      currentDealStageFilter = filterKey;
+      document.querySelectorAll('.deal-filter-tab').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-xs');
+        btn.classList.add('bg-white', 'text-slate-700', 'border', 'border-slate-300');
+      });
+      const activeBtn = document.getElementById(`dealFilterTab_${filterKey}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-slate-700', 'border', 'border-slate-300');
+        activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-xs');
+      }
+      renderDealListInModal();
+    }
+
+    function renderDealListInModal() {
+      const container = document.getElementById('dealListContainer');
+      if (!container || !window.DealStore) return;
+
+      const allDeals = window.DealStore.listDeals();
+      const filtered = currentDealStageFilter === 'all'
+        ? allDeals
+        : allDeals.filter(d => (d.status || 'agreement_signed') === currentDealStageFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="py-12 px-4 text-center bg-white rounded-2xl border border-slate-200">
+            <div class="w-12 h-12 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <h3 class="text-sm font-bold text-slate-700">해당 단계에 등록된 거래 내역이 없습니다</h3>
+            <p class="text-xs text-slate-500 mt-1 mb-4">새로운 매매약정서를 작성하거나 샘플 데이터를 생성해 보세요.</p>
+            <div class="flex items-center justify-center gap-2">
+              <a href="./agreement/index.html" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow-xs">
+                ✨ 새 매매약정서 작성하기
+              </a>
+              <button onclick="createSampleDealInModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition border border-slate-300">
+                샘플 거래 생성
+              </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const stages = window.DealStore.DEAL_STAGES || {};
+
+      container.innerHTML = filtered.map(deal => {
+        const stageKey = deal.status || 'agreement_signed';
+        const stageInfo = stages[stageKey] || { label: '가계약', color: '#d97706', bgColor: '#fef3c7', nextAction: '신청서 작성' };
+
+        // D-Day 계산 (허가완료 상태인 경우)
+        const dDayInfo = window.DealStore.getPermitDDay ? window.DealStore.getPermitDDay(deal) : null;
+
+        // 주요 당사자
+        const sellerNames = (deal.parties && deal.parties.sellers)
+          ? deal.parties.sellers.map(s => s.name).filter(Boolean).join(', ')
+          : '매도인 미정';
+        const buyerNames = (deal.parties && deal.parties.buyers)
+          ? deal.parties.buyers.map(b => b.name).filter(Boolean).join(', ')
+          : '매수인 미정';
+
+        const p = deal.property || {};
+        const f = deal.financial || {};
+        const permit = deal.permit || {};
+
+        const complexText = p.complex || p.bldAddr || '단지명 미지정';
+        const unitText = (p.dongNum ? `${p.dongNum}동 ` : '') + (p.hoNum ? `${p.hoNum}호` : '');
+        const titleText = `${complexText} ${unitText}`.trim() || deal.title || '부동산 거래';
+
+        // 금액 포맷
+        const priceStr = f.totalPrice ? window.DealStore.formatNumber(f.totalPrice) + '원' : '-';
+        const depositStr = f.tempDeposit ? window.DealStore.formatNumber(f.tempDeposit) + '원' : '-';
+        const balanceStr = f.balance ? window.DealStore.formatNumber(f.balance) + '원' : '-';
+
+        return `
+          <div class="bg-white border border-slate-200 hover:border-blue-400 rounded-2xl p-4 shadow-xs transition space-y-3">
+            <!-- 1. 헤더: 물건명 & 상태 뱃지 & 거래일 -->
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                  <span class="text-blue-600">🏠</span>
+                  <span>${titleText}</span>
+                </span>
+                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full" style="color:${stageInfo.color}; background-color:${stageInfo.bgColor}; border:1px solid ${stageInfo.color}40;">
+                  ${stageInfo.label}
+                </span>
+                ${dDayInfo ? `
+                  <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${dDayInfo.isOverdue ? 'bg-red-100 text-red-700 border border-red-300 animate-pulse' : (dDayInfo.isDueToday ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300')}">
+                    ★ 본계약 기한: ${dDayInfo.remainingDays >= 0 ? `D-${dDayInfo.remainingDays}일 남음` : `${Math.abs(dDayInfo.remainingDays)}일 초과`}
+                  </span>
+                ` : ''}
+              </div>
+              <div class="text-[11px] text-slate-400 flex items-center gap-2">
+                <span>약정일: <strong class="text-slate-600">${deal.dealDate || '-'}</strong></span>
+                <span>|</span>
+                <span class="font-mono text-[10px] text-slate-400">${deal.id}</span>
+              </div>
+            </div>
+
+            <!-- 2. 다음 단계 알림 바 (Step 3 가이드) -->
+            <div class="px-3 py-2 rounded-xl text-xs flex items-center justify-between gap-2 ${stageKey === 'permit_approved' ? 'bg-amber-50 border border-amber-200 text-amber-900 font-bold' : 'bg-slate-50 border border-slate-200 text-slate-700'}">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-blue-600 font-bold">📌 다음 조치:</span>
+                <span>${stageInfo.nextAction}</span>
+              </div>
+              <div class="text-[11px] shrink-0">
+                <span class="text-slate-400 font-normal">단계 변경:</span>
+                <select onchange="changeDealStageInModal('${deal.id}', this.value)" class="ml-1 border border-slate-300 rounded-lg px-2 py-1 text-xs bg-white font-semibold cursor-pointer focus:outline-none focus:border-blue-500">
+                  <option value="agreement_signed" ${stageKey === 'agreement_signed' ? 'selected' : ''}>🟡 가계약 체결</option>
+                  <option value="permit_submitted" ${stageKey === 'permit_submitted' ? 'selected' : ''}>🔵 허가신청 접수</option>
+                  <option value="permit_approved" ${stageKey === 'permit_approved' ? 'selected' : ''}>🟢 허가증 교부 (D-7)</option>
+                  <option value="contract_signed" ${stageKey === 'contract_signed' ? 'selected' : ''}>🟣 본계약 체결</option>
+                  <option value="deal_completed" ${stageKey === 'deal_completed' ? 'selected' : ''}>🏁 잔금/이전 완료</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 3. 핵심 거래 요약 3분할 그리드 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
+              <div>
+                <span class="text-slate-400 text-[11px] block">대금 내역</span>
+                <div class="font-bold text-slate-800 mt-0.5">매매대금: <span class="text-blue-600">${priceStr}</span></div>
+                <div class="text-[11px] text-slate-600 mt-0.5">약정금: ${depositStr} | 잔금: ${balanceStr}</div>
+              </div>
+              <div>
+                <span class="text-slate-400 text-[11px] block">거래 당사자</span>
+                <div class="text-slate-800 mt-0.5 font-medium truncate">매도: <strong>${sellerNames}</strong></div>
+                <div class="text-slate-800 mt-0.5 font-medium truncate">매수: <strong>${buyerNames}</strong></div>
+              </div>
+              <div>
+                <span class="text-slate-400 text-[11px] block">허가 연동 정보 (3~5P)</span>
+                <div class="text-slate-700 mt-0.5 truncate">목적: ${permit.purpose || '자기거주용 주택'}</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">입주예정: ${permit.moveInDate || f.balanceDate || '-'}</div>
+              </div>
+            </div>
+
+            <!-- 4. 원스톱 액션 버튼군 -->
+            <div class="flex items-center justify-between gap-2 pt-1 flex-wrap">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <a href="./agreement/index.html?dealId=${deal.id}" target="_blank" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                  <span>📝 약정서 편집·인쇄</span>
+                </a>
+                <a href="./toji-permit/index.html?dealId=${deal.id}" target="_blank" class="px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                  <span>🏛️ 허가신청서 8P 자동완성</span>
+                </a>
+                <button onclick="createDriveFolderForDeal('${deal.id}')" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs" title="구글 드라이브에 이 거래 전용 폴더 및 표준 서류함 4개 자동 생성">
+                  <span>📁 Drive 폴더 생성</span>
+                </button>
+              </div>
+
+              <div class="flex items-center gap-1.5 ml-auto">
+                <button onclick="exportSingleDealJson('${deal.id}')" class="px-2 py-1 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg text-xs transition" title="JSON 백업 파일 다운로드">
+                  <span>⬇️ 백업</span>
+                </button>
+                <button onclick="deleteDealInModal('${deal.id}')" class="px-2 py-1 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-xs transition" title="거래 삭제">
+                  <span>🗑️ 삭제</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function changeDealStageInModal(dealId, newStage) {
+      if (!window.DealStore) return;
+      window.DealStore.updateDealStatus(dealId, newStage);
+      updateDealCountBadges();
+      renderDealListInModal();
+      const stageName = (window.DealStore.DEAL_STAGES[newStage] || {}).label || newStage;
+      alert(`거래 진행 상태가 '${stageName}'(으)로 업데이트되었습니다.`);
+      if (accessToken && appState.rootFolderId) {
+        syncDealsWithGoogleDrive(true).catch(e => console.warn(e));
+      }
+    }
+
+    function createSampleDealInModal() {
+      if (!window.DealStore) return;
+      const sample = window.DealStore.createEmptyDeal();
+      sample.dealDate = '2026-11-20';
+      sample.property.dong = '호계동';
+      sample.property.complex = '목련두산아파트';
+      sample.property.dongNum = '201';
+      sample.property.hoNum = '1502';
+      sample.property.bldAddr = '경기도 안양시 동안구 호계동 1052-3 목련아파트 201동 1502호';
+      sample.parties.sellers = [{ name: '홍길동', rrn: '750101-1234567', tel: '010-1234-5678', addr: '경기도 안양시 동안구 동안로 120, 101동 202호', share: '1/1' }];
+      sample.parties.buyers = [
+        { name: '김철수', rrn: '750101-1234567', tel: '010-9876-5432', addr: '서울특별시 서초구 서초대로 50, 203동 501호', share: '1/2' },
+        { name: '이영희', rrn: '800505-2345678', tel: '010-5555-6666', addr: '서울특별시 서초구 서초대로 50, 203동 501호', share: '1/2' }
+      ];
+      sample.financial.totalPrice = 1250000000;
+      sample.financial.tempDeposit = 30000000;
+      sample.financial.contractDeposit = 125000000;
+      sample.financial.midPayment = 200000000;
+      sample.financial.balance = 925000000;
+      sample.financial.balanceDate = '2026-12-30';
+      sample.status = 'agreement_signed';
+
+      window.DealStore.saveDeal(sample);
+      updateDealCountBadges();
+      renderDealListInModal();
+      alert('샘플 거래 데이터가 등록되었습니다: ' + sample.title);
+      if (accessToken && appState.rootFolderId) {
+        syncDealsWithGoogleDrive(true).catch(e => console.warn(e));
+      }
+    }
+
+    // Step 4: Google Drive 클라우드 거래 동기화
+    async function syncDealsWithGoogleDrive(isSilent = false) {
+      if (!window.DealStore) return;
+      if (!accessToken || !appState.rootFolderId) {
+        if (!isSilent) {
+          alert('먼저 상단 [Google Drive 로그인 연결] 버튼을 눌러 구글 계정을 연결해 주세요.');
+        }
+        return;
+      }
+
+      const syncBtn = document.getElementById('btnDealDriveSync');
+      if (syncBtn) {
+        syncBtn.disabled = true;
+        syncBtn.textContent = '☁️ 동기화 중...';
+      }
+
+      try {
+        const rootId = appState.rootFolderId;
+        const fileName = 'realty_deals.json';
+        const q = encodeURIComponent(`name='${fileName}' and '${rootId}' in parents and trashed=false`);
+        const searchRes = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)&supportsAllDrives=true`);
+        const searchData = await searchRes.json();
+
+        let driveDeals = [];
+        let fileId = null;
+
+        if (searchData.files && searchData.files.length > 0) {
+          fileId = searchData.files[0].id;
+          const contentRes = await driveFetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&supportsAllDrives=true`);
+          const text = await contentRes.text();
+          try {
+            driveDeals = JSON.parse(text);
+          } catch (e) {
+            console.warn('[Sync] Failed to parse drive deals JSON:', e);
+            driveDeals = [];
+          }
+        }
+
+        // 1. 드라이브 내용과 로컬 내용을 머지
+        if (driveDeals && driveDeals.length > 0) {
+          window.DealStore._mergeImportedData(driveDeals);
+        }
+
+        // 2. 머지된 최신 전체 목록을 드라이브로 업로드
+        const allDeals = window.DealStore.listDeals();
+        const jsonBody = JSON.stringify(allDeals, null, 2);
+
+        if (fileId) {
+          await driveFetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media&supportsAllDrives=true`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+            body: jsonBody
+          });
+        } else {
+          const form = new FormData();
+          form.append('metadata', new Blob([JSON.stringify({
+            name: fileName,
+            parents: [rootId],
+            mimeType: 'application/json'
+          })], { type: 'application/json' }));
+          form.append('file', new Blob([jsonBody], { type: 'application/json' }));
+
+          await driveFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name&supportsAllDrives=true', {
+            method: 'POST',
+            body: form
+          });
+        }
+
+        localStorage.setItem('realty_last_drive_sync', new Date().toISOString());
+        updateDealCountBadges();
+        updateSyncStatusTextUI();
+        renderDealListInModal();
+
+        if (!isSilent) {
+          alert(`Google Drive 거래 데이터 동기화 완료!\n총 ${allDeals.length}건의 거래가 안전하게 클라우드와 동기화되었습니다.`);
+        }
+      } catch (err) {
+        console.error('[Sync] Drive deals sync error:', err);
+        if (!isSilent) {
+          alert('Google Drive 거래 동기화 오류: ' + err.message);
+        }
+      } finally {
+        if (syncBtn) {
+          syncBtn.disabled = false;
+          syncBtn.textContent = '☁️ Google Drive 동기화';
+        }
+      }
+    }
+
+    // Step 5: 약정 체결 시 거래 전용 구글 드라이브 폴더 및 표준 서류 하위폴더 4개 자동 생성
+    async function createDriveFolderForDeal(dealId) {
+      if (!window.DealStore) return;
+      if (!accessToken || !appState.rootFolderId) {
+        alert('먼저 상단 [Google Drive 로그인 연결] 버튼을 눌러 구글 드라이브에 연결해 주세요.');
+        return;
+      }
+
+      const deal = window.DealStore.getDeal(dealId);
+      if (!deal) {
+        alert('해당 거래 데이터를 찾을 수 없습니다.');
+        return;
+      }
+
+      // 폴더명 포맷: YYYYMMDD_법정동_단지명_동호수
+      let folderName = deal.title;
+      if (!folderName) {
+        folderName = window.DealStore.generateStandardFileName(deal, '').replace(/_$/, '');
+      }
+      if (!folderName) {
+        folderName = `거래_${deal.id}`;
+      }
+
+      if (!confirm(`Google Drive [01_진행계약_관리함] 하위에\n'${folderName}' 거래 전용 폴더 및 4대 필수 서류함을 생성하시겠습니까?`)) {
+        return;
+      }
+
+      closeModal('dealManagerModal');
+      setBackgroundSyncing(true, true, `'${folderName}' 거래 폴더 및 표준 하위폴더 4개 생성 중...`);
+
+      try {
+        // 1. 진행계약 관리함 루트 확보
+        const contractsRoot = await findOrCreateFolderByName(appState.rootFolderId, '01_진행계약_관리함');
+
+        // 2. 해당 물건 거래 폴더 확보
+        const propFolder = await findOrCreateFolderByName(contractsRoot.id, folderName);
+
+        // 3. 4대 표준 서류 하위폴더 자동 생성
+        const standardSubfolders = [
+          '01_매매약정서및영수증',
+          '02_토지거래허가신청서류',
+          '03_등기부등본및공적장부',
+          '04_신분증및서명날인본'
+        ];
+
+        for (const sub of standardSubfolders) {
+          await findOrCreateFolderByName(propFolder.id, sub);
+        }
+
+        // 4. 탐색기 화면을 새로 생성된 거래 폴더로 이동 및 새로고침
+        appState.currentPath = [
+          { id: contractsRoot.id, name: contractsRoot.name },
+          { id: propFolder.id, name: propFolder.name }
+        ];
+
+        await refreshCurrentView(true, true);
+        alert(`📁 Google Drive에 거래 폴더 생성이 완료되었습니다!\n\n위치: 01_진행계약_관리함 > ${folderName}\n하위 서류 폴더: 4개 생성 완료\n\n지금 바로 관련 서류(PDF, 신분증, 등기부)를 드래그하여 보관할 수 있습니다.`);
+      } catch (err) {
+        alert('거래 폴더 생성 오류: ' + err.message);
+        setBackgroundSyncing(false, false);
+      }
+    }
+
+    // JSON 백업 / 복원
+    function exportAllDealsJson() {
+      if (!window.DealStore) return;
+      window.DealStore.exportJson();
+    }
+
+    function exportSingleDealJson(dealId) {
+      if (!window.DealStore) return;
+      window.DealStore.exportJson(dealId);
+    }
+
+    function triggerImportDealsJson() {
+      const input = document.getElementById('root_file_json_import');
+      if (input) input.click();
+    }
+
+    async function handleRootJsonImport(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file || !window.DealStore) return;
+
+      try {
+        const res = await window.DealStore.importJson(file);
+        updateDealCountBadges();
+        renderDealListInModal();
+        alert(`거래 데이터 복원 완료!\n총 ${res.total}건 (신규 추가: ${res.added}건, 갱신: ${res.updated}건)`);
+        if (accessToken && appState.rootFolderId) {
+          syncDealsWithGoogleDrive(true).catch(e => console.warn(e));
+        }
+      } catch (err) {
+        alert('JSON 복원 실패: ' + err.message);
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    function deleteDealInModal(dealId) {
+      if (!window.DealStore) return;
+      const deal = window.DealStore.getDeal(dealId);
+      const title = (deal && deal.title) || dealId;
+      if (!confirm(`정말 '${title}' 거래 데이터를 삭제하시겠습니까?\n(로컬 저장소에서 제거됩니다)`)) {
+        return;
+      }
+      window.DealStore.deleteDeal(dealId);
+      updateDealCountBadges();
+      renderDealListInModal();
+      if (accessToken && appState.rootFolderId) {
+        syncDealsWithGoogleDrive(true).catch(e => console.warn(e));
+      }
+    }
+
     applyConfigToUI();
     renderBreadcrumb();
     renderSidebarTree();
+    updateDealCountBadges();
 
     if (initLoadResult.isNewUser) {
       openModal('welcomeModal');
@@ -1912,5 +2612,110 @@
 
     window.addEventListener('load', initGisClient);
   </script>
+
+  <!-- 모달 8: 통합 거래 관리 (매매약정서 ↔ 토지거래허가 연동) -->
+  <div id="dealManagerModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div class="bg-[#0b1b36] text-white px-5 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-base">📂</span>
+          <div>
+            <h2 class="text-sm font-bold flex items-center gap-2">
+              <span>원스톱 거래 데이터 관리소</span>
+              <span class="text-[11px] font-normal text-slate-300">매매약정서(가계약) ➔ 토지거래허가(8P) ➔ 구글 드라이브</span>
+            </h2>
+          </div>
+        </div>
+        <button onclick="closeModal('dealManagerModal')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- 상단 액션 툴바 & 클라우드 상태 (Step 4 동기화 버튼 포함) -->
+      <div
+        class="p-3.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span id="dealModalSyncStatusText" class="text-slate-500 font-medium flex items-center gap-1.5">
+            <span>💾 로컬 브라우저 저장됨</span>
+          </span>
+          <button onclick="syncDealsWithGoogleDrive(false)" id="btnDealDriveSync"
+            class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold flex items-center gap-1 shadow-xs transition"
+            title="구글 드라이브와 거래 목록 양방향 자동 동기화">
+            <span>☁️ Google Drive 동기화</span>
+          </button>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <a href="./agreement/index.html" target="_blank"
+            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition shadow-xs flex items-center gap-1">
+            <span>✨ 새 매매약정서 작성</span>
+          </a>
+          <button onclick="exportAllDealsJson()"
+            class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-semibold border border-slate-300 transition"
+            title="전체 거래 JSON 다운로드">
+            <span>⬇️ 전체 백업 JSON</span>
+          </button>
+          <button onclick="triggerImportDealsJson()"
+            class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-semibold border border-slate-300 transition"
+            title="JSON 백업 파일 복원">
+            <span>⬆️ JSON 복원</span>
+          </button>
+          <input type="file" id="root_file_json_import" accept=".json" style="display:none;"
+            onchange="handleRootJsonImport(event)" />
+        </div>
+      </div>
+
+      <!-- 진행 단계 필터 탭 (Step 3 라이프사이클) -->
+      <div
+        class="px-4 py-2 bg-slate-100 border-b border-slate-200 flex items-center gap-1.5 overflow-x-auto text-xs shrink-0 custom-scrollbar">
+        <span class="text-slate-500 font-bold shrink-0 mr-1">단계별 보기:</span>
+        <button onclick="setDealStageFilter('all')" id="dealFilterTab_all"
+          class="px-2.5 py-1 rounded-lg font-bold transition deal-filter-tab bg-blue-600 text-white shadow-xs">
+          전체 (<span id="filterCount_all">0</span>)
+        </button>
+        <button onclick="setDealStageFilter('agreement_signed')" id="dealFilterTab_agreement_signed"
+          class="px-2.5 py-1 rounded-lg font-semibold transition deal-filter-tab bg-white text-slate-700 border border-slate-300 hover:bg-slate-50">
+          🟡 가계약 (<span id="filterCount_agreement_signed">0</span>)
+        </button>
+        <button onclick="setDealStageFilter('permit_submitted')" id="dealFilterTab_permit_submitted"
+          class="px-2.5 py-1 rounded-lg font-semibold transition deal-filter-tab bg-white text-slate-700 border border-slate-300 hover:bg-slate-50">
+          🔵 허가접수 (<span id="filterCount_permit_submitted">0</span>)
+        </button>
+        <button onclick="setDealStageFilter('permit_approved')" id="dealFilterTab_permit_approved"
+          class="px-2.5 py-1 rounded-lg font-semibold transition deal-filter-tab bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-50">
+          🟢 허가완료 D-7 (<span id="filterCount_permit_approved">0</span>)
+        </button>
+        <button onclick="setDealStageFilter('contract_signed')" id="dealFilterTab_contract_signed"
+          class="px-2.5 py-1 rounded-lg font-semibold transition deal-filter-tab bg-white text-slate-700 border border-slate-300 hover:bg-slate-50">
+          🟣 본계약 (<span id="filterCount_contract_signed">0</span>)
+        </button>
+        <button onclick="setDealStageFilter('deal_completed')" id="dealFilterTab_deal_completed"
+          class="px-2.5 py-1 rounded-lg font-semibold transition deal-filter-tab bg-white text-slate-700 border border-slate-300 hover:bg-slate-50">
+          🏁 잔금완료 (<span id="filterCount_deal_completed">0</span>)
+        </button>
+      </div>
+
+      <!-- 거래 목록 본문 스크롤 영역 -->
+      <div class="flex-1 overflow-y-auto p-4 custom-scrollbar bg-slate-50">
+        <div id="dealListContainer" class="flex flex-col gap-3">
+          <!-- JS 동적 렌더링 -->
+        </div>
+      </div>
+
+      <!-- 하단 상태 바 & 닫기 -->
+      <div class="px-5 py-3 bg-white border-t border-slate-200 flex items-center justify-between gap-2">
+        <div class="text-[11px] text-slate-500">
+          💡 각 거래 카드의 <strong>[📁 Drive 폴더 생성]</strong>을 클릭하면 구글 드라이브에 표준 서류 보관함 4개가 즉시 자동 생성됩니다.
+        </div>
+        <button onclick="closeModal('dealManagerModal')"
+          class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
 </body>
+
 </html>

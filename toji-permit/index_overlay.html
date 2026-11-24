@@ -1,0 +1,3774 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>토지거래계약 허가신청서 실시간 자동완성 및 공적장부 연동 시스템</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --accent-orange: #ea580c;
+      --accent-teal: #0d9488;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+      background-color: #383c40;
+      color: var(--slate-800);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* ==============================================================
+       1. 좌측 에디터 패널 (공적장부 세분화 폼)
+       ============================================================== */
+    .editor-panel {
+      width: 480px;
+      min-width: 480px;
+      height: 100vh;
+      background: #ffffff;
+      border-right: 1px solid var(--slate-200);
+      display: flex;
+      flex-direction: column;
+      z-index: 30;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .editor-header {
+      padding: 12px 18px;
+      background: var(--slate-900);
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-bottom: 1px solid var(--slate-700);
+    }
+
+    .editor-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .editor-header h1 {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-tag {
+      font-size: 10px;
+      font-weight: 600;
+      background: #2563eb;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* 상단 액션 버튼바 */
+    .header-actions {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    .btn-action {
+      padding: 7px 8px;
+      border-radius: 5px;
+      font-size: 11.5px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-print-main {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    .btn-print-main:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-sample {
+      background: #0d9488;
+      color: #ffffff;
+    }
+
+    .btn-sample:hover {
+      background: #0f766e;
+    }
+
+    .btn-json {
+      background: #475569;
+      color: #ffffff;
+    }
+
+    .btn-json:hover {
+      background: #334155;
+    }
+
+    /* 툴바: 모드 토글 (드래그 / 좌표 추출 / 투명도) */
+    .toolbar-bar {
+      padding: 8px 18px;
+      background: var(--slate-50);
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .helper-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .switch-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--slate-700);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 38px;
+      height: 20px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #cbd5e1;
+      transition: .2s;
+      border-radius: 20px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .2s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background-color: #2563eb;
+    }
+
+    input:checked+.slider.orange {
+      background-color: #ea580c;
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(18px);
+    }
+
+    .opacity-control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--slate-600);
+    }
+
+    .opacity-control-row input[type="range"] {
+      width: 110px;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+
+    /* 선택된 필드 정밀 인스펙터 패널 */
+    .field-inspector-box {
+      background: #eff6ff;
+      border: 1px solid #93c5fd;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin: 8px 18px 0;
+      display: none;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+    }
+
+    .field-inspector-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .field-inspector-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1e40af;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 170px;
+    }
+
+    .inspector-badge {
+      background: #dbeafe;
+      color: #1e40af;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 10px;
+      border: 1px solid #93c5fd;
+    }
+
+    .inspector-close-btn {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+      border-radius: 3px;
+    }
+
+    .inspector-close-btn:hover {
+      color: #0f172a;
+      background: #e2e8f0;
+    }
+
+    .inspector-subtip {
+      font-size: 9px;
+      color: #64748b;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .inspector-section-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #2563eb;
+      margin-top: 6px;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .inspector-align-toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      background: #ffffff;
+      border: 1px solid #bfdbfe;
+      border-radius: 4px;
+      padding: 4px 6px;
+      margin-bottom: 6px;
+    }
+
+    .align-group {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .align-group-title {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #475569;
+      width: 44px;
+      flex-shrink: 0;
+    }
+
+    .tool-btn {
+      flex: 1;
+      padding: 2.5px 2px;
+      font-size: 9.5px;
+      font-weight: 600;
+      border: 1px solid #cbd5e1;
+      border-radius: 3px;
+      background: #f8fafc;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .tool-btn:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+      color: #0f172a;
+    }
+
+    .tool-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #1d4ed8;
+      font-weight: 700;
+    }
+
+    .inspector-grid-5 {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+
+    .inspector-item label {
+      display: block;
+      font-size: 8.5px;
+      font-weight: 600;
+      color: #3b82f6;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .inspector-item input {
+      width: 100%;
+      padding: 3px 2px;
+      border: 1px solid #bfdbfe;
+      border-radius: 3px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #1e3a8a;
+      background: #fff;
+      text-align: center;
+    }
+
+    .inspector-item input::placeholder {
+      color: #94a3b8;
+      font-weight: normal;
+    }
+
+    .inspector-format-toolbar {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .toggle-wrap-btn {
+      flex: 1.2;
+      padding: 3px 5px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .btn-group-segmented {
+      display: flex;
+      flex: 1.4;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .segment-btn {
+      flex: 1;
+      border: none;
+      border-radius: 0;
+      border-right: 1px solid #cbd5e1;
+      background: #ffffff;
+      padding: 3px 2px;
+      font-size: 9.5px;
+    }
+
+    .segment-btn:last-child {
+      border-right: none;
+    }
+
+    .inspector-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .inspector-btn {
+      flex: 1;
+      padding: 3px 4px;
+      font-size: 9.5px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid #bfdbfe;
+      background: #ffffff;
+      color: #1e40af;
+      transition: all 0.15s ease;
+    }
+
+    .inspector-btn:hover {
+      background: #dbeafe;
+    }
+
+    .inspector-btn.primary {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+    }
+
+    /* 폼 본문 스크롤 */
+    .editor-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 18px 60px;
+    }
+
+    .editor-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .editor-body::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+
+    /* 폼 섹션 아코디언 스타일 */
+    .form-section {
+      margin-bottom: 12px;
+      background: #ffffff;
+      border: 1px solid var(--slate-200);
+      border-radius: 7px;
+      overflow: hidden;
+    }
+
+    .section-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--slate-800);
+      background: var(--slate-100);
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+
+    .section-badge {
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: #e2e8f0;
+      color: #475569;
+    }
+
+    .section-badge.blue {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .section-badge.green {
+      background: #ccfbf1;
+      color: #0f766e;
+    }
+
+    .section-badge.orange {
+      background: #ffedd5;
+      color: #c2410c;
+    }
+
+    .section-content {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .field-row.grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .field-row.grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    .field-row.grid-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 4px;
+    }
+
+    .field-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--slate-600);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .field-label span.sub {
+      font-size: 9px;
+      color: #94a3b8;
+      font-weight: normal;
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 5px 8px;
+      border: 1px solid var(--slate-300);
+      border-radius: 4px;
+      font-size: 11.5px;
+      color: var(--slate-800);
+      font-family: inherit;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .input-box:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+
+    .input-box.read-calc {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #1e40af;
+    }
+
+    /* 서식 페이지 선택 체크박스 목록 */
+    .page-check-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 10.5px;
+    }
+
+    .page-check-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 5px;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .page-check-item:hover {
+      background: var(--slate-50);
+    }
+
+    .page-check-item input[type="checkbox"] {
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+
+    /* ==============================================================
+       2. 우측 8페이지 A4 미리보기 영역
+       ============================================================== */
+    .preview-container {
+      flex: 1;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: auto;
+      padding: 24px 20px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      position: relative;
+    }
+
+    .preview-toolbar {
+      position: sticky;
+      top: 0px;
+      z-index: 20;
+      background: rgba(30, 41, 59, 0.92);
+      backdrop-filter: blur(6px);
+      padding: 5px 14px;
+      border-radius: 30px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      font-size: 11.5px;
+    }
+
+    .preview-toolbar button {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      padding: 3px 9px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 10.5px;
+      transition: background 0.15s ease;
+    }
+
+    .preview-toolbar button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* ==============================================================
+       3. 210mm x 297mm A4 규격 컨테이너
+       ============================================================== */
+    .a4-page-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .page-header-tag {
+      width: 210mm;
+      padding: 3px 8px;
+      margin-bottom: 5px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .a4-page {
+      width: 210mm;
+      height: 297mm;
+      min-width: 210mm;
+      min-height: 297mm;
+      max-width: 210mm;
+      max-height: 297mm;
+      position: relative;
+      background-color: #ffffff;
+      background-size: 210mm 297mm;
+      background-repeat: no-repeat;
+      background-position: top left;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      box-sizing: border-box;
+      transform-origin: top center;
+    }
+
+    /* 8개 페이지 배경 이미지 매핑 (toji-permit/bg/page_X.png) */
+    #page-1 {
+      background-image: url('bg/page_1.png');
+    }
+
+    #page-2 {
+      background-image: url('bg/page_2.png');
+    }
+
+    #page-3,
+    #page-3-2 {
+      background-image: url('bg/page_3.png');
+    }
+
+    #page-4 {
+      background-image: url('bg/page_4.png');
+    }
+
+    #page-5 {
+      background-image: url('bg/page_5.png');
+    }
+
+    #page-6 {
+      background-image: url('bg/page_6.png');
+    }
+
+    #page-7 {
+      background-image: url('bg/page_7.png');
+    }
+
+    #page-8 {
+      background-image: url('bg/page_8.png');
+    }
+
+    .a4-page-wrapper.excluded {
+      display: none !important;
+    }
+
+    /* ==============================================================
+       4. 데이터 오버레이 필드 스타일
+       ============================================================== */
+    .field {
+      position: absolute;
+      font-size: 9.2pt;
+      font-weight: 500;
+      color: #000000;
+      line-height: 1.25;
+      white-space: nowrap;
+      z-index: 10;
+      letter-spacing: -0.2px;
+      font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      user-select: none;
+    }
+
+    .field.wrap {
+      white-space: normal;
+      word-break: keep-all;
+    }
+
+    .field.bold {
+      font-weight: 700;
+    }
+
+    .field.sm {
+      font-size: 8.5pt;
+    }
+
+    .field.xs {
+      font-size: 7.8pt;
+    }
+
+    .field.lg {
+      font-size: 11pt;
+    }
+
+    .field.center {
+      text-align: center;
+    }
+
+    .field.right {
+      text-align: right;
+    }
+
+    /* [드래그 편집 모드] */
+    body.drag-mode-active .field {
+      cursor: grab !important;
+      outline: 1px dashed rgba(59, 130, 246, 0.6) !important;
+      background: rgba(239, 246, 255, 0.4) !important;
+      padding: 1px 2px;
+    }
+
+    body.drag-mode-active .field:hover {
+      outline: 1.5px solid #2563eb !important;
+      background: rgba(219, 234, 254, 0.8) !important;
+    }
+
+    body.drag-mode-active .field.selected {
+      cursor: grab !important;
+      outline: 1.5px dashed #ea580c !important;
+      background: rgba(255, 237, 213, 0.75) !important;
+      color: #9a3412 !important;
+      z-index: 100 !important;
+    }
+
+    body.drag-mode-active .field.primary-selected {
+      outline: 2px solid #ea580c !important;
+      background: rgba(254, 215, 170, 0.9) !important;
+      box-shadow: 0 0 6px rgba(234, 88, 12, 0.45);
+      z-index: 101 !important;
+    }
+
+    body.drag-mode-active .field.primary-selected::after {
+      content: attr(data-pos-label);
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      transform: translateY(-2px);
+      background: #ea580c;
+      color: #ffffff;
+      font-family: Consolas, monospace;
+      font-size: 8.5px;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 2px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 102;
+    }
+
+    /* 리사이즈 모서리 드래그 핸들 */
+    .field-resize-handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #ea580c;
+      border: 2px solid #ffffff;
+      border-radius: 2px;
+      cursor: se-resize;
+      z-index: 110;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      display: none;
+      transform: translate(-50%, -50%);
+      pointer-events: auto;
+    }
+
+    .field-resize-handle:hover {
+      background: #c2410c;
+      transform: translate(-50%, -50%) scale(1.25);
+    }
+
+    /* [좌표 도우미 십자선 & 툴팁] */
+    body.coord-mode-active:not(.drag-mode-active) .a4-page {
+      cursor: crosshair !important;
+    }
+
+    .coord-guide-x,
+    .coord-guide-y {
+      position: absolute;
+      pointer-events: none;
+      z-index: 99;
+      display: none;
+    }
+
+    .coord-guide-x {
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(239, 68, 68, 0.45);
+    }
+
+    .coord-guide-y {
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(239, 68, 68, 0.45);
+    }
+
+    .coord-live-badge {
+      position: absolute;
+      pointer-events: none;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.9);
+      color: #38bdf8;
+      font-family: Consolas, monospace;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 4px;
+      display: none;
+      white-space: nowrap;
+      transform: translate(12px, 12px);
+    }
+
+    .coord-pin {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #ef4444;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 80;
+      pointer-events: none;
+    }
+
+    .coord-pin-tag {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ef4444;
+      color: #fff;
+      font-family: Consolas, monospace;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    /* 토스트 */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: #1e293b;
+      color: #ffffff;
+      border-left: 4px solid #3b82f6;
+      padding: 10px 14px;
+      border-radius: 5px;
+      font-size: 11.5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.success {
+      border-left-color: #10b981;
+    }
+
+    .toast.orange {
+      border-left-color: #ea580c;
+    }
+
+    .toast code {
+      background: #334155;
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: #38bdf8;
+      font-family: Consolas, monospace;
+    }
+
+    /* JSON 모달 */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #fff;
+      width: 640px;
+      max-width: 92vw;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      background: var(--slate-900);
+      color: #fff;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 14px 16px;
+    }
+
+    .modal-body textarea {
+      width: 100%;
+      height: 260px;
+      font-family: Consolas, monospace;
+      font-size: 11px;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      background: #f8fafc;
+      outline: none;
+      resize: vertical;
+    }
+
+    .modal-footer {
+      padding: 10px 16px;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    /* ==============================================================
+       5. Ctrl+P 무여백 인쇄 스타일 (@media print)
+       ============================================================== */
+    @media print {
+      @page {
+        size: 210mm 297mm;
+        margin: 0mm !important;
+      }
+
+      html,
+      body {
+        width: 210mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+        display: block !important;
+      }
+
+      .no-print,
+      .editor-panel,
+      .preview-toolbar,
+      .page-header-tag,
+      .coord-guide-x,
+      .coord-guide-y,
+      .coord-live-badge,
+      .coord-pin,
+      .toast-container,
+      .modal-backdrop {
+        display: none !important;
+      }
+
+      .preview-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+        background: #ffffff !important;
+        width: 210mm !important;
+        overflow: visible !important;
+      }
+
+      .a4-page-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+      }
+
+      .a4-page-wrapper.excluded {
+        display: none !important;
+      }
+
+      .a4-page {
+        width: 210mm !important;
+        height: 297mm !important;
+        min-width: 210mm !important;
+        min-height: 297mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        page-break-before: auto !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        position: relative !important;
+        overflow: hidden !important;
+        transform: none !important;
+      }
+
+      .a4-page-wrapper:last-child .a4-page {
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }
+
+      .field {
+        color: #000000 !important;
+        outline: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+  </style>
+  <script src="../shared/deal-store.js"></script>
+</head>
+
+<body class="coord-mode-active drag-mode-active">
+
+  <!-- ==============================================================
+       1. 좌측 공적장부 세분화 에디터 패널
+       ============================================================== -->
+  <aside class="editor-panel no-print">
+    <!-- 헤더 -->
+    <div class="editor-header">
+      <div class="editor-header-top">
+        <h1>
+          <span>🏛️</span>
+          <span>안양시 동안구 토지거래허가 신청시스템</span>
+        </h1>
+        <span class="badge-tag">A4 무여백 정밀</span>
+      </div>
+
+      <!-- 상단 액션 버튼바 -->
+      <div class="header-actions">
+        <button class="btn-action btn-print-main" onclick="printWithStandardFileName()">
+          <span>🖨️ 인쇄 (Ctrl+P)</span>
+        </button>
+        <button class="btn-action btn-sample" onclick="fillSampleData()">
+          <span>🧪 목련두산 샘플</span>
+        </button>
+        <button class="btn-action btn-json" onclick="openJsonModal()">
+          <span>🔄 공적장부 JSON</span>
+        </button>
+      </div>
+      <!-- 약정서 연동 거래 선택바 -->
+      <div class="deal-integration-box" style="margin-top: 10px; padding: 8px 10px; background: rgba(30, 41, 59, 0.85); border: 1px solid #3b82f6; border-radius: 6px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 11px; font-weight: 700; color: #93c5fd; display: flex; align-items: center; gap: 4px;">
+            <span>📂</span> <span>매매약정서 데이터 연동</span>
+          </span>
+          <a href="../agreement/index.html" target="_blank" style="font-size: 11px; color: #38bdf8; text-decoration: none; font-weight: 600;">
+            📝 매매약정서 작성 ↗
+          </a>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <select id="sel_permit_deal" style="flex: 1; background: #0f172a; border: 1px solid #475569; color: #f1f5f9; padding: 5px 8px; font-size: 11.5px; border-radius: 4px; outline: none;">
+            <option value="">-- [약정서] 저장된 거래 데이터 선택 --</option>
+          </select>
+          <button type="button" class="btn-action" onclick="loadSelectedDealIntoPermit()" style="background: #2563eb; color: #fff; padding: 5px 10px; font-size: 11.5px; font-weight: 600; border-radius: 4px; cursor: pointer; border: none;">
+            불러오기
+          </button>
+          <button type="button" class="btn-action" onclick="savePermitBackToDealStore()" style="background: #059669; color: #fff; padding: 5px 10px; font-size: 11.5px; font-weight: 600; border-radius: 4px; cursor: pointer; border: none;" title="현재 허가서 입력 내용을 거래 저장소에 업데이트">
+            저장
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 툴바: 모드 토글 -->
+    <div class="toolbar-bar">
+      <div class="helper-toggle-row">
+        <span class="switch-label">
+          <span>🖐️ 필드 마우스 드래그 & 방향키(0.1mm)</span>
+          <span id="dragStatusBadge" style="font-size:10px; color:#ea580c; font-weight:700;">(ON)</span>
+        </span>
+        <label class="switch">
+          <input type="checkbox" id="dragModeToggle" checked onchange="toggleDragMode(this.checked)">
+          <span class="slider orange"></span>
+        </label>
+      </div>
+
+      <div class="helper-toggle-row">
+        <span class="switch-label">
+          <span>🎯 바탕 클릭 좌표 복사 도우미</span>
+          <span id="coordStatusBadge" style="font-size:10px; color:#2563eb;">(ON)</span>
+        </span>
+        <label class="switch">
+          <input type="checkbox" id="coordHelperToggle" checked onchange="toggleCoordHelper(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="opacity-control-row">
+        <span>배경 서식 선명도</span>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <input type="range" id="bgOpacityRange" min="0" max="100" value="100" oninput="changeBgOpacity(this.value)">
+          <span id="bgOpacityLabel" style="width:30px; text-align:right; font-weight:700;">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 선택 필드 정밀 레이아웃 & 정렬 인스펙터 패널 -->
+    <div class="field-inspector-box" id="fieldInspectorBox">
+      <div class="field-inspector-header">
+        <div style="display:flex; align-items:center; gap:5px; overflow:hidden;">
+          <span class="field-inspector-title" id="inspectorFieldName">선택된 필드 없음</span>
+          <span class="inspector-badge" id="inspectorCountBadge" style="display:none;">1개</span>
+        </div>
+        <button class="inspector-close-btn" onclick="deselectAllFields()" title="선택 해제 (ESC)">✕</button>
+      </div>
+
+      <div class="inspector-subtip">
+        <span>💡 Shift/Ctrl+클릭 다중선택 | 방향키(↑↓←→) 이동 (Alt:0.1mm)</span>
+      </div>
+
+      <!-- 열 맞추기 (가로) & 행 맞추기 (세로) -->
+      <div class="inspector-section-label">📐 열 맞추기 (가로) & 행 맞추기 (세로)</div>
+      <div class="inspector-align-toolbar">
+        <div class="align-group">
+          <span class="align-group-title">열 맞춤:</span>
+          <button class="tool-btn" onclick="alignSelectedFields('left')" title="선택 항목 좌측 맞춤">⬅ 좌측</button>
+          <button class="tool-btn" onclick="alignSelectedFields('centerX')" title="선택 항목 가로 중앙 맞춤">⫿ 중앙</button>
+          <button class="tool-btn" onclick="alignSelectedFields('right')" title="선택 항목 우측 맞춤">➡ 우측</button>
+          <button class="tool-btn" onclick="alignSelectedFields('distributeX')" title="선택 항목 가로 간격 균등">↔ 균등</button>
+        </div>
+        <div class="align-group">
+          <span class="align-group-title">행 맞춤:</span>
+          <button class="tool-btn" onclick="alignSelectedFields('top')" title="선택 항목 상단 맞춤">⬆ 상단</button>
+          <button class="tool-btn" onclick="alignSelectedFields('centerY')" title="선택 항목 세로 중앙 맞춤">⫾ 중앙</button>
+          <button class="tool-btn" onclick="alignSelectedFields('bottom')" title="선택 항목 하단 맞춤">⬇ 하단</button>
+          <button class="tool-btn" onclick="alignSelectedFields('distributeY')" title="선택 항목 세로 간격 균등">↕ 균등</button>
+        </div>
+      </div>
+
+      <!-- 좌표 및 범위(너비/높이) 설정 그리드 -->
+      <div class="inspector-section-label">📏 위치 및 범위 (크기 mm)</div>
+      <div class="inspector-grid-5">
+        <div class="inspector-item">
+          <label>Top(Y)</label>
+          <input type="number" step="0.5" id="inspTop" oninput="updateSelectedFieldPos('top')">
+        </div>
+        <div class="inspector-item">
+          <label>Left(X)</label>
+          <input type="number" step="0.5" id="inspLeft" oninput="updateSelectedFieldPos('left')">
+        </div>
+        <div class="inspector-item">
+          <label>너비(W)</label>
+          <input type="number" step="0.5" min="0" id="inspWidth" placeholder="auto"
+            oninput="updateSelectedFieldSize('width')">
+        </div>
+        <div class="inspector-item">
+          <label>높이(H)</label>
+          <input type="number" step="0.5" min="0" id="inspHeight" placeholder="auto"
+            oninput="updateSelectedFieldSize('height')">
+        </div>
+        <div class="inspector-item">
+          <label>Font(pt)</label>
+          <input type="number" step="0.5" id="inspFontSize" oninput="updateSelectedFieldPos('font')">
+        </div>
+      </div>
+
+      <!-- 줄바꿈 및 텍스트 서식 -->
+      <div class="inspector-section-label">✍️ 줄바꿈 & 텍스트 정렬</div>
+      <div class="inspector-format-toolbar">
+        <button class="tool-btn toggle-wrap-btn" id="btnWrapToggle" onclick="toggleWrapSelected()">
+          <span id="wrapIcon">↵</span> <span id="wrapText">줄바꿈: OFF</span>
+        </button>
+        <div class="btn-group-segmented">
+          <button class="tool-btn segment-btn" id="btnAlignLeft" onclick="setTextAlignSelected('left')"
+            title="텍스트 좌측 정렬">◀ 좌</button>
+          <button class="tool-btn segment-btn" id="btnAlignCenter" onclick="setTextAlignSelected('center')"
+            title="텍스트 가운데 정렬">〓 중</button>
+          <button class="tool-btn segment-btn" id="btnAlignRight" onclick="setTextAlignSelected('right')"
+            title="텍스트 우측 정렬">▶ 우</button>
+        </div>
+      </div>
+
+      <div class="inspector-actions" style="margin-top:8px;">
+        <button class="inspector-btn primary" onclick="exportCoordinates()">📋 변경 좌표 전체 내보내기</button>
+        <button class="inspector-btn" onclick="resetCoordinates()">🔄 기본 위치 복원</button>
+      </div>
+    </div>
+
+    <!-- 폼 스크롤 바디 -->
+    <div class="editor-body">
+
+      <!-- 출력 서식 선택 -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>📑 출력 서식 선택 (체크 해제 시 인쇄 제외)</span>
+        </div>
+        <div class="section-content">
+          <div class="page-check-list">
+            <label class="page-check-item">
+              <input type="checkbox" id="chk-page-1" checked onchange="togglePageDisplay('page-1', this.checked)">
+              <span><strong>1p.</strong> 토지거래계약 허가신청서 (앞쪽) [필수]</span>
+            </label>
+            <label class="page-check-item">
+              <input type="checkbox" id="chk-page-2" onchange="togglePageDisplay('page-2', this.checked)">
+              <span><strong>2p.</strong> 허가신청서 별지 (공동명의 다수 시)</span>
+            </label>
+            <label class="page-check-item">
+              <input type="checkbox" id="chk-page-3" checked onchange="togglePageDisplay('page-3', this.checked)">
+              <span><strong>3p.</strong> 토지취득자금조달계획서 (매수인1)</span>
+            </label>
+            <label class="page-check-item">
+              <input type="checkbox" id="chk-page-3-2" onchange="togglePageDisplay('page-3-2', this.checked)">
+              <span><strong>3p-2.</strong> 토지취득자금조달계획서 (공동매수인2)</span>
+            </label>
+            <label class="page-check-item">
+              <input type="checkbox" id="chk-page-4" checked onchange="togglePageDisplay('page-4', this.checked)">
+              <span><strong>4p.</strong> 토지이용계획서 Ⓐ (주거용 자가주택)</span>
+            </label>
+            <label class="page-check-item">
+              <input type="checkbox" id="chk-page-5" onchange="togglePageDisplay('page-5', this.checked)">
+              <span><strong>5p.</strong> 토지이용계획서 Ⓑ (실거주 유예 등)</span>
+            </label>
+            <label class="page-check-item">
+              <input type="checkbox" id="chk-page-6" onchange="togglePageDisplay('page-6', this.checked)">
+              <span><strong>6p.</strong> 주택 임대차 계약 확인서 (묵시적 갱신)</span>
+            </label>
+            <label class="page-check-item">
+              <input type="checkbox" id="chk-page-7" checked onchange="togglePageDisplay('page-7', this.checked)">
+              <span><strong>7p.</strong> 개인정보 및 행정정보 공동이용 사전 동의서</span>
+            </label>
+            <label class="page-check-item">
+              <input type="checkbox" id="chk-page-8" checked onchange="togglePageDisplay('page-8', this.checked)">
+              <span><strong>8p.</strong> 토지거래계약 허가신청 위임장 (공인중개사)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- [공적장부 1] 소재지 및 기본 표시 -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>📍 1. 소재지 & 기본 표시 (공적장부 고유식별)</span>
+          <span class="section-badge blue">기본키</span>
+        </div>
+        <div class="section-content">
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">신청일자 <span class="sub">(접수일·공백)</span></label>
+              <input type="date" class="input-box" id="in_date" value="" oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">법정동 <span class="sub">⑧소재지</span></label>
+              <input type="text" class="input-box" id="in_dong" value="호계동" placeholder="예: 호계동" oninput="syncAll()">
+            </div>
+          </div>
+          <div class="field-row grid-3">
+            <div>
+              <label class="field-label">지번 본번</label>
+              <input type="text" class="input-box" id="in_jibun_main" value="1054" placeholder="예: 1054"
+                oninput="calcJibunFull(); syncAll();">
+            </div>
+            <div>
+              <label class="field-label">부번</label>
+              <input type="text" class="input-box" id="in_jibun_sub" value="" placeholder="없으면 공란"
+                oninput="calcJibunFull(); syncAll();">
+            </div>
+            <div>
+              <label class="field-label">외 필지</label>
+              <input type="text" class="input-box" id="in_jibun_extra" value="외 5필지" placeholder="예: 외 5필지"
+                oninput="calcJibunFull(); syncAll();">
+            </div>
+          </div>
+          <div class="field-row grid-3">
+            <div>
+              <label class="field-label">단지/건물명</label>
+              <input type="text" class="input-box" id="in_complex" value="목련마을두산" placeholder="예: 목련두산"
+                oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">동(棟)</label>
+              <input type="text" class="input-box" id="in_dong_num" value="제601동" placeholder="예: 제601동"
+                oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">호(號)</label>
+              <input type="text" class="input-box" id="in_ho_num" value="제601호" placeholder="예: 제601호"
+                oninput="syncAll()">
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">도로명 주소</label>
+            <input type="text" class="input-box" id="in_road_addr" value="경기도 안양시 동안구 동안로 120" placeholder="도로명주소"
+              oninput="syncAll()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">전체 지번 표시 (공적장부용)</label>
+            <input type="text" class="input-box" id="in_addr_full" value="경기도 안양시 동안구 호계동 1054 목련마을두산아파트 제601동 제601호"
+              oninput="syncAll()">
+          </div>
+        </div>
+      </div>
+
+      <!-- [공적장부 2] 토지에 관한 사항 (토지대장/토지등기) -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>🌱 2. 토지에 관한 사항 (토지대장 연동)</span>
+          <span class="section-badge green">토지대장</span>
+        </div>
+        <div class="section-content">
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">⑩ 법정 지목</label>
+              <input type="text" class="input-box" id="in_jimok_legal" value="대" oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">⑪ 현실 지목</label>
+              <input type="text" class="input-box" id="in_jimok_actual" value="대" oninput="syncAll()">
+            </div>
+          </div>
+          <div class="field-row grid-3">
+            <div>
+              <label class="field-label">1필지 총면적(㎡)</label>
+              <input type="number" step="0.01" class="input-box" id="in_land_total_area" value="56123.4"
+                placeholder="총면적" oninput="calcLandShare(); syncAll();">
+            </div>
+            <div>
+              <label class="field-label">대지권 분모</label>
+              <input type="number" class="input-box" id="in_land_ratio_den" value="56123" placeholder="분모"
+                oninput="calcLandShare(); syncAll();">
+            </div>
+            <div>
+              <label class="field-label">대지권 분자</label>
+              <input type="number" step="0.001" class="input-box" id="in_land_ratio_num" value="51.84" placeholder="분자"
+                oninput="calcLandShare(); syncAll();">
+            </div>
+          </div>
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">⑫ 대지권 지분면적(㎡)</label>
+              <input type="text" class="input-box read-calc" id="in_land_share_display" value="51.84㎡"
+                oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">개별공시지가(원/㎡)</label>
+              <input type="number" class="input-box" id="in_land_unit_price" value="4500000" placeholder="원/㎡"
+                oninput="calcPriceBreakdown(); syncAll();">
+            </div>
+          </div>
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">⑬ 용도지역</label>
+              <input type="text" class="input-box" id="in_yongdo_area" value="제3종일반주거지역" oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">⑭ 토지 이용현황</label>
+              <input type="text" class="input-box" id="in_land_use_status" value="아파트" oninput="syncAll()">
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">⑮ 권리설정현황</label>
+            <input type="text" class="input-box" id="in_rights_status" value="해당없음" placeholder="근저당권 등 설정사항 (없으면 해당없음)"
+              oninput="syncAll()">
+          </div>
+        </div>
+      </div>
+
+      <!-- [공적장부 3] 건축물에 관한 사항 (건축물대장/건물등기) -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>🏢 3. 건축물에 관한 사항 (건축물대장 연동)</span>
+          <span class="section-badge green">건축물대장</span>
+        </div>
+        <div class="section-content">
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">⑯ 종류 (주용도)</label>
+              <input type="text" class="input-box" id="in_bld_type" value="공동주택" oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">⑰ 정착물의 내용 (동·호)</label>
+              <input type="text" class="input-box" id="in_bld_detail" value="제601동 제601호" oninput="syncAll()">
+            </div>
+          </div>
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">전유면적(㎡)</label>
+              <input type="number" step="0.01" class="input-box" id="in_exclusive_area" value="101.42"
+                oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">공용면적(㎡)</label>
+              <input type="number" step="0.01" class="input-box" id="in_common_area" value="28.56" oninput="syncAll()">
+            </div>
+          </div>
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">⑱ 이전 권리 종류</label>
+              <input type="text" class="input-box" id="in_right_kind" value="소유권" oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">⑲ 내용 (이전/설정)</label>
+              <input type="text" class="input-box" id="in_right_action" value="이전" oninput="syncAll()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- [공적장부 4] 계약 및 금액 산출 (자동계산) -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>💰 4. 계약 & 금액 산출 (자동 안분 계산)</span>
+          <span class="section-badge orange">자동계산</span>
+        </div>
+        <div class="section-content">
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">⑳ 이전/설정 형태</label>
+              <input type="text" class="input-box" id="in_transfer_type" value="매매" oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">계약예정일</label>
+              <input type="date" class="input-box" id="in_contract_date" value="2026-11-25" oninput="syncAll()">
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label"> 총 거래예정금액 (원) <span class="sub">실제 매매대금</span></label>
+            <input type="number" class="input-box" id="in_total_price" value="1250000000"
+              oninput="calcPriceBreakdown(); syncAll();">
+          </div>
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label"> 토지 예정금액 (공시지가 안분)</label>
+              <input type="text" class="input-box read-calc" id="in_land_price_display" value="233,280,000원" readonly>
+            </div>
+            <div>
+              <label class="field-label"> 건물 예정금액 (총액 - 토지)</label>
+              <input type="text" class="input-box read-calc" id="in_bld_price_display" value="1,016,720,000원" readonly>
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">이용목적 (토지이용계획)</label>
+            <input type="text" class="input-box" id="in_purpose" value="주거용 (세대원 전원 실거주 자가주택 취득)" oninput="syncAll()">
+          </div>
+        </div>
+      </div>
+
+      <!-- [당사자 5] 매도인 (양도인) -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>👤 5. 매도인 (양도인) 인적사항</span>
+          <span class="section-badge">1p·2p·8p</span>
+        </div>
+        <div class="section-content">
+          <!-- 매도인 (주) -->
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">성명 (법인명)</label>
+              <input type="text" class="input-box" id="in_seller_name" value="김매도" placeholder="성명" oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">주민등록번호</label>
+              <input type="text" class="input-box" id="in_seller_rrn" value="750101-1234567"
+                placeholder="000000-0000000" oninput="syncAll()">
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">연락처</label>
+            <input type="text" class="input-box" id="in_seller_tel" value="010-3322-1144" placeholder="010-0000-0000"
+              oninput="syncAll()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">주민등록상 주소</label>
+            <input type="text" class="input-box" id="in_seller_addr" value="경기도 안양시 동안구 동안로 120, 101동 202호"
+              oninput="syncAll()">
+          </div>
+
+          <!-- 공동매도인 (공동명의자 추가) -->
+          <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 3px;">
+              <span style="font-size:10px; font-weight:700; color:#ea580c;">➕ 공동매도인 (공동명의)</span>
+              <span style="font-size:8.5px; color:#64748b;">(있을 경우만 입력 · 1p·2p·8p 자동 반영)</span>
+            </div>
+            <div class="field-row grid-2">
+              <div>
+                <label class="field-label">성명 (공동명의)</label>
+                <input type="text" class="input-box" id="in_seller2_name" value="" placeholder="공동매도인 성명"
+                  oninput="syncAll()">
+              </div>
+              <div>
+                <label class="field-label">주민등록번호</label>
+                <input type="text" class="input-box" id="in_seller2_rrn" value="" placeholder="000000-0000000"
+                  oninput="syncAll()">
+              </div>
+            </div>
+            <div class="field-row">
+              <label class="field-label">연락처</label>
+              <input type="text" class="input-box" id="in_seller2_tel" value="" placeholder="010-0000-0000"
+                oninput="syncAll()">
+            </div>
+            <div class="field-row">
+              <label class="field-label">주소</label>
+              <input type="text" class="input-box" id="in_seller2_addr" value="" placeholder="공동매도인 주소"
+                oninput="syncAll()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- [당사자 6] 매수인 (양수인 / 신청인) -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>👥 6. 매수인 (양수인 / 제출인) 인적사항</span>
+          <span class="section-badge blue">핵심</span>
+        </div>
+        <div class="section-content">
+          <!-- 매수인 (주) -->
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">성명 (법인명)</label>
+              <input type="text" class="input-box" id="in_buyer_name" value="이매수" placeholder="성명" oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">주민등록번호</label>
+              <input type="text" class="input-box" id="in_buyer_rrn" value="850505-1987654" placeholder="000000-0000000"
+                oninput="syncAll()">
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">연락처</label>
+            <input type="text" class="input-box" id="in_buyer_tel" value="010-9876-5432" placeholder="010-0000-0000"
+              oninput="syncAll()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">현재 주민등록상 주소</label>
+            <input type="text" class="input-box" id="in_buyer_addr" value="서울특별시 서초구 서초대로 50, 203동 501호"
+              oninput="syncAll()">
+          </div>
+
+          <!-- 공동매수인 (공동명의자 추가) -->
+          <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 3px;">
+              <span style="font-size:10px; font-weight:700; color:#2563eb;">➕ 공동매수인 (공동명의)</span>
+              <span style="font-size:8.5px; color:#64748b;">(있을 경우만 입력 · 1p·2p·4p·7p·8p 자동 반영)</span>
+            </div>
+            <div class="field-row grid-2">
+              <div>
+                <label class="field-label">성명 (공동명의)</label>
+                <input type="text" class="input-box" id="in_buyer2_name" value="" placeholder="공동매수인 성명"
+                  oninput="syncAll()">
+              </div>
+              <div>
+                <label class="field-label">주민등록번호</label>
+                <input type="text" class="input-box" id="in_buyer2_rrn" value="" placeholder="000000-0000000"
+                  oninput="syncAll()">
+              </div>
+            </div>
+            <div class="field-row">
+              <label class="field-label">연락처</label>
+              <input type="text" class="input-box" id="in_buyer2_tel" value="" placeholder="010-0000-0000"
+                oninput="syncAll()">
+            </div>
+            <div class="field-row">
+              <label class="field-label">주소</label>
+              <input type="text" class="input-box" id="in_buyer2_addr" value="" placeholder="공동매수인 주소"
+                oninput="syncAll()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- [자금조달 및 이용계획 7] -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>🏦 7. 자금조달(3p) 및 입주계획(4p)</span>
+          <span class="section-badge">별지서식</span>
+        </div>
+        <div class="section-content">
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">자기자금 소계(원)</label>
+              <input type="number" class="input-box" id="in_fund_self" value="650000000" oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">금융기관 대출액(원)</label>
+              <input type="number" class="input-box" id="in_fund_loan" value="600000000" oninput="syncAll()">
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">실거주 입주예정 시기</label>
+            <input type="text" class="input-box" id="in_move_in_date" value="2026년 12월 (잔금 지급 즉시 세대원 전원 입주)"
+              oninput="syncAll()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">거주예정자 성명</label>
+            <input type="text" class="input-box" id="in_residents" value="이매수(본인) 및 배우자, 자녀 2명 (세대원 전원)"
+              oninput="syncAll()">
+          </div>
+        </div>
+      </div>
+
+      <!-- [대리인 8] 개업공인중개사 (위임장 8p) -->
+      <div class="form-section">
+        <div class="section-title">
+          <span>📑 8. 수임인 (개업공인중개사)</span>
+          <span class="section-badge">위임장 8p</span>
+        </div>
+        <div class="section-content">
+          <div class="field-row">
+            <label class="field-label">중개사무소 상호</label>
+            <input type="text" class="input-box" id="in_agent_office" value="부동산이즈 두산공인중개사사무소" oninput="syncAll()">
+          </div>
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">대표 공인중개사 성명</label>
+              <input type="text" class="input-box" id="in_agent_name" value="백근영" oninput="syncAll()">
+            </div>
+            <div>
+              <label class="field-label">중개사 등록번호</label>
+              <input type="text" class="input-box" id="in_agent_reg" value="41173-2023-00045" oninput="syncAll()">
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">사무소 소재지</label>
+            <input type="text" class="input-box" id="in_agent_addr" value="경기도 안양시 동안구 평촌대로179번길 39, 상가 104호"
+              oninput="syncAll()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">사무소 대표 전화</label>
+            <input type="text" class="input-box" id="in_agent_tel" value="031-383-7700" oninput="syncAll()">
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ==============================================================
+       2. 우측 8페이지 A4 정밀 미리보기 패널
+       ============================================================== -->
+  <main class="preview-container" id="previewContainer">
+
+    <!-- 상단 줌 툴바 -->
+    <div class="preview-toolbar no-print">
+      <span style="font-weight:700;">🔍 배율</span>
+      <button onclick="setZoom(0.65)">65%</button>
+      <button onclick="setZoom(0.80)">80%</button>
+      <button onclick="setZoom(1.0)">100% (실제)</button>
+      <button onclick="setZoom('fit')">너비 맞춤</button>
+      <span style="color:#94a3b8; margin-left:8px;">|</span>
+      <span id="currentZoomText" style="color:#38bdf8; font-weight:700;">100%</span>
+    </div>
+
+    <!-- 십자선 가이드 및 실시간 좌표 뱃지 -->
+    <div class="coord-guide-x" id="guideX"></div>
+    <div class="coord-guide-y" id="guideY"></div>
+    <div class="coord-live-badge" id="liveCoordBadge">X: 0.0mm, Y: 0.0mm</div>
+    <div id="fieldResizeHandle" class="field-resize-handle no-print" title="모서리를 드래그하여 범위(너비/높이) 변경"></div>
+
+    <!-- ==========================================================
+         Page 1: 토지거래계약 허가신청서 (앞쪽) - 300 DPI 정밀 매핑
+         ========================================================== -->
+    <div class="a4-page-wrapper" id="wrap-page-1">
+      <div class="page-header-tag no-print">
+        <span>📄 [1페이지] 토지거래계약 허가신청서 (앞쪽)</span>
+        <span>A4 210 x 297mm · bg/page_1.png</span>
+      </div>
+      <div class="a4-page" id="page-1" data-page="1">
+        <!-- 매도인 정보 (y: 50.4~67.7mm) -->
+        <div class="field bold" id="f_p1_seller_name" data-label="1p 매도인 성명" data-bind="seller_name"
+          style="top: 52.7mm; left: 67mm;"></div>
+        <div class="field" id="f_p1_seller_rrn" data-label="1p 매도인 주민번호" data-bind="seller_rrn"
+          style="top: 54.8mm; left: 127.5mm;"></div>
+        <div class="field wrap" id="f_p1_seller_addr" data-label="1p 매도인 주소" data-bind="seller_addr"
+          style="top: 62.5mm; left: 40mm; width: 82.6mm; height: 4.2mm; white-space: normal; word-break: keep-all;"></div>
+        <div class="field" id="f_p1_seller_tel" data-label="1p 매도인 연락처" data-bind="seller_tel"
+          style="top: 63mm; left: 132.1mm;"></div>
+
+        <!-- 매수인 정보 (y: 67.7~85.1mm) -->
+        <div class="field bold" id="f_p1_buyer_name" data-label="1p 매수인 성명" data-bind="buyer_name"
+          style="top: 69.6mm; left: 67.5mm;"></div>
+        <div class="field" id="f_p1_buyer_rrn" data-label="1p 매수인 주민번호" data-bind="buyer_rrn"
+          style="top: 72mm; left: 127.3mm;"></div>
+        <div class="field wrap" id="f_p1_buyer_addr" data-label="1p 매수인 주소" data-bind="buyer_addr"
+          style="top: 80mm; left: 40mm; width: 82.6mm; height: 4.5mm; white-space: normal; word-break: keep-all;"></div>
+        <div class="field" id="f_p1_buyer_tel" data-label="1p 매수인 연락처" data-bind="buyer_tel"
+          style="top: 80.5mm; left: 133.2mm;"></div>
+
+        <!-- ⑦ 허가신청 권리 (소유권 체크 ✔) -->
+        <div class="field bold" id="f_p1_right_check" data-label="1p 신청권리(소유권체크)"
+          style="top: 86.9mm; left: 84.2mm; font-size: 11pt; color: #1e3a8a;">✔</div>
+
+        <!-- 토지에 관한 사항 (y: 104.5~116.4mm) -->
+        <div class="field center" id="f_p1_land_row1_dong" data-label="1p 토지 ⑧소재지" data-bind="dong"
+          style="top: 108.5mm; left: 54.2mm; width: 22.6mm; height: 4.8mm;"></div>
+        <div class="field center" id="f_p1_land_row1_jibun" data-label="1p 토지 ⑨지번" data-bind="jibun_display"
+          style="top: 106.4mm; left: 77.5mm; width: 18mm; white-space: normal; word-break: keep-all;"></div>
+        <div class="field center" id="f_p1_land_row1_jimok_l" data-label="1p 토지 ⑩법정지목" data-bind="jimok_legal"
+          style="top: 108.5mm; left: 96.5mm; width: 15mm;"></div>
+        <div class="field center" id="f_p1_land_row1_jimok_a" data-label="1p 토지 ⑪현실지목" data-bind="jimok_actual"
+          style="top: 108.5mm; left: 114mm; width: 17mm;"></div>
+        <div class="field center" id="f_p1_land_row1_ratio" data-label="1p 토지 ⑫면적(대지권비율)" data-bind="land_ratio_html"
+          data-html="true"
+          style="top: 106.6mm; left: 132.5mm; width: 16.5mm; height: 8.2mm; display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.15; overflow: hidden; padding: 0;">
+        </div>
+        <div class="field center sm" id="f_p1_land_row1_yongdo" data-label="1p 토지 ⑬용도지역" data-bind="yongdo_area"
+          style="top: 108.5mm; left: 151mm; width: 26mm;"></div>
+        <div class="field center" id="f_p1_land_row1_status" data-label="1p 토지 ⑭이용현황" data-bind="land_use_status"
+          style="top: 108.5mm; left: 178.9mm; width: 15.1mm; height: 4mm;"></div>
+
+        <!-- 정착물에 관한 사항 (y: 133.0~144.8mm) -->
+        <div class="field center sm bold" id="f_p1_bld_row1_type" data-label="1p 정착물 ⑯종류(공동주택)" data-bind="bld_type"
+          style="top: 134.5mm; left: 55.6mm; width: 36mm;"></div>
+        <div class="field center sm" id="f_p1_bld_row1_complex" data-label="1p 정착물 ⑯단지명" data-bind="complex_name_parens"
+          style="top: 139.7mm; left: 56.4mm; width: 36mm;"></div>
+        <div class="field center sm" id="f_p1_bld_row1_desc" data-label="1p 정착물 ⑰내용" data-bind="bld_detail"
+          style="top: 136mm; left: 97.8mm; width: 32.3mm; height: 8.5mm; white-space: normal; word-break: keep-all;"></div>
+        <div class="field center" id="f_p1_bld_row1_rkind" data-label="1p 정착물 ⑱권리종류" data-bind="right_kind"
+          style="top: 136.5mm; left: 133mm; width: 32mm;"></div>
+        <div class="field center" id="f_p1_bld_row1_ract" data-label="1p 정착물 ⑲내용" data-bind="right_action"
+          style="top: 136.5mm; left: 167mm; width: 27mm;"></div>
+
+        <!-- 이전 또는 설정하는 권리 내용 (y: 155.8~167.9mm) -->
+        <div class="field center" id="f_p1_transfer_type" data-label="1p ⑳이전형태" data-bind="transfer_type"
+          style="top: 159.5mm; left: 53.6mm; width: 42mm;"></div>
+
+        <!-- 계약예정금액에 관한 사항 (y: 182.1~193.9mm) -->
+        <div class="field center xs" id="f_p1_price_jimok" data-label="1p 금액 지목" data-bind="jimok_actual"
+          style="top: 185.5mm; left: 58.3mm; width: 9mm;"></div>
+        <div class="field center xs" id="f_p1_price_area" data-label="1p 금액 면적" data-bind="land_share_num"
+          style="top: 185.5mm; left: 73.8mm; width: 14mm;"></div>
+        <div class="field right xs" id="f_p1_price_unit" data-label="1p 금액 단가" data-bind="land_unit_fmt"
+          style="top: 185.5mm; left: 88.3mm; width: 19mm;"></div>
+        <div class="field right xs bold" id="f_p1_price_land" data-label="1p 금액 토지금액" data-bind="land_price_fmt"
+          style="top: 185.5mm; left: 108.6mm; width: 23mm;"></div>
+        <div class="field center xs" id="f_p1_price_bld_type" data-label="1p 금액 건물종류" data-bind="bld_type_short"
+          style="top: 185.5mm; left: 132.5mm; width: 13.1mm; height: 4mm;"></div>
+        <div class="field right xs bold" id="f_p1_price_bld" data-label="1p 금액 건물금액" data-bind="bld_price_fmt"
+          style="top: 185.5mm; left: 146.4mm; width: 19.8mm; height: 4.2mm;"></div>
+        <div class="field right xs bold" id="f_p1_price_total" data-label="1p 금액 예정합계" data-bind="total_price_fmt"
+          style="top: 185.5mm; left: 167.7mm; width: 27.2mm; height: 4.2mm;"></div>
+
+        <!-- 신청인 서명 (y: 220.0~232.0mm, 매도인/매수인 및 공동명의인 위아래 배치) -->
+        <div class="field bold" id="f_p1_sign_seller" data-label="1p 매도인 성명/서명" data-bind="seller_sign_text"
+          style="top: 220.5mm; left: 137.5mm;"></div>
+        <div class="field bold" id="f_p1_sign_seller2" data-label="1p 공동매도인 성명/서명" data-bind="seller2_sign_text"
+          style="top: 220.5mm; left: 162.6mm;"></div>
+        <div class="field bold" id="f_p1_sign_buyer" data-label="1p 매수인 성명/서명" data-bind="buyer_sign_text"
+          style="top: 227.8mm; left: 137.5mm;"></div>
+        <div class="field bold" id="f_p1_sign_buyer2" data-label="1p 공동매수인 성명/서명" data-bind="buyer2_sign_text"
+          style="top: 227.8mm; left: 162.6mm;"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         Page 2: 허가신청서 별지 (기본 제외, 공동명의 시 자동 포함)
+         ========================================================== -->
+    <div class="a4-page-wrapper excluded" id="wrap-page-2">
+      <div class="page-header-tag no-print">
+        <span>📄 [2페이지] 허가신청서 별지목록 (공동명의 등 다수 시)</span>
+        <span>A4 210 x 297mm · bg/page_2.png</span>
+      </div>
+      <div class="a4-page" id="page-2" data-page="2">
+        <!-- 1. 매도인 인적사항 (별지: 공동매도인 기재란) -->
+        <div class="field bold" id="f_p2_seller2_name" data-label="2p 매도인2 성명" data-bind="seller2_name"
+          style="top: 37.5mm; left: 60.8mm; width: 45mm;"></div>
+        <div class="field" id="f_p2_seller2_rrn" data-label="2p 매도인2 주민번호" data-bind="seller2_rrn"
+          style="top: 39.1mm; left: 123.4mm; width: 55mm;"></div>
+        <div class="field wrap" id="f_p2_seller2_addr" data-label="2p 매도인2 주소" data-bind="seller2_addr"
+          style="top: 51.7mm; left: 41.7mm; width: 74.9mm; height: 9.5mm; white-space: normal; word-break: keep-all;"></div>
+        <div class="field" id="f_p2_seller2_tel" data-label="2p 매도인2 연락처" data-bind="seller2_tel"
+          style="top: 52.2mm; left: 123.7mm; width: 38mm;"></div>
+
+        <!-- 2. 매수인 인적사항 (별지: 공동매수인 기재란) -->
+        <div class="field bold" id="f_p2_buyer2_name" data-label="2p 매수인2 성명" data-bind="buyer2_name"
+          style="top: 183.2mm; left: 61.3mm; width: 45mm;"></div>
+        <div class="field" id="f_p2_buyer2_rrn" data-label="2p 매수인2 주민번호" data-bind="buyer2_rrn"
+          style="top: 185.3mm; left: 123.9mm; width: 55mm;"></div>
+        <div class="field wrap" id="f_p2_buyer2_addr" data-label="2p 매수인2 주소" data-bind="buyer2_addr"
+          style="top: 199.4mm; left: 41.2mm; width: 74.9mm; height: 9mm; white-space: normal; word-break: keep-all;"></div>
+        <div class="field" id="f_p2_buyer2_tel" data-label="2p 매수인2 연락처" data-bind="buyer2_tel"
+          style="top: 201.5mm; left: 125.2mm; width: 38mm;"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         Page 3: 토지취득자금조달계획서 (매수인 1)
+         ========================================================== -->
+    <div class="a4-page-wrapper" id="wrap-page-3">
+      <div class="page-header-tag no-print">
+        <span>📄 [3페이지] 토지취득자금조달계획서 (매수인1)</span>
+        <span>A4 210 x 297mm · bg/page_3.png</span>
+      </div>
+      <div class="a4-page" id="page-3" data-page="3">
+        <!-- 제출인(매수인1) 인적사항 -->
+        <div class="field bold" id="f_p3_buyer_name" data-label="3p 제출인 성명" data-bind="buyer_raw_name"
+          style="top: 52.2mm; left: 64.8mm;"></div>
+        <div class="field" id="f_p3_buyer_rrn" data-label="3p 제출인 주민번호" data-bind="buyer_rrn"
+          style="top: 53.8mm; left: 137.3mm;"></div>
+        <div class="field wrap" id="f_p3_buyer_addr" data-label="3p 제출인 주소" data-bind="buyer_addr"
+          style="top: 64.3mm; left: 42.3mm; width: 82.5mm; white-space: normal; word-break: keep-all; height: 4.5mm;"></div>
+        <div class="field" id="f_p3_buyer_tel" data-label="3p 제출인 연락처" data-bind="buyer_tel"
+          style="top: 65.4mm; left: 139mm;"></div>
+
+        <!-- 제출인 서명 (no '(인)') -->
+        <div class="field bold" id="f_p3_sign" data-label="3p 제출인 서명" data-bind="buyer_sign_text"
+          style="top: 257mm; left: 140mm;"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         Page 3-2: 토지취득자금조달계획서 (공동매수인 2 - 공동명의 시 자동 포함)
+         ========================================================== -->
+    <div class="a4-page-wrapper excluded" id="wrap-page-3-2">
+      <div class="page-header-tag no-print">
+        <span>📄 [3-2페이지] 토지취득자금조달계획서 (공동매수인2)</span>
+        <span>A4 210 x 297mm · bg/page_3.png</span>
+      </div>
+      <div class="a4-page" id="page-3-2" data-page="3-2">
+        <!-- 제출인(공동매수인2) 인적사항 -->
+        <div class="field bold" id="f_p3_2_buyer_name" data-label="3p-2 제출인 성명" data-bind="buyer2_name"
+          style="top: 53.3mm; left: 47.6mm;"></div>
+        <div class="field" id="f_p3_2_buyer_rrn" data-label="3p-2 제출인 주민번호" data-bind="buyer2_rrn"
+          style="top: 54.1mm; left: 132.8mm;"></div>
+        <div class="field wrap" id="f_p3_2_buyer_addr" data-label="3p-2 제출인 주소" data-bind="buyer2_addr"
+          style="top: 63mm; left: 42mm; width: 81.7mm; white-space: normal; word-break: keep-all; height: 5.6mm;"></div>
+        <div class="field" id="f_p3_2_buyer_tel" data-label="3p-2 제출인 연락처" data-bind="buyer2_tel"
+          style="top: 64.9mm; left: 133.2mm;"></div>
+
+        <!-- 제출인 서명 (no '(인)') -->
+        <div class="field bold" id="f_p3_2_sign" data-label="3p-2 제출인 서명" data-bind="buyer2_sign_text"
+          style="top: 257mm; left: 140mm;"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         Page 4: 토지이용계획서 Ⓐ (주거용 자가주택)
+         ========================================================== -->
+    <div class="a4-page-wrapper" id="wrap-page-4">
+      <div class="page-header-tag no-print">
+        <span>📄 [4페이지] 토지이용계획서 Ⓐ (주거용 실거주 계획)</span>
+        <span>A4 210 x 297mm · bg/page_4.png</span>
+      </div>
+      <div class="a4-page" id="page-4" data-page="4">
+        <!-- 매수인 인적사항 (공동명의 시 성명 병기, 주민번호 및 전화 상하 배치) -->
+        <div class="field center bold" id="f_p4_buyer_name" data-label="4p 매수인 성명" data-bind="buyer_name_p4"
+          style="top: 22.2mm; left: 52mm; width: 33.5mm;"></div>
+        <div class="field center sm" id="f_p4_buyer_rrn" data-label="4p 매수인 주민번호" data-bind="buyer_rrn"
+          style="top: 20.6mm; left: 112mm; width: 35mm;"></div>
+        <div class="field center sm" id="f_p4_buyer2_rrn" data-label="4p 공동매수인 주민번호" data-bind="buyer2_rrn"
+          style="top: 24mm; left: 112mm; width: 35mm;"></div>
+        <div class="field center sm" id="f_p4_buyer_tel" data-label="4p 매수인 전화" data-bind="buyer_tel"
+          style="top: 20.6mm; left: 166.8mm; width: 27.5mm;"></div>
+        <div class="field center sm" id="f_p4_buyer2_tel" data-label="4p 공동매수인 전화" data-bind="buyer2_tel"
+          style="top: 24mm; left: 166.8mm; width: 27.5mm;"></div>
+        <div class="field wrap sm" id="f_p4_buyer_addr" data-label="4p 매수인 주소" data-bind="buyer_addr_p4"
+          style="top: 29.5mm; left: 52mm; width: 142mm; white-space: normal; word-break: keep-all;"></div>
+
+        <!-- 토지 현황 (소재지/지번, 지목 공부 & 현황 나란히 배치, 면적, 용도지역, 건축물현황) -->
+        <div class="field center sm" id="f_p4_land_addr" data-label="4p 토지 소재지/지번" data-bind="dong_jibun"
+          style="top: 48mm; left: 31.8mm; width: 31.5mm;"></div>
+        <div class="field center" id="f_p4_land_jimok_study" data-label="4p 토지 지목(공부)" data-bind="jimok_legal"
+          style="top: 48mm; left: 63.8mm; width: 13mm;"></div>
+        <div class="field center" id="f_p4_land_jimok_actual" data-label="4p 토지 지목(현황)" data-bind="jimok_actual"
+          style="top: 48mm; left: 77.2mm; width: 13.8mm;"></div>
+        <div class="field center sm" id="f_p4_land_area" data-label="4p 토지 면적" data-bind="land_share_display"
+          style="top: 48mm; left: 91.5mm; width: 19mm;"></div>
+        <div class="field center xs" id="f_p4_land_yongdo" data-label="4p 토지 용도지역" data-bind="yongdo_area"
+          style="top: 48mm; left: 111mm; width: 27mm;"></div>
+        <div class="field center xs" id="f_p4_bld_desc" data-label="4p 건축물 현황" data-bind="bld_desc"
+          style="top: 48mm; left: 138.5mm; width: 56mm;"></div>
+
+        <!-- 제출인(매수인 및 공동명의인) 서명 -->
+        <div class="field bold" id="f_p4_sign_buyer" data-label="4p 매수인 서명" data-bind="buyer_sign_text"
+          style="top: 266.4mm; left: 140.3mm;"></div>
+        <div class="field bold" id="f_p4_sign_buyer2" data-label="4p 공동매수인 서명" data-bind="buyer2_sign_text"
+          style="top: 275.4mm; left: 140.3mm;"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         Page 5: 토지이용계획서 Ⓑ (실거주 유예 등 - 기본 제외)
+         ========================================================== -->
+    <div class="a4-page-wrapper excluded" id="wrap-page-5">
+      <div class="page-header-tag no-print">
+        <span>📄 [5페이지] 토지이용계획서 Ⓑ (26.5.12 실거주 유예 관련)</span>
+        <span>A4 210 x 297mm · bg/page_5.png</span>
+      </div>
+      <div class="a4-page" id="page-5" data-page="5">
+        <div class="field" id="f_p5_buyer_name" data-label="5p 매수인 성명" data-bind="buyer_name"
+          style="top: 50mm; left: 50mm;"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         Page 6: 주택 임대차 계약 확인서 (기본 제외)
+         ========================================================== -->
+    <div class="a4-page-wrapper excluded" id="wrap-page-6">
+      <div class="page-header-tag no-print">
+        <span>📄 [6페이지] 주택 임대차 계약 확인서 (묵시적 갱신 등)</span>
+        <span>A4 210 x 297mm · bg/page_6.png</span>
+      </div>
+      <div class="a4-page" id="page-6" data-page="6">
+        <div class="field wrap" id="f_p6_addr" data-label="6p 임대차 소재지" data-bind="addr_full"
+          style="top: 45mm; left: 45mm; width: 140mm; white-space: normal; word-break: keep-all;"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         Page 7: 개인정보 및 행정정보 사전 동의서
+         ========================================================== -->
+    <div class="a4-page-wrapper" id="wrap-page-7">
+      <div class="page-header-tag no-print">
+        <span>📄 [7페이지] 개인정보 및 행정정보 공동이용 사전 동의서</span>
+        <span>A4 210 x 297mm · bg/page_7.png</span>
+      </div>
+      <div class="a4-page" id="page-7" data-page="7">
+        <!-- 신청인(동의자) 인적사항 및 서명 -->
+        <div class="field bold" id="f_p7_name" data-label="7p 신청인 성명" data-bind="buyer_sign_text"
+          style="top: 252.1mm; left: 98mm;"></div>
+        <div class="field bold" id="f_p7_name2" data-label="7p 공동명의인 성명" data-bind="buyer2_sign_text"
+          style="top: 251.5mm; left: 126.8mm;"></div>
+        <!-- 주민등록번호 (주매수인 및 옆에 공동명의인) -->
+        <div class="field sm" id="f_p7_rrn" data-label="7p 신청인 주민번호" data-bind="buyer_rrn"
+          style="top: 259.5mm; left: 98mm;"></div>
+        <div class="field sm" id="f_p7_rrn2" data-label="7p 공동명의인 주민번호" data-bind="buyer2_rrn"
+          style="top: 259mm; left: 126.8mm;"></div>
+        <!-- 연락처 (주매수인 및 옆에 공동명의인) -->
+        <div class="field sm" id="f_p7_tel" data-label="7p 신청인 연락처" data-bind="buyer_tel"
+          style="top: 267mm; left: 98mm;"></div>
+        <div class="field sm" id="f_p7_tel2" data-label="7p 공동명의인 연락처" data-bind="buyer2_tel"
+          style="top: 266.2mm; left: 126.8mm;"></div>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         Page 8: 토지거래계약 허가신청 위임장 (수임인 공인중개사)
+         ========================================================== -->
+    <div class="a4-page-wrapper" id="wrap-page-8">
+      <div class="page-header-tag no-print">
+        <span>📄 [8페이지] 토지거래계약 허가신청 위임장 (공인중개사 대리)</span>
+        <span>A4 210 x 297mm · bg/page_8.png</span>
+      </div>
+      <div class="a4-page" id="page-8" data-page="8">
+        <!-- 1. 위임인의 인적사항 -->
+        <!-- 가) 매도인 (성명, 주민번호, 연락처 옆에 공동명의인 나란히 배치) -->
+        <div class="field bold" id="f_p8_seller_name" data-label="8p 매도인 성명" data-bind="seller_raw_name"
+          style="top: 48.5mm; left: 44mm;"></div>
+        <div class="field bold" id="f_p8_seller2_name" data-label="8p 공동매도인 성명" data-bind="seller2_name"
+          style="top: 48.5mm; left: 64mm;"></div>
+        <div class="field sm" id="f_p8_seller_rrn" data-label="8p 매도인 주민번호" data-bind="seller_rrn"
+          style="top: 48.5mm; left: 119mm;"></div>
+        <div class="field sm" id="f_p8_seller2_rrn" data-label="8p 공동매도인 주민번호" data-bind="seller2_rrn"
+          style="top: 48.5mm; left: 155mm;"></div>
+        <div class="field wrap sm" id="f_p8_seller_addr" data-label="8p 매도인 주소" data-bind="seller_addr_p8" data-html="true"
+          style="top: 55.7mm; left: 42.7mm; width: 73.3mm; white-space: normal; word-break: keep-all; height: 7.4mm;"></div>
+        <div class="field sm" id="f_p8_seller_tel" data-label="8p 매도인 연락처" data-bind="seller_tel"
+          style="top: 57mm; left: 148mm;"></div>
+        <div class="field sm" id="f_p8_seller2_tel" data-label="8p 공동매도인 연락처" data-bind="seller2_tel"
+          style="top: 57mm; left: 171mm;"></div>
+
+        <!-- 나) 매수인 (성명, 주민번호, 연락처 옆에 공동명의인 나란히 배치) -->
+        <div class="field bold" id="f_p8_buyer_name" data-label="8p 매수인 성명" data-bind="buyer_raw_name"
+          style="top: 77.5mm; left: 44mm;"></div>
+        <div class="field bold" id="f_p8_buyer2_name" data-label="8p 공동매수인 성명" data-bind="buyer2_name"
+          style="top: 77.5mm; left: 64mm;"></div>
+        <div class="field sm" id="f_p8_buyer_rrn" data-label="8p 매수인 주민번호" data-bind="buyer_rrn"
+          style="top: 77.5mm; left: 119mm;"></div>
+        <div class="field sm" id="f_p8_buyer2_rrn" data-label="8p 공동매수인 주민번호" data-bind="buyer2_rrn"
+          style="top: 77.5mm; left: 155mm;"></div>
+        <div class="field wrap sm" id="f_p8_buyer_addr" data-label="8p 매수인 주소" data-bind="buyer_addr_p8" data-html="true"
+          style="top: 86mm; left: 44mm; width: 72mm; white-space: normal; word-break: keep-all;"></div>
+        <div class="field sm" id="f_p8_buyer_tel" data-label="8p 매수인 연락처" data-bind="buyer_tel"
+          style="top: 86mm; left: 148mm;"></div>
+        <div class="field sm" id="f_p8_buyer2_tel" data-label="8p 공동매수인 연락처" data-bind="buyer2_tel"
+          style="top: 86mm; left: 171mm;"></div>
+
+        <!-- 2. 수임인의 인적사항 (개업공인중개사 - 주소에서 부동산이름 제외) -->
+        <div class="field bold" id="f_p8_agent_name" data-label="8p 수임인 성명" data-bind="agent_name"
+          style="top: 106.5mm; left: 44mm;"></div>
+        <div class="field sm" id="f_p8_agent_reg" data-label="8p 수임인 등록번호" data-bind="agent_reg"
+          style="top: 106.5mm; left: 119mm;"></div>
+        <div class="field wrap sm" id="f_p8_agent_addr" data-label="8p 수임인 주소" data-bind="agent_addr"
+          style="top: 115mm; left: 44mm; width: 72mm; white-space: normal; word-break: keep-all;"></div>
+        <div class="field sm" id="f_p8_agent_tel" data-label="8p 수임인 연락처" data-bind="agent_tel"
+          style="top: 115mm; left: 148mm;"></div>
+
+        <!-- 3. 위임 권한 및 대상 부동산 표시 -->
+        <div class="field wrap bold" id="f_p8_target_addr" data-label="8p 위임 부동산 소재지" data-bind="addr_full"
+          style="top: 134.3mm; left: 43.7mm; width: 145mm; white-space: normal; word-break: keep-all;"></div>
+
+        <!-- 각 당사자 서명 (위임인 매도인/매수인 및 공동명의인 위아래 배치, no "(인)") -->
+        <div class="field bold" id="f_p8_sign_seller" data-label="8p 위임인(매도인) 성명" data-bind="seller_sign_text"
+          style="top: 182.5mm; left: 111.8mm;"></div>
+        <div class="field bold" id="f_p8_sign_seller2" data-label="8p 공동매도인 성명" data-bind="seller2_sign_text"
+          style="top: 181.4mm; left: 157.9mm;"></div>
+        <div class="field bold" id="f_p8_sign_buyer" data-label="8p 위임인(매수인) 성명" data-bind="buyer_sign_text"
+          style="top: 191.4mm; left: 111.8mm;"></div>
+        <div class="field bold" id="f_p8_sign_buyer2" data-label="8p 공동매수인 성명" data-bind="buyer2_sign_text"
+          style="top: 192.5mm; left: 158.1mm;"></div>
+        <div class="field bold" id="f_p8_sign_agent" data-label="8p 수임인(중개사) 성명" data-bind="agent_sign_text"
+          style="top: 203mm; left: 111.8mm;"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 토스트 알림창 -->
+  <div class="toast-container no-print" id="toastContainer"></div>
+
+  <!-- 공적장부 JSON 연동 모달 창 -->
+  <div class="modal-backdrop no-print" id="jsonModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span>🔄 공적장부 연동 JSON 불러오기 / 내보내기</span>
+        <button onclick="closeJsonModal()"
+          style="background:none; border:none; color:white; font-size:16px; cursor:pointer;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:11px; color:#64748b; margin-bottom:8px;">
+          차후 등기정보광장, 정부24(건축물대장/토지대장) 스크래퍼 또는 공공데이터 API로부터 수신한 표준 JSON 데이터를 아래에 붙여넣고 [적용하기]를 누르면 모든 서식이 자동 완성됩니다.
+        </p>
+        <textarea id="jsonArea"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="inspector-btn primary" onclick="importJsonData()">입력창에 적용하기</button>
+        <button class="inspector-btn" onclick="exportCurrentJson()">현재 데이터 JSON 복사</button>
+        <button class="inspector-btn" onclick="closeJsonModal()">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 좌표 내보내기 모달 창 -->
+  <div class="modal-backdrop no-print" id="codeModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span>📋 변경된 필드 좌표 코드 (CSS / HTML)</span>
+        <button onclick="closeCodeModal()"
+          style="background:none; border:none; color:white; font-size:16px; cursor:pointer;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:11px; color:#64748b; margin-bottom:8px;">조정한 모든 필드의 좌표 목록입니다. 클립보드에 복사하여 코드에 영구 반영할 수 있습니다.
+        </p>
+        <textarea id="exportedCodeText" readonly></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="inspector-btn primary" onclick="copyExportedCode()">전체 복사하기</button>
+        <button class="inspector-btn" onclick="closeCodeModal()">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       6. 통합 계산 및 자바스크립트 로직
+       ============================================================== -->
+  <script>
+    let isDragModeActive = true;
+    let isCoordHelperActive = true;
+    let selectedFieldEl = null;
+    let recentCoords = [];
+    const defaultPositions = {};
+
+    // 1. 숫자 포맷팅 유틸 (원 단위 콤마)
+    function formatNumber(num) {
+      if (isNaN(num) || num === null || num === '') return '0';
+      return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    // 2. 날짜 포맷팅 도우미 (YYYY년 MM월 DD일)
+    function formatDateKorean(dateStr) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      return `${parts[0]}년 ${parseInt(parts[1], 10)}월 ${parseInt(parts[2], 10)}일`;
+    }
+
+    // 3. 지번 완성 조합
+    function calcJibunFull() {
+      const main = document.getElementById('in_jibun_main').value.trim();
+      const sub = document.getElementById('in_jibun_sub').value.trim();
+      const extra = document.getElementById('in_jibun_extra').value.trim();
+      let res = main;
+      if (sub) res += '-' + sub;
+      if (extra) res += ' ' + extra;
+      return res;
+    }
+
+    // 4. 대지권 지분면적 자동 계산
+    function calcLandShare() {
+      const num = parseFloat(document.getElementById('in_land_ratio_num').value) || 0;
+      document.getElementById('in_land_share_display').value = num > 0 ? `${num.toFixed(2)}㎡` : '0㎡';
+      calcPriceBreakdown();
+    }
+
+    // 5. 공시지가 기준 토지/건물 금액 자동 안분 계산
+    function calcPriceBreakdown() {
+      const totalPrice = parseFloat(document.getElementById('in_total_price').value) || 0;
+      const landShareArea = parseFloat(document.getElementById('in_land_ratio_num').value) || 0;
+      const unitPrice = parseFloat(document.getElementById('in_land_unit_price').value) || 0;
+
+      // 토지 예정금액 = 대지권 면적 × 개별공시지가
+      const landPrice = landShareArea * unitPrice;
+      // 정착물(건물) 예정금액 = 총 매매금액 - 토지 예정금액
+      const bldPrice = Math.max(0, totalPrice - landPrice);
+
+      document.getElementById('in_land_price_display').value = formatNumber(landPrice) + '원';
+      document.getElementById('in_bld_price_display').value = formatNumber(bldPrice) + '원';
+    }
+
+    // 6. 전체 폼 실시간 동기화
+    function syncAll() {
+      const rawDate = document.getElementById('in_date').value;
+      const formattedDate = formatDateKorean(rawDate);
+      const dong = document.getElementById('in_dong').value;
+      const jibunDisplay = calcJibunFull();
+      const addrFull = document.getElementById('in_addr_full').value;
+
+      const sellerName = document.getElementById('in_seller_name').value.trim();
+      const sellerRrn = document.getElementById('in_seller_rrn').value.trim();
+      const sellerTel = document.getElementById('in_seller_tel').value.trim();
+      const sellerAddr = document.getElementById('in_seller_addr').value.trim();
+
+      const seller2Name = (document.getElementById('in_seller2_name')?.value || '').trim();
+      const seller2Rrn = (document.getElementById('in_seller2_rrn')?.value || '').trim();
+      const seller2Tel = (document.getElementById('in_seller2_tel')?.value || '').trim();
+      const seller2Addr = (document.getElementById('in_seller2_addr')?.value || '').trim();
+
+      const buyerName = document.getElementById('in_buyer_name').value.trim();
+      const buyerRrn = document.getElementById('in_buyer_rrn').value.trim();
+      const buyerTel = document.getElementById('in_buyer_tel').value.trim();
+      const buyerAddr = document.getElementById('in_buyer_addr').value.trim();
+
+      const buyer2Name = (document.getElementById('in_buyer2_name')?.value || '').trim();
+      const buyer2Rrn = (document.getElementById('in_buyer2_rrn')?.value || '').trim();
+      const buyer2Tel = (document.getElementById('in_buyer2_tel')?.value || '').trim();
+      const buyer2Addr = (document.getElementById('in_buyer2_addr')?.value || '').trim();
+
+      const complexName = (document.getElementById('in_complex')?.value || '').trim();
+      const complexParens = complexName ? `(${complexName})` : '';
+
+      const jimokLegal = document.getElementById('in_jimok_legal').value;
+      const jimokActual = document.getElementById('in_jimok_actual').value;
+      const landRatioDen = (document.getElementById('in_land_ratio_den').value || '').trim();
+      const landRatioNum = parseFloat(document.getElementById('in_land_ratio_num').value) || 0;
+      const landRatioText = `${landRatioDen}분의 ${landRatioNum.toFixed(2)}`;
+
+      let landRatioHtml = '';
+      if (landRatioDen && landRatioNum > 0) {
+        landRatioHtml = `<div style="font-size: 7.2pt; font-weight: 500; white-space: nowrap; letter-spacing: -0.3px;">${formatNumber(landRatioDen)}분의</div><div style="font-size: 7.8pt; font-weight: 700; white-space: nowrap; letter-spacing: -0.2px;">${landRatioNum.toFixed(2)}㎡</div>`;
+      } else if (landRatioNum > 0) {
+        landRatioHtml = `<div style="font-size: 8.2pt; font-weight: 700; white-space: nowrap;">${landRatioNum.toFixed(2)}㎡</div>`;
+      }
+
+      const yongdoArea = document.getElementById('in_yongdo_area').value;
+      const landUseStatus = document.getElementById('in_land_use_status').value;
+      const rightsStatus = document.getElementById('in_rights_status').value;
+
+      const rawBldType = document.getElementById('in_bld_type').value.trim();
+      const bldType = rawBldType.replace(/\([^)]*\)/g, '').trim() || rawBldType;
+      const bldTypeShort = '아파트';
+      const bldDetail = document.getElementById('in_bld_detail').value.trim();
+      const exclArea = document.getElementById('in_exclusive_area').value;
+      const bldDesc = `${bldDetail} (전용 ${exclArea}㎡)`;
+      const rightKind = document.getElementById('in_right_kind').value;
+      const rightAction = document.getElementById('in_right_action').value;
+      const transferType = document.getElementById('in_transfer_type').value;
+
+      const totalPrice = parseFloat(document.getElementById('in_total_price').value) || 0;
+      const unitPrice = parseFloat(document.getElementById('in_land_unit_price').value) || 0;
+      const landPrice = landRatioNum * unitPrice;
+      const bldPrice = Math.max(0, totalPrice - landPrice);
+
+      const fundSelf = parseFloat(document.getElementById('in_fund_self').value) || 0;
+      const fundLoan = parseFloat(document.getElementById('in_fund_loan').value) || 0;
+      const moveInDate = document.getElementById('in_move_in_date').value;
+      const residents = document.getElementById('in_residents').value;
+
+      const agentOffice = document.getElementById('in_agent_office').value;
+      const agentName = document.getElementById('in_agent_name').value;
+      const agentReg = document.getElementById('in_agent_reg').value;
+      const agentAddr = document.getElementById('in_agent_addr').value;
+      const agentTel = document.getElementById('in_agent_tel').value;
+
+      // 공동명의자 존재 시 2p 별지목록 및 3p-2 자금조달계획서 자동 체크 및 표시
+      const hasCoOwner = !!(seller2Name || buyer2Name);
+      const chkP2 = document.getElementById('chk-page-2');
+      const wrapP2 = document.getElementById('wrap-page-2');
+      if (chkP2 && wrapP2 && !chkP2.dataset.userToggled) {
+        chkP2.checked = hasCoOwner;
+        wrapP2.classList.toggle('excluded', !hasCoOwner);
+      }
+
+      const hasBuyer2 = !!buyer2Name;
+      const chkP3_2 = document.getElementById('chk-page-3-2');
+      const wrapP3_2 = document.getElementById('wrap-page-3-2');
+      if (chkP3_2 && wrapP3_2 && !chkP3_2.dataset.userToggled) {
+        chkP3_2.checked = hasBuyer2;
+        wrapP3_2.classList.toggle('excluded', !hasBuyer2);
+      }
+
+      const dongJibun = `${dong} ${jibunDisplay}`.trim();
+      const buyerNameP4 = buyer2Name ? `${buyerName}, ${buyer2Name}` : buyerName;
+      const sellerAddrP8 = (seller2Addr && seller2Addr !== sellerAddr) ? `${sellerAddr}<br>${seller2Addr}` : sellerAddr;
+      const buyerAddrP4 = (buyer2Addr && buyer2Addr !== buyerAddr) ? `${buyerAddr}, ${buyer2Addr}` : buyerAddr;
+      const buyerAddrP8 = (buyer2Addr && buyer2Addr !== buyerAddr) ? `${buyerAddr}<br>${buyer2Addr}` : buyerAddr;
+
+      const dataMap = {
+        date_raw: rawDate,
+        date_formatted: formattedDate,
+        dong: dong,
+        jibun_display: jibunDisplay,
+        dong_jibun: dongJibun,
+        addr_full: addrFull,
+        complex_name_parens: complexParens,
+
+        seller_name: sellerName, // 공동명의시에도 매도인1만 단독 표기
+        seller_raw_name: sellerName,
+        seller_rrn: sellerRrn,
+        seller_tel: sellerTel,
+        seller_addr: sellerAddr,
+        seller_addr_p8: sellerAddrP8,
+        seller_sign_text: sellerName,
+
+        seller2_name: seller2Name,
+        seller2_rrn: seller2Rrn,
+        seller2_tel: seller2Tel,
+        seller2_addr: seller2Addr,
+        seller2_sign_text: seller2Name,
+
+        buyer_name: buyerName, // 공동명의라도 매수인1만 단독 표기
+        buyer_name_p4: buyerNameP4,
+        buyer_raw_name: buyerName,
+        buyer_rrn: buyerRrn,
+        buyer_tel: buyerTel,
+        buyer_addr: buyerAddr,
+        buyer_addr_p4: buyerAddrP4,
+        buyer_addr_p8: buyerAddrP8,
+        buyer_sign_text: buyerName,
+
+        buyer2_name: buyer2Name,
+        buyer2_rrn: buyer2Rrn,
+        buyer2_tel: buyer2Tel,
+        buyer2_addr: buyer2Addr,
+        buyer2_sign_text: buyer2Name,
+
+        jimok_legal: jimokLegal,
+        jimok_actual: jimokActual,
+        land_ratio_text: landRatioText,
+        land_ratio_html: landRatioHtml,
+        land_share_num: landRatioNum.toFixed(2),
+        land_share_display: `${landRatioNum.toFixed(2)}㎡`,
+        yongdo_area: yongdoArea,
+        land_use_status: landUseStatus,
+        rights_status: rightsStatus,
+
+        bld_type: bldType,
+        bld_type_short: bldTypeShort,
+        bld_detail: bldDetail,
+        bld_desc: bldDesc,
+        right_kind: rightKind,
+        right_action: rightAction,
+        transfer_type: transferType,
+
+        land_unit_fmt: formatNumber(unitPrice),
+        land_price_fmt: formatNumber(landPrice),
+        bld_price_fmt: formatNumber(bldPrice),
+        total_price_fmt: formatNumber(totalPrice),
+
+        fund_self_fmt: formatNumber(fundSelf),
+        fund_loan_fmt: formatNumber(fundLoan),
+        move_in_date: moveInDate,
+        residents: residents,
+
+        agent_office: agentOffice,
+        agent_name: agentName,
+        agent_reg: agentReg,
+        agent_addr: agentAddr,
+        agent_tel: agentTel,
+        agent_office_full: `${agentOffice} (${agentAddr})`,
+        agent_sign_text: agentName
+      };
+
+      document.querySelectorAll('[data-bind]').forEach(el => {
+        const key = el.getAttribute('data-bind');
+        if (dataMap[key] !== undefined) {
+          if (el.hasAttribute('data-html') || key.includes('html')) {
+            el.innerHTML = dataMap[key];
+          } else {
+            el.textContent = dataMap[key];
+          }
+        }
+      });
+    }
+
+    // 서식 페이지 제외 토글
+    function togglePageDisplay(pageId, isChecked) {
+      const wrapper = document.getElementById('wrap-' + pageId);
+      if (wrapper) wrapper.classList.toggle('excluded', !isChecked);
+    }
+
+    // 배경 서식 선명도(투명도) 조절
+    function changeBgOpacity(val) {
+      document.getElementById('bgOpacityLabel').textContent = val + '%';
+      const opacityVal = val / 100;
+      document.querySelectorAll('.a4-page').forEach(page => {
+        page.style.backgroundColor = `rgba(255, 255, 255, ${1 - opacityVal})`;
+      });
+    }
+
+    // 줌 배율 제어
+    function setZoom(factor) {
+      const pages = document.querySelectorAll('.a4-page');
+      const textEl = document.getElementById('currentZoomText');
+      if (factor === 'fit') {
+        const containerWidth = document.getElementById('previewContainer').clientWidth - 60;
+        const fitScale = Math.min(1.0, containerWidth / 794);
+        pages.forEach(p => p.style.transform = `scale(${fitScale})`);
+        textEl.textContent = `${Math.round(fitScale * 100)}% (맞춤)`;
+      } else {
+        pages.forEach(p => p.style.transform = `scale(${factor})`);
+        textEl.textContent = `${Math.round(factor * 100)}%`;
+      }
+    }
+
+    // ==============================================================
+    // 7. 직접 드래그 & 방향키(0.1mm) 미세 조정 & 다중선택 / 정렬 / 범위 / 줄바꿈
+    // ==============================================================
+    let selectedFields = []; // Array of HTMLElement
+    let primarySelectedField = null;
+
+    function toggleDragMode(active) {
+      isDragModeActive = active;
+      document.body.classList.toggle('drag-mode-active', active);
+      document.getElementById('dragStatusBadge').textContent = active ? '(ON)' : '(OFF)';
+      document.getElementById('dragStatusBadge').style.color = active ? '#ea580c' : '#64748b';
+      if (!active) deselectAllFields();
+      showToast(active ? '🖐️ 필드 마우스 드래그 & 방향키 이동 모드 활성화' : '드래그 이동 모드 비활성화', false, true);
+    }
+
+    function selectField(fieldEl, isToggle = false) {
+      if (isToggle) {
+        const idx = selectedFields.indexOf(fieldEl);
+        if (idx > -1) {
+          fieldEl.classList.remove('selected', 'primary-selected');
+          selectedFields.splice(idx, 1);
+          if (primarySelectedField === fieldEl) {
+            primarySelectedField = selectedFields.length > 0 ? selectedFields[selectedFields.length - 1] : null;
+            if (primarySelectedField) primarySelectedField.classList.add('primary-selected');
+          }
+        } else {
+          selectedFields.push(fieldEl);
+          fieldEl.classList.add('selected');
+          if (primarySelectedField) primarySelectedField.classList.remove('primary-selected');
+          primarySelectedField = fieldEl;
+          fieldEl.classList.add('primary-selected');
+        }
+      } else {
+        selectedFields.forEach(f => f.classList.remove('selected', 'primary-selected'));
+        selectedFields = [fieldEl];
+        fieldEl.classList.add('selected', 'primary-selected');
+        primarySelectedField = fieldEl;
+      }
+      updateInspectorValues();
+      updateResizeHandle();
+    }
+
+    function deselectAllFields() {
+      selectedFields.forEach(f => f.classList.remove('selected', 'primary-selected'));
+      selectedFields = [];
+      primarySelectedField = null;
+      selectedFieldEl = null;
+      document.getElementById('fieldInspectorBox').style.display = 'none';
+      hideResizeHandle();
+    }
+
+    function deselectField() {
+      deselectAllFields();
+    }
+
+    function getFieldWidthMm(f) {
+      if (!f) return 20;
+      if (f.style.width && f.style.width.endsWith('mm')) {
+        return parseFloat(f.style.width) || 0;
+      }
+      const page = f.closest('.a4-page');
+      if (page) {
+        const scale = 210 / page.getBoundingClientRect().width;
+        return (f.offsetWidth * scale) || 20;
+      }
+      return 20;
+    }
+
+    function getFieldHeightMm(f) {
+      if (!f) return 5;
+      if (f.style.height && f.style.height.endsWith('mm')) {
+        return parseFloat(f.style.height) || 0;
+      }
+      const page = f.closest('.a4-page');
+      if (page) {
+        const scale = 210 / page.getBoundingClientRect().width;
+        return (f.offsetHeight * scale) || 5;
+      }
+      return 5;
+    }
+
+    function updateInspectorValues() {
+      if (selectedFields.length === 0) {
+        document.getElementById('fieldInspectorBox').style.display = 'none';
+        hideResizeHandle();
+        return;
+      }
+
+      document.getElementById('fieldInspectorBox').style.display = 'block';
+
+      const titleEl = document.getElementById('inspectorFieldName');
+      const countBadge = document.getElementById('inspectorCountBadge');
+
+      if (selectedFields.length === 1) {
+        const f = primarySelectedField || selectedFields[0];
+        selectedFieldEl = f;
+        const pageNum = f.closest('.a4-page')?.getAttribute('data-page') || '1';
+        const label = f.getAttribute('data-label') || f.id || '선택된 필드';
+        titleEl.textContent = `[P.${pageNum}] ${label}`;
+        countBadge.style.display = 'none';
+
+        document.getElementById('inspTop').value = (parseFloat(f.style.top) || 0).toFixed(1);
+        document.getElementById('inspLeft').value = (parseFloat(f.style.left) || 0).toFixed(1);
+        document.getElementById('inspWidth').value = f.style.width ? (parseFloat(f.style.width) || 0).toFixed(1) : '';
+        document.getElementById('inspHeight').value = f.style.height ? (parseFloat(f.style.height) || 0).toFixed(1) : '';
+        document.getElementById('inspFontSize').value = (parseFloat(f.style.fontSize) || 9.2).toFixed(1);
+
+        const isWrapped = f.classList.contains('wrap') || f.style.whiteSpace === 'normal';
+        updateWrapButtonUI(isWrapped);
+        updateTextAlignButtonUI(f.style.textAlign || 'left');
+      } else {
+        selectedFieldEl = primarySelectedField || selectedFields[0];
+        titleEl.textContent = `다중 항목 선택`;
+        countBadge.textContent = `${selectedFields.length}개 선택됨`;
+        countBadge.style.display = 'inline-block';
+
+        const p = primarySelectedField || selectedFields[0];
+        document.getElementById('inspTop').value = (parseFloat(p.style.top) || 0).toFixed(1);
+        document.getElementById('inspLeft').value = (parseFloat(p.style.left) || 0).toFixed(1);
+        document.getElementById('inspWidth').value = p.style.width ? (parseFloat(p.style.width) || 0).toFixed(1) : '';
+        document.getElementById('inspHeight').value = p.style.height ? (parseFloat(p.style.height) || 0).toFixed(1) : '';
+        document.getElementById('inspFontSize').value = (parseFloat(p.style.fontSize) || 9.2).toFixed(1);
+
+        const isWrapped = p.classList.contains('wrap') || p.style.whiteSpace === 'normal';
+        updateWrapButtonUI(isWrapped);
+        updateTextAlignButtonUI(p.style.textAlign || 'left');
+      }
+    }
+
+    function updateWrapButtonUI(isWrapped) {
+      const btn = document.getElementById('btnWrapToggle');
+      const text = document.getElementById('wrapText');
+      if (!btn || !text) return;
+      if (isWrapped) {
+        btn.classList.add('active');
+        text.textContent = '줄바꿈: ON';
+      } else {
+        btn.classList.remove('active');
+        text.textContent = '줄바꿈: OFF';
+      }
+    }
+
+    function updateTextAlignButtonUI(align) {
+      ['left', 'center', 'right'].forEach(a => {
+        const el = document.getElementById(`btnAlign${a.charAt(0).toUpperCase() + a.slice(1)}`);
+        if (el) el.classList.toggle('active', (align || 'left') === a);
+      });
+    }
+
+    function updateSelectedFieldPos(prop) {
+      if (selectedFields.length === 0) return;
+      const topVal = parseFloat(document.getElementById('inspTop').value);
+      const leftVal = parseFloat(document.getElementById('inspLeft').value);
+      const fontVal = parseFloat(document.getElementById('inspFontSize').value);
+
+      if (prop === 'font') {
+        if (!isNaN(fontVal) && fontVal > 0) {
+          selectedFields.forEach(f => f.style.fontSize = fontVal.toFixed(1) + 'pt');
+        }
+      } else if (selectedFields.length === 1 && primarySelectedField) {
+        if (prop === 'top' && !isNaN(topVal)) primarySelectedField.style.top = topVal.toFixed(1) + 'mm';
+        if (prop === 'left' && !isNaN(leftVal)) primarySelectedField.style.left = leftVal.toFixed(1) + 'mm';
+      } else if (primarySelectedField) {
+        if (prop === 'top' && !isNaN(topVal)) {
+          const delta = topVal - (parseFloat(primarySelectedField.style.top) || 0);
+          selectedFields.forEach(f => {
+            const curr = parseFloat(f.style.top) || 0;
+            f.style.top = Math.max(0, Math.min(297, curr + delta)).toFixed(1) + 'mm';
+          });
+        }
+        if (prop === 'left' && !isNaN(leftVal)) {
+          const delta = leftVal - (parseFloat(primarySelectedField.style.left) || 0);
+          selectedFields.forEach(f => {
+            const curr = parseFloat(f.style.left) || 0;
+            f.style.left = Math.max(0, Math.min(210, curr + delta)).toFixed(1) + 'mm';
+          });
+        }
+      }
+
+      updatePosLabels();
+      updateResizeHandle();
+      savePositionsToStorage();
+    }
+
+    function updateSelectedFieldSize(dim) {
+      if (selectedFields.length === 0) return;
+      const widthVal = document.getElementById('inspWidth').value.trim();
+      const heightVal = document.getElementById('inspHeight').value.trim();
+
+      selectedFields.forEach(f => {
+        if (dim === 'width') {
+          if (widthVal && parseFloat(widthVal) > 0) {
+            f.style.width = parseFloat(widthVal).toFixed(1) + 'mm';
+          } else {
+            f.style.width = '';
+          }
+        }
+        if (dim === 'height') {
+          if (heightVal && parseFloat(heightVal) > 0) {
+            f.style.height = parseFloat(heightVal).toFixed(1) + 'mm';
+          } else {
+            f.style.height = '';
+          }
+        }
+      });
+
+      updateResizeHandle();
+      savePositionsToStorage();
+    }
+
+    function alignSelectedFields(mode) {
+      if (selectedFields.length < 2) {
+        showToast('⚠️ 정렬할 항목을 2개 이상 선택해주세요 (Shift/Ctrl+클릭)');
+        return;
+      }
+
+      switch (mode) {
+        case 'left': {
+          const minLeft = Math.min(...selectedFields.map(f => parseFloat(f.style.left) || 0));
+          selectedFields.forEach(f => f.style.left = minLeft.toFixed(1) + 'mm');
+          showToast(`⬅ 선택 ${selectedFields.length}개 좌측 열 맞춤 (${minLeft.toFixed(1)}mm)`);
+          break;
+        }
+        case 'centerX': {
+          const centers = selectedFields.map(f => (parseFloat(f.style.left) || 0) + (getFieldWidthMm(f) / 2));
+          const avgCenter = centers.reduce((a, b) => a + b, 0) / centers.length;
+          selectedFields.forEach(f => {
+            const w = getFieldWidthMm(f);
+            f.style.left = Math.max(0, avgCenter - w / 2).toFixed(1) + 'mm';
+          });
+          showToast(`⫿ 선택 ${selectedFields.length}개 가로 중앙 열 맞춤`);
+          break;
+        }
+        case 'right': {
+          const rights = selectedFields.map(f => (parseFloat(f.style.left) || 0) + getFieldWidthMm(f));
+          const maxRight = Math.max(...rights);
+          selectedFields.forEach(f => {
+            const w = getFieldWidthMm(f);
+            f.style.left = Math.max(0, maxRight - w).toFixed(1) + 'mm';
+          });
+          showToast(`➡ 선택 ${selectedFields.length}개 우측 열 맞춤`);
+          break;
+        }
+        case 'distributeX': {
+          if (selectedFields.length < 3) {
+            showToast('⚠️ 간격 균등 분배는 3개 이상 선택해주세요.');
+            return;
+          }
+          const sorted = [...selectedFields].sort((a, b) => (parseFloat(a.style.left) || 0) - (parseFloat(b.style.left) || 0));
+          const firstLeft = parseFloat(sorted[0].style.left) || 0;
+          const lastLeft = parseFloat(sorted[sorted.length - 1].style.left) || 0;
+          const step = (lastLeft - firstLeft) / (sorted.length - 1);
+          sorted.forEach((f, idx) => {
+            f.style.left = (firstLeft + idx * step).toFixed(1) + 'mm';
+          });
+          showToast(`↔ 선택 ${selectedFields.length}개 가로 간격 균등 분배 완료`);
+          break;
+        }
+        case 'top': {
+          const minTop = Math.min(...selectedFields.map(f => parseFloat(f.style.top) || 0));
+          selectedFields.forEach(f => f.style.top = minTop.toFixed(1) + 'mm');
+          showToast(`⬆ 선택 ${selectedFields.length}개 상단 행 맞춤 (${minTop.toFixed(1)}mm)`);
+          break;
+        }
+        case 'centerY': {
+          const centers = selectedFields.map(f => (parseFloat(f.style.top) || 0) + (getFieldHeightMm(f) / 2));
+          const avgCenter = centers.reduce((a, b) => a + b, 0) / centers.length;
+          selectedFields.forEach(f => {
+            const h = getFieldHeightMm(f);
+            f.style.top = Math.max(0, avgCenter - h / 2).toFixed(1) + 'mm';
+          });
+          showToast(`⫾ 선택 ${selectedFields.length}개 세로 중앙 행 맞춤`);
+          break;
+        }
+        case 'bottom': {
+          const bottoms = selectedFields.map(f => (parseFloat(f.style.top) || 0) + getFieldHeightMm(f));
+          const maxBottom = Math.max(...bottoms);
+          selectedFields.forEach(f => {
+            const h = getFieldHeightMm(f);
+            f.style.top = Math.max(0, maxBottom - h).toFixed(1) + 'mm';
+          });
+          showToast(`⬇ 선택 ${selectedFields.length}개 하단 행 맞춤`);
+          break;
+        }
+        case 'distributeY': {
+          if (selectedFields.length < 3) {
+            showToast('⚠️ 간격 균등 분배는 3개 이상 선택해주세요.');
+            return;
+          }
+          const sorted = [...selectedFields].sort((a, b) => (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0));
+          const firstTop = parseFloat(sorted[0].style.top) || 0;
+          const lastTop = parseFloat(sorted[sorted.length - 1].style.top) || 0;
+          const step = (lastTop - firstTop) / (sorted.length - 1);
+          sorted.forEach((f, idx) => {
+            f.style.top = (firstTop + idx * step).toFixed(1) + 'mm';
+          });
+          showToast(`↕ 선택 ${selectedFields.length}개 세로 간격 균등 분배 완료`);
+          break;
+        }
+      }
+
+      updateInspectorValues();
+      updatePosLabels();
+      updateResizeHandle();
+      savePositionsToStorage();
+    }
+
+    function toggleWrapSelected() {
+      if (selectedFields.length === 0) return;
+      const p = primarySelectedField || selectedFields[0];
+      const willWrap = !(p.classList.contains('wrap') || p.style.whiteSpace === 'normal');
+
+      selectedFields.forEach(f => {
+        if (willWrap) {
+          f.classList.add('wrap');
+          f.style.whiteSpace = 'normal';
+          f.style.wordBreak = 'keep-all';
+          if (!f.style.width) {
+            const currentW = Math.max(16, getFieldWidthMm(f));
+            f.style.width = currentW.toFixed(1) + 'mm';
+          }
+        } else {
+          f.classList.remove('wrap');
+          f.style.whiteSpace = 'nowrap';
+        }
+      });
+
+      updateWrapButtonUI(willWrap);
+      updateInspectorValues();
+      updateResizeHandle();
+      savePositionsToStorage();
+      showToast(willWrap ? '↵ 선택 항목 줄바꿈 활성화 (너비 내 자동 줄바꿈)' : '↵ 선택 항목 줄바꿈 해제 (단일 행)');
+    }
+
+    function setTextAlignSelected(align) {
+      if (selectedFields.length === 0) return;
+      selectedFields.forEach(f => {
+        f.style.textAlign = align;
+        f.classList.toggle('center', align === 'center');
+        f.classList.toggle('right', align === 'right');
+        if (!f.style.width) {
+          const currentW = Math.max(16, getFieldWidthMm(f));
+          f.style.width = currentW.toFixed(1) + 'mm';
+        }
+      });
+
+      updateTextAlignButtonUI(align);
+      updateInspectorValues();
+      updateResizeHandle();
+      savePositionsToStorage();
+      showToast(`텍스트 ${align === 'left' ? '좌측' : align === 'center' ? '가운데' : '우측'} 정렬 적용`);
+    }
+
+    function updateResizeHandle() {
+      const handle = document.getElementById('fieldResizeHandle');
+      if (!handle) return;
+      if (!isDragModeActive || !primarySelectedField) {
+        handle.style.display = 'none';
+        return;
+      }
+      const page = primarySelectedField.closest('.a4-page');
+      if (!page) {
+        handle.style.display = 'none';
+        return;
+      }
+
+      if (handle.parentElement !== page) {
+        page.appendChild(handle);
+      }
+
+      const leftMm = parseFloat(primarySelectedField.style.left) || 0;
+      const topMm = parseFloat(primarySelectedField.style.top) || 0;
+      const widthMm = getFieldWidthMm(primarySelectedField);
+      const heightMm = getFieldHeightMm(primarySelectedField);
+
+      handle.style.left = (leftMm + widthMm).toFixed(1) + 'mm';
+      handle.style.top = (topMm + heightMm).toFixed(1) + 'mm';
+      handle.style.display = 'block';
+    }
+
+    function hideResizeHandle() {
+      const handle = document.getElementById('fieldResizeHandle');
+      if (handle) handle.style.display = 'none';
+    }
+
+    let isResizing = false;
+    let resizeStartX = 0, resizeStartY = 0;
+    let resizeStartW = 0, resizeStartH = 0;
+
+    function initResizeHandleDrag() {
+      const handle = document.getElementById('fieldResizeHandle');
+      if (!handle) return;
+
+      handle.addEventListener('mousedown', (e) => {
+        if (!primarySelectedField) return;
+        e.stopPropagation();
+        e.preventDefault();
+
+        isResizing = true;
+        resizeStartX = e.clientX;
+        resizeStartY = e.clientY;
+        resizeStartW = getFieldWidthMm(primarySelectedField);
+        resizeStartH = getFieldHeightMm(primarySelectedField);
+
+        const page = primarySelectedField.closest('.a4-page');
+        const scaleMmPerPx = 210 / page.getBoundingClientRect().width;
+
+        function onResizeMouseMove(moveEv) {
+          if (!isResizing || !primarySelectedField) return;
+          const deltaXmm = (moveEv.clientX - resizeStartX) * scaleMmPerPx;
+          const deltaYmm = (moveEv.clientY - resizeStartY) * scaleMmPerPx;
+
+          const newW = Math.max(4.0, resizeStartW + deltaXmm);
+          const newH = Math.max(3.0, resizeStartH + deltaYmm);
+
+          selectedFields.forEach(f => {
+            f.style.width = newW.toFixed(1) + 'mm';
+            f.style.height = newH.toFixed(1) + 'mm';
+          });
+
+          document.getElementById('inspWidth').value = newW.toFixed(1);
+          document.getElementById('inspHeight').value = newH.toFixed(1);
+          updateResizeHandle();
+        }
+
+        function onResizeMouseUp() {
+          if (isResizing) {
+            isResizing = false;
+            window.removeEventListener('mousemove', onResizeMouseMove);
+            window.removeEventListener('mouseup', onResizeMouseUp);
+            savePositionsToStorage();
+            showToast(`📏 범위 조절 완료: ${primarySelectedField.style.width} × ${primarySelectedField.style.height}`);
+          }
+        }
+
+        window.addEventListener('mousemove', onResizeMouseMove);
+        window.addEventListener('mouseup', onResizeMouseUp);
+      });
+    }
+
+    let isDraggingFields = false;
+    let dragStartCoords = [];
+    let dragStartX = 0, dragStartY = 0;
+    let didDragMove = false;
+    let activePageEl = null;
+
+    document.querySelectorAll('.field').forEach(field => {
+      field.addEventListener('mousedown', (e) => {
+        if (!isDragModeActive) return;
+        e.stopPropagation();
+
+        const isMultiKey = e.shiftKey || e.ctrlKey || e.metaKey;
+        let willDeselectOthersOnUp = false;
+
+        if (isMultiKey) {
+          selectField(field, true);
+        } else {
+          if (selectedFields.includes(field) && selectedFields.length > 1) {
+            primarySelectedField = field;
+            selectedFields.forEach(f => f.classList.toggle('primary-selected', f === field));
+            willDeselectOthersOnUp = true;
+            updateInspectorValues();
+            updateResizeHandle();
+          } else {
+            selectField(field, false);
+          }
+        }
+
+        if (selectedFields.length === 0) return;
+
+        activePageEl = (primarySelectedField || field).closest('.a4-page');
+        if (!activePageEl) return;
+
+        isDraggingFields = true;
+        didDragMove = false;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+
+        dragStartCoords = selectedFields.map(f => ({
+          el: f,
+          startLeftMm: parseFloat(f.style.left) || 0,
+          startTopMm: parseFloat(f.style.top) || 0
+        }));
+
+        function onFieldMouseMove(moveEv) {
+          if (!isDraggingFields || !activePageEl) return;
+          const dx = moveEv.clientX - dragStartX;
+          const dy = moveEv.clientY - dragStartY;
+
+          if (Math.hypot(dx, dy) > 2) {
+            didDragMove = true;
+          }
+
+          const rect = activePageEl.getBoundingClientRect();
+          const scaleMmPerPx = 210 / rect.width;
+          const deltaXmm = dx * scaleMmPerPx;
+          const deltaYmm = dy * scaleMmPerPx;
+
+          dragStartCoords.forEach(item => {
+            const newLeft = Math.max(0, Math.min(210, item.startLeftMm + deltaXmm));
+            const newTop = Math.max(0, Math.min(297, item.startTopMm + deltaYmm));
+            item.el.style.left = newLeft.toFixed(1) + 'mm';
+            item.el.style.top = newTop.toFixed(1) + 'mm';
+          });
+
+          updateInspectorValues();
+          updatePosLabels();
+          updateResizeHandle();
+        }
+
+        function onFieldMouseUp() {
+          window.removeEventListener('mousemove', onFieldMouseMove);
+          window.removeEventListener('mouseup', onFieldMouseUp);
+
+          if (isDraggingFields) {
+            isDraggingFields = false;
+            if (!didDragMove && willDeselectOthersOnUp) {
+              selectField(field, false);
+            }
+            savePositionsToStorage();
+          }
+        }
+
+        window.addEventListener('mousemove', onFieldMouseMove);
+        window.addEventListener('mouseup', onFieldMouseUp);
+      });
+    });
+
+    // 키보드 방향키 이동 (선택된 모든 항목 동시 이동)
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+      if (!isDragModeActive || selectedFields.length === 0) return;
+
+      let step = 0.5;
+      if (e.altKey) step = 0.1;
+      if (e.shiftKey) step = 2.0;
+
+      let dx = 0, dy = 0;
+      if (e.key === 'ArrowUp') { dy = -step; }
+      else if (e.key === 'ArrowDown') { dy = step; }
+      else if (e.key === 'ArrowLeft') { dx = -step; }
+      else if (e.key === 'ArrowRight') { dx = step; }
+      else if (e.key === 'Escape') { deselectAllFields(); return; }
+      else return;
+
+      e.preventDefault();
+
+      selectedFields.forEach(f => {
+        let currTop = parseFloat(f.style.top) || 0;
+        let currLeft = parseFloat(f.style.left) || 0;
+        f.style.top = Math.max(0, Math.min(297, currTop + dy)).toFixed(1) + 'mm';
+        f.style.left = Math.max(0, Math.min(210, currLeft + dx)).toFixed(1) + 'mm';
+      });
+
+      updateInspectorValues();
+      updatePosLabels();
+      updateResizeHandle();
+      savePositionsToStorage();
+    });
+
+    // ==============================================================
+    // 8. 바탕 클릭 좌표 복사 도우미
+    // ==============================================================
+    function toggleCoordHelper(active) {
+      isCoordHelperActive = active;
+      document.body.classList.toggle('coord-mode-active', active);
+      document.getElementById('coordStatusBadge').textContent = active ? '(ON)' : '(OFF)';
+      document.getElementById('coordStatusBadge').style.color = active ? '#2563eb' : '#64748b';
+      if (!active) hideGuides();
+      showToast(active ? '🎯 바탕 클릭 좌표 복사 활성화' : '좌표 복사 비활성화');
+    }
+
+    const guideX = document.getElementById('guideX');
+    const guideY = document.getElementById('guideY');
+    const liveCoordBadge = document.getElementById('liveCoordBadge');
+
+    function hideGuides() {
+      guideX.style.display = 'none';
+      guideY.style.display = 'none';
+      liveCoordBadge.style.display = 'none';
+    }
+
+    document.querySelectorAll('.a4-page').forEach(page => {
+      page.addEventListener('mousemove', (e) => {
+        if (!isCoordHelperActive || isDragging) return;
+        const rect = page.getBoundingClientRect();
+        const clientX = e.clientX, clientY = e.clientY;
+        const leftMm = Math.max(0, Math.min(210, ((clientX - rect.left) / rect.width) * 210)).toFixed(1);
+        const topMm = Math.max(0, Math.min(297, ((clientY - rect.top) / rect.height) * 297)).toFixed(1);
+        const pageNum = page.getAttribute('data-page') || '1';
+
+        guideX.style.display = 'block'; guideX.style.left = clientX + 'px';
+        guideY.style.display = 'block'; guideY.style.top = clientY + 'px';
+        liveCoordBadge.style.display = 'block'; liveCoordBadge.style.left = clientX + 'px'; liveCoordBadge.style.top = clientY + 'px';
+        liveCoordBadge.textContent = `P.${pageNum} top: ${topMm}mm; left: ${leftMm}mm;`;
+      });
+
+      page.addEventListener('mouseleave', () => hideGuides());
+
+      page.addEventListener('click', (e) => {
+        if (!isCoordHelperActive || e.target.classList.contains('field')) return;
+        const rect = page.getBoundingClientRect();
+        const leftMm = Math.max(0, Math.min(210, ((e.clientX - rect.left) / rect.width) * 210)).toFixed(1);
+        const topMm = Math.max(0, Math.min(297, ((e.clientY - rect.top) / rect.height) * 297)).toFixed(1);
+        const pageNum = page.getAttribute('data-page') || '1';
+        const coordCode = `top: ${topMm}mm; left: ${leftMm}mm;`;
+
+        copyToClipboard(coordCode);
+        createPinMarker(page, leftMm, topMm);
+        showToast(`📋 [P.${pageNum}] 복사 완료: <code>${coordCode}</code>`, true);
+      });
+    });
+
+    document.getElementById('previewContainer').addEventListener('click', (e) => {
+      if (!e.target.closest('.field') && !e.target.closest('.field-inspector-box') && !e.target.closest('.field-resize-handle')) {
+        deselectAllFields();
+      }
+    });
+
+    function createPinMarker(page, leftMm, topMm) {
+      const existingPin = page.querySelector('.coord-pin');
+      if (existingPin) existingPin.remove();
+      const pin = document.createElement('div');
+      pin.className = 'coord-pin no-print';
+      pin.style.left = `${leftMm}mm`; pin.style.top = `${topMm}mm`;
+      const tag = document.createElement('div');
+      tag.className = 'coord-pin-tag'; tag.textContent = `${leftMm}, ${topMm}mm`;
+      pin.appendChild(tag);
+      page.appendChild(pin);
+      setTimeout(() => {
+        pin.style.transition = 'opacity 0.6s ease';
+        pin.style.opacity = '0';
+        setTimeout(() => pin.remove(), 600);
+      }, 3500);
+    }
+
+    // ==============================================================
+    // 9. 좌표 백업 / 로컬저장 / 복원
+    // ==============================================================
+    function recordDefaultPositions() {
+      document.querySelectorAll('.field').forEach(field => {
+        if (field.id) {
+          defaultPositions[field.id] = {
+            top: field.style.top || '0mm',
+            left: field.style.left || '0mm',
+            width: field.style.width || '',
+            height: field.style.height || '',
+            fontSize: field.style.fontSize || '9.2pt',
+            whiteSpace: field.style.whiteSpace || (field.classList.contains('wrap') ? 'normal' : 'nowrap'),
+            textAlign: field.style.textAlign || ''
+          };
+        }
+      });
+    }
+
+    function loadSavedPositions() {
+      try {
+        const saved = localStorage.getItem('toji_permit_field_coords_v7');
+        if (saved) {
+          const coords = JSON.parse(saved);
+          Object.keys(coords).forEach(id => {
+            const el = document.getElementById(id);
+            if (el && coords[id]) {
+              if (id === 'f_p1_land_row1_ratio') return; // 최신 지정 좌표(top: 106.6mm; left: 132.5mm) 우선 적용
+              if (coords[id].top) el.style.top = coords[id].top;
+              if (coords[id].left) el.style.left = coords[id].left;
+              if (coords[id].width !== undefined) el.style.width = coords[id].width;
+              if (coords[id].height !== undefined) el.style.height = coords[id].height;
+              if (coords[id].fontSize) el.style.fontSize = coords[id].fontSize;
+              if (coords[id].whiteSpace) {
+                el.style.whiteSpace = coords[id].whiteSpace;
+                el.classList.toggle('wrap', coords[id].whiteSpace === 'normal');
+              }
+              if (coords[id].textAlign) {
+                el.style.textAlign = coords[id].textAlign;
+                el.classList.toggle('center', coords[id].textAlign === 'center');
+                el.classList.toggle('right', coords[id].textAlign === 'right');
+              }
+            }
+          });
+        }
+      } catch (e) { }
+      updatePosLabels();
+    }
+
+    function savePositionsToStorage() {
+      const coords = {};
+      document.querySelectorAll('.field').forEach(field => {
+        if (field.id) {
+          coords[field.id] = {
+            top: field.style.top,
+            left: field.style.left,
+            width: field.style.width || '',
+            height: field.style.height || '',
+            fontSize: field.style.fontSize || '',
+            whiteSpace: field.style.whiteSpace || (field.classList.contains('wrap') ? 'normal' : 'nowrap'),
+            textAlign: field.style.textAlign || ''
+          };
+        }
+      });
+      localStorage.setItem('toji_permit_field_coords_v7', JSON.stringify(coords));
+    }
+
+    function updatePosLabels() {
+      document.querySelectorAll('.field').forEach(field => {
+        field.setAttribute('data-pos-label', `${field.style.top}, ${field.style.left}`);
+      });
+    }
+
+    function exportCoordinates() {
+      const lines = ['/* === 안양시 동안구 토지거래허가 서식 정밀 좌표 & 레이아웃 CSS === */\n'];
+      document.querySelectorAll('.field').forEach(f => {
+        const page = f.closest('.a4-page')?.getAttribute('data-page') || '';
+        const label = f.getAttribute('data-label') || f.id;
+        const cssRules = [];
+        if (f.style.top) cssRules.push(`top: ${f.style.top};`);
+        if (f.style.left) cssRules.push(`left: ${f.style.left};`);
+        if (f.style.width) cssRules.push(`width: ${f.style.width};`);
+        if (f.style.height) cssRules.push(`height: ${f.style.height};`);
+        if (f.style.fontSize) cssRules.push(`font-size: ${f.style.fontSize};`);
+        if (f.style.whiteSpace === 'normal' || f.classList.contains('wrap')) {
+          cssRules.push(`white-space: normal; word-break: keep-all;`);
+        }
+        if (f.style.textAlign) cssRules.push(`text-align: ${f.style.textAlign};`);
+        lines.push(`// [P.${page}] ${label}\n#${f.id} { ${cssRules.join(' ')} }`);
+      });
+      document.getElementById('exportedCodeText').value = lines.join('\n\n');
+      document.getElementById('codeModal').classList.add('active');
+    }
+
+    function closeCodeModal() { document.getElementById('codeModal').classList.remove('active'); }
+    function copyExportedCode() {
+      copyToClipboard(document.getElementById('exportedCodeText').value);
+      showToast('📋 전체 좌표 코드가 클립보드에 복사되었습니다!', true);
+    }
+
+    function resetCoordinates() {
+      if (!confirm('직접 수정한 모든 필드 위치와 범위를 초기 설정값으로 되돌리시겠습니까?')) return;
+      localStorage.removeItem('toji_permit_field_coords_v7');
+      Object.keys(defaultPositions).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && defaultPositions[id]) {
+          el.style.top = defaultPositions[id].top;
+          el.style.left = defaultPositions[id].left;
+          el.style.width = defaultPositions[id].width || '';
+          el.style.height = defaultPositions[id].height || '';
+          el.style.fontSize = defaultPositions[id].fontSize || '9.2pt';
+          el.style.whiteSpace = defaultPositions[id].whiteSpace || 'nowrap';
+          el.style.textAlign = defaultPositions[id].textAlign || '';
+          el.classList.toggle('wrap', defaultPositions[id].whiteSpace === 'normal');
+          el.classList.toggle('center', defaultPositions[id].textAlign === 'center');
+          el.classList.toggle('right', defaultPositions[id].textAlign === 'right');
+        }
+      });
+      updatePosLabels();
+      deselectAllFields();
+      showToast('🔄 모든 필드 위치 및 범위가 기본값으로 복원되었습니다.');
+    }
+
+    // ==============================================================
+    // 10. 공적장부 JSON 불러오기 / 내보내기 인터페이스
+    // ==============================================================
+    function openJsonModal() {
+      exportCurrentJson();
+      document.getElementById('jsonModal').classList.add('active');
+    }
+    function closeJsonModal() {
+      document.getElementById('jsonModal').classList.remove('active');
+    }
+
+    function exportCurrentJson() {
+      const currentData = {
+        meta: {
+          system: "안양시 동안구 토지거래허가 신청시스템",
+          version: "2.0",
+          exportDate: new Date().toISOString()
+        },
+        property: {
+          sido: "경기도",
+          sgg: "안양시 동안구",
+          bjdong: document.getElementById('in_dong').value,
+          jibun_main: document.getElementById('in_jibun_main').value,
+          jibun_sub: document.getElementById('in_jibun_sub').value,
+          jibun_extra: document.getElementById('in_jibun_extra').value,
+          complex_name: document.getElementById('in_complex').value,
+          bld_dong: document.getElementById('in_dong_num').value,
+          bld_ho: document.getElementById('in_ho_num').value,
+          road_addr: document.getElementById('in_road_addr').value,
+          full_addr: document.getElementById('in_addr_full').value
+        },
+        land_registry: {
+          jimok_legal: document.getElementById('in_jimok_legal').value,
+          jimok_actual: document.getElementById('in_jimok_actual').value,
+          total_area_m2: parseFloat(document.getElementById('in_land_total_area').value) || 0,
+          land_ratio_den: parseFloat(document.getElementById('in_land_ratio_den').value) || 0,
+          land_ratio_num: parseFloat(document.getElementById('in_land_ratio_num').value) || 0,
+          indiv_land_price_won_per_m2: parseFloat(document.getElementById('in_land_unit_price').value) || 0,
+          yongdo_area: document.getElementById('in_yongdo_area').value,
+          land_use_status: document.getElementById('in_land_use_status').value,
+          rights_status: document.getElementById('in_rights_status').value
+        },
+        building_registry: {
+          bld_type: document.getElementById('in_bld_type').value,
+          bld_detail: document.getElementById('in_bld_detail').value,
+          exclusive_area_m2: parseFloat(document.getElementById('in_exclusive_area').value) || 0,
+          common_area_m2: parseFloat(document.getElementById('in_common_area').value) || 0,
+          right_kind: document.getElementById('in_right_kind').value,
+          right_action: document.getElementById('in_right_action').value
+        },
+        contract: {
+          transfer_type: document.getElementById('in_transfer_type').value,
+          contract_date: document.getElementById('in_contract_date').value,
+          total_price_won: parseFloat(document.getElementById('in_total_price').value) || 0,
+          purpose: document.getElementById('in_purpose').value,
+          fund_self_won: parseFloat(document.getElementById('in_fund_self').value) || 0,
+          fund_loan_won: parseFloat(document.getElementById('in_fund_loan').value) || 0,
+          residents: document.getElementById('in_residents').value,
+          move_in_date: document.getElementById('in_move_in_date').value
+        },
+        parties: {
+          seller: {
+            name: document.getElementById('in_seller_name').value,
+            rrn: document.getElementById('in_seller_rrn').value,
+            tel: document.getElementById('in_seller_tel').value,
+            addr: document.getElementById('in_seller_addr').value
+          },
+          seller2: {
+            name: document.getElementById('in_seller2_name')?.value || '',
+            rrn: document.getElementById('in_seller2_rrn')?.value || '',
+            tel: document.getElementById('in_seller2_tel')?.value || '',
+            addr: document.getElementById('in_seller2_addr')?.value || ''
+          },
+          buyer: {
+            name: document.getElementById('in_buyer_name').value,
+            rrn: document.getElementById('in_buyer_rrn').value,
+            tel: document.getElementById('in_buyer_tel').value,
+            addr: document.getElementById('in_buyer_addr').value
+          },
+          buyer2: {
+            name: document.getElementById('in_buyer2_name')?.value || '',
+            rrn: document.getElementById('in_buyer2_rrn')?.value || '',
+            tel: document.getElementById('in_buyer2_tel')?.value || '',
+            addr: document.getElementById('in_buyer2_addr')?.value || ''
+          },
+          realtor: {
+            office: document.getElementById('in_agent_office').value,
+            name: document.getElementById('in_agent_name').value,
+            reg_no: document.getElementById('in_agent_reg').value,
+            addr: document.getElementById('in_agent_addr').value,
+            tel: document.getElementById('in_agent_tel').value
+          }
+        }
+      };
+      document.getElementById('jsonArea').value = JSON.stringify(currentData, null, 2);
+    }
+
+    function importJsonData() {
+      try {
+        const text = document.getElementById('jsonArea').value;
+        const data = JSON.parse(text);
+
+        if (data.property) {
+          if (data.property.bjdong) document.getElementById('in_dong').value = data.property.bjdong;
+          if (data.property.jibun_main) document.getElementById('in_jibun_main').value = data.property.jibun_main;
+          if (data.property.jibun_sub !== undefined) document.getElementById('in_jibun_sub').value = data.property.jibun_sub;
+          if (data.property.jibun_extra !== undefined) document.getElementById('in_jibun_extra').value = data.property.jibun_extra;
+          if (data.property.complex_name) document.getElementById('in_complex').value = data.property.complex_name;
+          if (data.property.bld_dong) document.getElementById('in_dong_num').value = data.property.bld_dong;
+          if (data.property.bld_ho) document.getElementById('in_ho_num').value = data.property.bld_ho;
+          if (data.property.road_addr) document.getElementById('in_road_addr').value = data.property.road_addr;
+          if (data.property.full_addr) document.getElementById('in_addr_full').value = data.property.full_addr;
+        }
+
+        if (data.land_registry) {
+          if (data.land_registry.jimok_legal) document.getElementById('in_jimok_legal').value = data.land_registry.jimok_legal;
+          if (data.land_registry.jimok_actual) document.getElementById('in_jimok_actual').value = data.land_registry.jimok_actual;
+          if (data.land_registry.total_area_m2) document.getElementById('in_land_total_area').value = data.land_registry.total_area_m2;
+          if (data.land_registry.land_ratio_den) document.getElementById('in_land_ratio_den').value = data.land_registry.land_ratio_den;
+          if (data.land_registry.land_ratio_num) document.getElementById('in_land_ratio_num').value = data.land_registry.land_ratio_num;
+          if (data.land_registry.indiv_land_price_won_per_m2) document.getElementById('in_land_unit_price').value = data.land_registry.indiv_land_price_won_per_m2;
+          if (data.land_registry.yongdo_area) document.getElementById('in_yongdo_area').value = data.land_registry.yongdo_area;
+          if (data.land_registry.land_use_status) document.getElementById('in_land_use_status').value = data.land_registry.land_use_status;
+          if (data.land_registry.rights_status) document.getElementById('in_rights_status').value = data.land_registry.rights_status;
+        }
+
+        if (data.building_registry) {
+          if (data.building_registry.bld_type) document.getElementById('in_bld_type').value = data.building_registry.bld_type;
+          if (data.building_registry.bld_detail) document.getElementById('in_bld_detail').value = data.building_registry.bld_detail;
+          if (data.building_registry.exclusive_area_m2) document.getElementById('in_exclusive_area').value = data.building_registry.exclusive_area_m2;
+          if (data.building_registry.common_area_m2) document.getElementById('in_common_area').value = data.building_registry.common_area_m2;
+          if (data.building_registry.right_kind) document.getElementById('in_right_kind').value = data.building_registry.right_kind;
+          if (data.building_registry.right_action) document.getElementById('in_right_action').value = data.building_registry.right_action;
+        }
+
+        if (data.contract) {
+          if (data.contract.transfer_type) document.getElementById('in_transfer_type').value = data.contract.transfer_type;
+          if (data.contract.contract_date) document.getElementById('in_contract_date').value = data.contract.contract_date;
+          if (data.contract.total_price_won) document.getElementById('in_total_price').value = data.contract.total_price_won;
+          if (data.contract.purpose) document.getElementById('in_purpose').value = data.contract.purpose;
+          if (data.contract.fund_self_won) document.getElementById('in_fund_self').value = data.contract.fund_self_won;
+          if (data.contract.fund_loan_won) document.getElementById('in_fund_loan').value = data.contract.fund_loan_won;
+          if (data.contract.residents) document.getElementById('in_residents').value = data.contract.residents;
+          if (data.contract.move_in_date) document.getElementById('in_move_in_date').value = data.contract.move_in_date;
+        }
+
+        if (data.parties) {
+          if (data.parties.seller) {
+            if (data.parties.seller.name) document.getElementById('in_seller_name').value = data.parties.seller.name;
+            if (data.parties.seller.rrn) document.getElementById('in_seller_rrn').value = data.parties.seller.rrn;
+            if (data.parties.seller.tel) document.getElementById('in_seller_tel').value = data.parties.seller.tel;
+            if (data.parties.seller.addr) document.getElementById('in_seller_addr').value = data.parties.seller.addr;
+          }
+          if (data.parties.seller2) {
+            if (data.parties.seller2.name !== undefined) document.getElementById('in_seller2_name').value = data.parties.seller2.name;
+            if (data.parties.seller2.rrn !== undefined) document.getElementById('in_seller2_rrn').value = data.parties.seller2.rrn;
+            if (data.parties.seller2.tel !== undefined) document.getElementById('in_seller2_tel').value = data.parties.seller2.tel;
+            if (data.parties.seller2.addr !== undefined) document.getElementById('in_seller2_addr').value = data.parties.seller2.addr;
+          }
+          if (data.parties.buyer) {
+            if (data.parties.buyer.name) document.getElementById('in_buyer_name').value = data.parties.buyer.name;
+            if (data.parties.buyer.rrn) document.getElementById('in_buyer_rrn').value = data.parties.buyer.rrn;
+            if (data.parties.buyer.tel) document.getElementById('in_buyer_tel').value = data.parties.buyer.tel;
+            if (data.parties.buyer.addr) document.getElementById('in_buyer_addr').value = data.parties.buyer.addr;
+          }
+          if (data.parties.buyer2) {
+            if (data.parties.buyer2.name !== undefined) document.getElementById('in_buyer2_name').value = data.parties.buyer2.name;
+            if (data.parties.buyer2.rrn !== undefined) document.getElementById('in_buyer2_rrn').value = data.parties.buyer2.rrn;
+            if (data.parties.buyer2.tel !== undefined) document.getElementById('in_buyer2_tel').value = data.parties.buyer2.tel;
+            if (data.parties.buyer2.addr !== undefined) document.getElementById('in_buyer2_addr').value = data.parties.buyer2.addr;
+          }
+          if (data.parties.realtor) {
+            if (data.parties.realtor.office) document.getElementById('in_agent_office').value = data.parties.realtor.office;
+            if (data.parties.realtor.name) document.getElementById('in_agent_name').value = data.parties.realtor.name;
+            if (data.parties.realtor.reg_no) document.getElementById('in_agent_reg').value = data.parties.realtor.reg_no;
+            if (data.parties.realtor.addr) document.getElementById('in_agent_addr').value = data.parties.realtor.addr;
+            if (data.parties.realtor.tel) document.getElementById('in_agent_tel').value = data.parties.realtor.tel;
+          }
+        }
+
+        calcLandShare();
+        syncAll();
+        closeJsonModal();
+        showToast('🔄 공적장부 JSON 데이터가 성공적으로 폼에 반영되었습니다!', true);
+      } catch (err) {
+        alert('올바른 JSON 형식이 아닙니다: ' + err.message);
+      }
+    }
+
+    // ==============================================================
+    // 11. 인쇄 (Ctrl+P 지원)
+    // ==============================================================
+    function printWithStandardFileName() {
+      let rawDate = document.getElementById('in_date').value.replace(/-/g, '');
+      if (!rawDate) {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        rawDate = `${y}${m}${d}`;
+      }
+      const dong = (document.getElementById('in_dong').value || '').trim();
+      const complex = (document.getElementById('in_complex').value || '').trim();
+      const dongNum = (document.getElementById('in_dong_num').value || '').trim();
+      const hoNum = (document.getElementById('in_ho_num').value || '').trim();
+
+      const standardFileName = `${rawDate}_${dong}_${complex}_${dongNum}_${hoNum}_토지거래허가신청서`;
+      const originalTitle = document.title;
+      document.title = standardFileName;
+      window.print();
+      setTimeout(() => { document.title = originalTitle; }, 1500);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        printWithStandardFileName();
+      }
+    });
+
+    // ==============================================================
+    // 12. 목련두산 샘플 데이터 및 클립보드 유틸
+    // ==============================================================
+    function fillSampleData() {
+      document.getElementById('in_date').value = '';
+      document.getElementById('in_dong').value = '호계동';
+      document.getElementById('in_jibun_main').value = '1054';
+      document.getElementById('in_jibun_sub').value = '';
+      document.getElementById('in_jibun_extra').value = '외 5필지';
+      document.getElementById('in_complex').value = '목련마을두산';
+      document.getElementById('in_dong_num').value = '제601동';
+      document.getElementById('in_ho_num').value = '제601호';
+      document.getElementById('in_road_addr').value = '경기도 안양시 동안구 동안로 120';
+      document.getElementById('in_addr_full').value = '경기도 안양시 동안구 호계동 1054 목련마을두산아파트 제601동 제601호';
+
+      document.getElementById('in_jimok_legal').value = '대';
+      document.getElementById('in_jimok_actual').value = '대';
+      document.getElementById('in_land_total_area').value = '56123.4';
+      document.getElementById('in_land_ratio_den').value = '56123';
+      document.getElementById('in_land_ratio_num').value = '51.84';
+      document.getElementById('in_land_unit_price').value = '4500000';
+      document.getElementById('in_yongdo_area').value = '제3종일반주거지역';
+      document.getElementById('in_land_use_status').value = '아파트';
+      document.getElementById('in_rights_status').value = '해당없음';
+
+      document.getElementById('in_bld_type').value = '공동주택';
+      document.getElementById('in_bld_detail').value = '제601동 제601호';
+      document.getElementById('in_exclusive_area').value = '101.42';
+      document.getElementById('in_common_area').value = '28.56';
+      document.getElementById('in_right_kind').value = '소유권';
+      document.getElementById('in_right_action').value = '이전';
+
+      document.getElementById('in_transfer_type').value = '매매';
+      document.getElementById('in_contract_date').value = '2026-11-25';
+      document.getElementById('in_total_price').value = '1250000000';
+      document.getElementById('in_purpose').value = '주거용 (세대원 전원 실거주 자가주택 취득)';
+
+      document.getElementById('in_seller_name').value = '김매도';
+      document.getElementById('in_seller_rrn').value = '750101-1234567';
+      document.getElementById('in_seller_tel').value = '010-3322-1144';
+      document.getElementById('in_seller_addr').value = '경기도 안양시 동안구 동안로 120, 101동 202호';
+
+      document.getElementById('in_seller2_name').value = '';
+      document.getElementById('in_seller2_rrn').value = '';
+      document.getElementById('in_seller2_tel').value = '';
+      document.getElementById('in_seller2_addr').value = '';
+
+      document.getElementById('in_buyer_name').value = '이매수';
+      document.getElementById('in_buyer_rrn').value = '850505-1987654';
+      document.getElementById('in_buyer_tel').value = '010-9876-5432';
+      document.getElementById('in_buyer_addr').value = '서울특별시 서초구 서초대로 50, 203동 501호';
+
+      document.getElementById('in_buyer2_name').value = '박매수';
+      document.getElementById('in_buyer2_rrn').value = '880808-2987654';
+      document.getElementById('in_buyer2_tel').value = '010-1234-5678';
+      document.getElementById('in_buyer2_addr').value = '서울특별시 서초구 서초대로 50, 203동 501호';
+
+      document.getElementById('in_fund_self').value = '650000000';
+      document.getElementById('in_fund_loan').value = '600000000';
+      document.getElementById('in_move_in_date').value = '2026년 12월 (잔금 지급 즉시 세대원 전원 입주)';
+      document.getElementById('in_residents').value = '이매수(본인) 및 배우자, 자녀 2명 (세대원 전원)';
+
+      document.getElementById('in_agent_office').value = '부동산이즈 두산공인중개사사무소';
+      document.getElementById('in_agent_name').value = '백근영';
+      document.getElementById('in_agent_reg').value = '41173-2023-00045';
+      document.getElementById('in_agent_addr').value = '경기도 안양시 동안구 평촌대로179번길 39, 상가 104호';
+      document.getElementById('in_agent_tel').value = '031-383-7700';
+
+      calcLandShare();
+      syncAll();
+      showToast('🧪 목련두산 샘플 데이터가 채워졌습니다.', true);
+    }
+
+    function copyToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+      } else {
+        fallbackCopyText(text);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) { }
+      document.body.removeChild(ta);
+    }
+
+    function showToast(htmlMsg, isSuccess = false, isOrange = false) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${isSuccess ? 'success' : ''} ${isOrange ? 'orange' : ''}`;
+      toast.innerHTML = htmlMsg;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        toast.style.opacity = '0'; toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+
+    // === [공통 거래 저장소 연동 로직] ===
+    let currentLoadedDealId = null;
+
+    function initPermitDealDropdown(selectedId = null) {
+      const sel = document.getElementById('sel_permit_deal');
+      if (!sel || !window.DealStore) return;
+      sel.innerHTML = '<option value="">-- [약정서] 저장된 거래 데이터 선택 --</option>';
+      const list = window.DealStore.listDeals();
+      list.forEach(deal => {
+        const opt = document.createElement('option');
+        opt.value = deal.id;
+        const p = deal.property || {};
+        const title = deal.title || `${deal.dealDate}_${p.dong}_${p.complex}_${p.dongNum}동${p.hoNum}호`;
+        opt.textContent = title;
+        if (deal.id === selectedId || deal.id === currentLoadedDealId) {
+          opt.selected = true;
+        }
+        sel.appendChild(opt);
+      });
+    }
+
+    function applyDealToInputs(deal) {
+      if (!deal) return;
+      currentLoadedDealId = deal.id;
+      const p = deal.property || {};
+
+      // 엑셀 서식 주소 파싱 보조
+      if (!p.dong && (p.landAddr || p.bldAddr)) {
+        const full = p.landAddr || p.bldAddr;
+        const mDong = full.match(/([가-힣\d]+동)\s+(\d+(?:-\d+)?)/);
+        if (mDong) {
+          p.dong = mDong[1];
+          const parts = mDong[2].split('-');
+          p.jibunMain = parts[0];
+          p.jibunSub = parts[1] || '';
+        }
+      }
+      if (!p.complex && p.bldAddr) {
+        const mUnit = p.bldAddr.match(/([가-힣\w]+(?:아파트|마을|단지|빌라))\s*(?:제?(\d+)동)?\s*(?:제?(\d+)호)?/);
+        if (mUnit) {
+          p.complex = mUnit[1];
+          if (mUnit[2]) p.dongNum = mUnit[2];
+          if (mUnit[3]) p.hoNum = mUnit[3];
+        }
+      }
+      if (!p.landRatioDen && p.landRatioStr) {
+        const mRatio = p.landRatioStr.match(/([\d\.]+)\s*분의\s*([\d\.]+)/);
+        if (mRatio) {
+          p.landRatioDen = parseFloat(mRatio[1]) || 0;
+          p.landRatioNum = parseFloat(mRatio[2]) || 0;
+        }
+      }
+      const parties = deal.parties || {};
+      const sellers = parties.sellers || [];
+      const buyers = parties.buyers || [];
+      const fin = deal.financial || {};
+      const permit = deal.permit || {};
+      const agent = deal.agent || {};
+
+      // 1. 기본정보 및 부동산
+      if (deal.dealDate) document.getElementById('in_date').value = deal.dealDate;
+      if (p.dong) document.getElementById('in_dong').value = p.dong;
+      if (p.jibunMain) document.getElementById('in_jibun_main').value = p.jibunMain;
+      if (p.jibunSub !== undefined) document.getElementById('in_jibun_sub').value = p.jibunSub;
+      if (p.jibunExtra !== undefined) document.getElementById('in_jibun_extra').value = p.jibunExtra;
+      if (p.complex) document.getElementById('in_complex').value = p.complex;
+      if (p.dongNum) document.getElementById('in_dong_num').value = p.dongNum;
+      if (p.hoNum) document.getElementById('in_ho_num').value = p.hoNum;
+      if (p.roadAddr) document.getElementById('in_road_addr').value = p.roadAddr;
+      if (p.landCategoryLegal) document.getElementById('in_jimok_legal').value = p.landCategoryLegal;
+      if (p.landCategoryActual) document.getElementById('in_jimok_actual').value = p.landCategoryActual;
+      if (p.landAreaTotal) document.getElementById('in_land_total_area').value = p.landAreaTotal;
+      if (p.landRatioDen) document.getElementById('in_land_ratio_den').value = p.landRatioDen;
+      if (p.landRatioNum) document.getElementById('in_land_ratio_num').value = p.landRatioNum;
+      if (p.landUnitPrice) document.getElementById('in_land_unit_price').value = p.landUnitPrice;
+      if (p.zoning) document.getElementById('in_yongdo_area').value = p.zoning;
+      if (p.landUseStatus) document.getElementById('in_land_use_status').value = p.landUseStatus;
+      if (p.rightsStatus) document.getElementById('in_rights_status').value = p.rightsStatus;
+      if (p.buildingType) document.getElementById('in_bld_type').value = p.buildingType;
+      if (p.buildingDetail) document.getElementById('in_bld_detail').value = p.buildingDetail;
+      if (p.exclusiveArea) document.getElementById('in_exclusive_area').value = p.exclusiveArea;
+      if (p.commonArea) document.getElementById('in_common_area').value = p.commonArea;
+
+      // 2. 권리 및 계약금액
+      if (permit.rightKind) document.getElementById('in_right_kind').value = permit.rightKind;
+      if (permit.rightAction) document.getElementById('in_right_action').value = permit.rightAction;
+      if (permit.transferType) document.getElementById('in_transfer_type').value = permit.transferType;
+      if (fin.contractDate || deal.dealDate) document.getElementById('in_contract_date').value = fin.contractDate || deal.dealDate;
+      if (fin.totalPrice) document.getElementById('in_total_price').value = fin.totalPrice;
+      if (permit.purpose) document.getElementById('in_purpose').value = permit.purpose;
+
+      // 3. 매도인 (1, 2)
+      const s1 = sellers[0] || {};
+      const s2 = sellers[1] || {};
+      document.getElementById('in_seller_name').value = s1.name || '';
+      document.getElementById('in_seller_rrn').value = s1.rrn || '';
+      document.getElementById('in_seller_tel').value = s1.tel || '';
+      document.getElementById('in_seller_addr').value = s1.addr || '';
+
+      document.getElementById('in_seller2_name').value = s2.name || '';
+      document.getElementById('in_seller2_rrn').value = s2.rrn || '';
+      document.getElementById('in_seller2_tel').value = s2.tel || '';
+      document.getElementById('in_seller2_addr').value = s2.addr || '';
+
+      // 4. 매수인 (1, 2)
+      const b1 = buyers[0] || {};
+      const b2 = buyers[1] || {};
+      document.getElementById('in_buyer_name').value = b1.name || '';
+      document.getElementById('in_buyer_rrn').value = b1.rrn || '';
+      document.getElementById('in_buyer_tel').value = b1.tel || '';
+      document.getElementById('in_buyer_addr').value = b1.addr || '';
+
+      document.getElementById('in_buyer2_name').value = b2.name || '';
+      document.getElementById('in_buyer2_rrn').value = b2.rrn || '';
+      document.getElementById('in_buyer2_tel').value = b2.tel || '';
+      document.getElementById('in_buyer2_addr').value = b2.addr || '';
+
+      // 5. 자금 및 토지이용계획
+      const b1Fund = permit.funding?.buyer1 || {};
+      const selfFund = (b1Fund.selfDeposit || 0) + (b1Fund.assetSale || 0);
+      const loanFund = b1Fund.loanAmount || 0;
+      if (selfFund > 0) document.getElementById('in_fund_self').value = selfFund;
+      if (loanFund > 0) document.getElementById('in_fund_loan').value = loanFund;
+      if (permit.moveInDate || fin.balanceDate) document.getElementById('in_move_in_date').value = permit.moveInDate || fin.balanceDate;
+      if (permit.residents) {
+        document.getElementById('in_residents').value = permit.residents;
+      } else if (buyers.length > 1) {
+        document.getElementById('in_residents').value = buyers[0].name + ' 외 ' + (buyers.length - 1) + '명';
+      } else if (buyers[0]?.name) {
+        document.getElementById('in_residents').value = buyers[0].name;
+      }
+
+      // 6. 공인중개사
+      if (agent.office) document.getElementById('in_agent_office').value = agent.office;
+      if (agent.name) document.getElementById('in_agent_name').value = agent.name;
+      if (agent.regNo) document.getElementById('in_agent_reg').value = agent.regNo;
+      if (agent.addr) document.getElementById('in_agent_addr').value = agent.addr;
+      if (agent.tel) document.getElementById('in_agent_tel').value = agent.tel;
+
+      // 동기화 실행
+      calcJibunFull();
+      calcLandShare();
+      calcPriceBreakdown();
+      syncAll();
+
+      initPermitDealDropdown(deal.id);
+    }
+
+    function loadSelectedDealIntoPermit() {
+      const sel = document.getElementById('sel_permit_deal');
+      const id = sel ? sel.value : null;
+      if (!id) {
+        alert('불러올 거래를 선택해 주세요.');
+        return;
+      }
+      const deal = window.DealStore.getDeal(id);
+      if (deal) {
+        applyDealToInputs(deal);
+        showToast('매매약정서 데이터를 성공적으로 불러왔습니다: ' + (deal.title || id));
+      } else {
+        alert('해당 거래를 찾을 수 없습니다.');
+      }
+    }
+
+    function savePermitBackToDealStore() {
+      if (!window.DealStore) {
+        alert('DealStore 모듈을 불러올 수 없습니다.');
+        return;
+      }
+      const existing = currentLoadedDealId ? window.DealStore.getDeal(currentLoadedDealId) : null;
+      const deal = existing || window.DealStore.createEmptyDeal();
+
+      deal.dealDate = document.getElementById('in_date').value;
+      deal.property.dong = document.getElementById('in_dong').value;
+      deal.property.jibunMain = document.getElementById('in_jibun_main').value;
+      deal.property.jibunSub = document.getElementById('in_jibun_sub').value;
+      deal.property.jibunExtra = document.getElementById('in_jibun_extra').value;
+      deal.property.complex = document.getElementById('in_complex').value;
+      deal.property.dongNum = document.getElementById('in_dong_num').value;
+      deal.property.hoNum = document.getElementById('in_ho_num').value;
+      deal.property.roadAddr = document.getElementById('in_road_addr').value;
+      deal.property.landCategoryLegal = document.getElementById('in_jimok_legal').value;
+      deal.property.landCategoryActual = document.getElementById('in_jimok_actual').value;
+      deal.property.landAreaTotal = parseFloat(document.getElementById('in_land_total_area').value) || 0;
+      deal.property.landRatioDen = parseFloat(document.getElementById('in_land_ratio_den').value) || 0;
+      deal.property.landRatioNum = parseFloat(document.getElementById('in_land_ratio_num').value) || 0;
+      deal.property.landUnitPrice = parseFloat(document.getElementById('in_land_unit_price').value) || 0;
+      deal.property.zoning = document.getElementById('in_yongdo_area').value;
+      deal.property.landUseStatus = document.getElementById('in_land_use_status').value;
+      deal.property.rightsStatus = document.getElementById('in_rights_status').value;
+      deal.property.buildingType = document.getElementById('in_bld_type').value;
+      deal.property.buildingDetail = document.getElementById('in_bld_detail').value;
+      deal.property.exclusiveArea = parseFloat(document.getElementById('in_exclusive_area').value) || 0;
+      deal.property.commonArea = parseFloat(document.getElementById('in_common_area').value) || 0;
+
+      // 당사자
+      const sellers = [];
+      const s1Name = document.getElementById('in_seller_name').value.trim();
+      if (s1Name) {
+        sellers.push({
+          name: s1Name,
+          rrn: document.getElementById('in_seller_rrn').value.trim(),
+          tel: document.getElementById('in_seller_tel').value.trim(),
+          addr: document.getElementById('in_seller_addr').value.trim(),
+          share: document.getElementById('in_seller2_name').value.trim() ? '1/2' : '1/1'
+        });
+      }
+      const s2Name = document.getElementById('in_seller2_name').value.trim();
+      if (s2Name) {
+        sellers.push({
+          name: s2Name,
+          rrn: document.getElementById('in_seller2_rrn').value.trim(),
+          tel: document.getElementById('in_seller2_tel').value.trim(),
+          addr: document.getElementById('in_seller2_addr').value.trim(),
+          share: '1/2'
+        });
+      }
+      deal.parties.sellers = sellers;
+
+      const buyers = [];
+      const b1Name = document.getElementById('in_buyer_name').value.trim();
+      if (b1Name) {
+        buyers.push({
+          name: b1Name,
+          rrn: document.getElementById('in_buyer_rrn').value.trim(),
+          tel: document.getElementById('in_buyer_tel').value.trim(),
+          addr: document.getElementById('in_buyer_addr').value.trim(),
+          share: document.getElementById('in_buyer2_name').value.trim() ? '1/2' : '1/1'
+        });
+      }
+      const b2Name = document.getElementById('in_buyer2_name').value.trim();
+      if (b2Name) {
+        buyers.push({
+          name: b2Name,
+          rrn: document.getElementById('in_buyer2_rrn').value.trim(),
+          tel: document.getElementById('in_buyer2_tel').value.trim(),
+          addr: document.getElementById('in_buyer2_addr').value.trim(),
+          share: '1/2'
+        });
+      }
+      deal.parties.buyers = buyers;
+
+      // 금액 및 허가항목
+      deal.financial.totalPrice = parseFloat(document.getElementById('in_total_price').value) || 0;
+      deal.financial.contractDate = document.getElementById('in_contract_date').value;
+      deal.permit.purpose = document.getElementById('in_purpose').value;
+      deal.permit.residents = document.getElementById('in_residents').value;
+      deal.permit.moveInDate = document.getElementById('in_move_in_date').value;
+      if (!deal.permit.funding) deal.permit.funding = {};
+      deal.permit.funding.buyer1 = {
+        name: b1Name,
+        selfDeposit: parseFloat(document.getElementById('in_fund_self').value) || 0,
+        loanAmount: parseFloat(document.getElementById('in_fund_loan').value) || 0
+      };
+
+      const saved = window.DealStore.saveDeal(deal);
+      currentLoadedDealId = saved.id;
+      initPermitDealDropdown(saved.id);
+      showToast('거래 저장소에 성공적으로 저장되었습니다: ' + saved.title);
+    }
+
+    // 초기화
+    document.addEventListener('DOMContentLoaded', () => {
+      recordDefaultPositions();
+      loadSavedPositions();
+      initResizeHandleDrag();
+      calcLandShare();
+      syncAll();
+
+      // 약정서 거래 데이터 연동 초기화
+      initPermitDealDropdown();
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlDealId = urlParams.get('dealId');
+      if (urlDealId && window.DealStore) {
+        const deal = window.DealStore.getDeal(urlDealId);
+        if (deal) {
+          applyDealToInputs(deal);
+          showToast('매매약정서 데이터를 성공적으로 불러왔습니다: ' + (deal.title || urlDealId));
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
