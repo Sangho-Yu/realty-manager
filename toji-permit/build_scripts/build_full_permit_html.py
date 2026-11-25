@@ -782,7 +782,7 @@ def build_full_html():
               </div>
               <div>
                 <label class="field-label">주소</label>
-                <input type="text" class="input-box" id="in_seller_addr" value="" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_seller_addr" value="" oninput="onPermitSellerAddrInput();">
               </div>
             </div>
 
@@ -805,8 +805,14 @@ def build_full_html():
                   <input type="text" class="input-box" id="in_seller2_tel" value="" placeholder="연락처" oninput="syncAll();">
                 </div>
                 <div>
-                  <label class="field-label">주소</label>
-                  <input type="text" class="input-box" id="in_seller2_addr" value="" placeholder="주소" oninput="syncAll();">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;">
+                    <label class="field-label" style="margin-bottom:0;">주소</label>
+                    <label style="font-size:10.5px; font-weight:600; color:var(--primary); display:inline-flex; align-items:center; gap:3px; cursor:pointer;">
+                      <input type="checkbox" id="chk_permit_seller2_same_addr" checked onchange="onPermitSeller2SameAddrToggle()">
+                      <span>매도인 1과 동일</span>
+                    </label>
+                  </div>
+                  <input type="text" class="input-box" id="in_seller2_addr" value="" placeholder="주소" oninput="onPermitSeller2AddrInput()">
                 </div>
               </div>
             </div>
@@ -837,7 +843,7 @@ def build_full_html():
               </div>
               <div>
                 <label class="field-label">주소</label>
-                <input type="text" class="input-box" id="in_buyer_addr" value="" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_buyer_addr" value="" oninput="onPermitBuyerAddrInput();">
               </div>
             </div>
 
@@ -860,8 +866,14 @@ def build_full_html():
                   <input type="text" class="input-box" id="in_buyer2_tel" value="" placeholder="연락처" oninput="syncAll();">
                 </div>
                 <div>
-                  <label class="field-label">주소</label>
-                  <input type="text" class="input-box" id="in_buyer2_addr" value="" placeholder="주소" oninput="syncAll();">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;">
+                    <label class="field-label" style="margin-bottom:0;">주소</label>
+                    <label style="font-size:10.5px; font-weight:600; color:var(--primary); display:inline-flex; align-items:center; gap:3px; cursor:pointer;">
+                      <input type="checkbox" id="chk_permit_buyer2_same_addr" checked onchange="onPermitBuyer2SameAddrToggle()">
+                      <span>매수인 1과 동일</span>
+                    </label>
+                  </div>
+                  <input type="text" class="input-box" id="in_buyer2_addr" value="" placeholder="주소" oninput="onPermitBuyer2AddrInput()">
                 </div>
               </div>
             </div>
@@ -1915,10 +1927,68 @@ def build_full_html():
       showToast(`🏢 '${{p.complex}}' 프리셋이 적용되었습니다.`);
     }}
 
+    // 주소 동일 체크박스 핸들러 (매도인 2)
+    function onPermitSellerAddrInput() {{
+      const chk = document.getElementById('chk_permit_seller2_same_addr');
+      if (chk && chk.checked) {{
+        document.getElementById('in_seller2_addr').value = document.getElementById('in_seller_addr').value;
+      }}
+      syncAll();
+    }}
+
+    function onPermitSeller2SameAddrToggle() {{
+      const chk = document.getElementById('chk_permit_seller2_same_addr');
+      if (chk && chk.checked) {{
+        document.getElementById('in_seller2_addr').value = document.getElementById('in_seller_addr').value;
+      }}
+      syncAll();
+    }}
+
+    function onPermitSeller2AddrInput() {{
+      const s1Addr = document.getElementById('in_seller_addr').value.trim();
+      const s2Addr = document.getElementById('in_seller2_addr').value.trim();
+      const chk = document.getElementById('chk_permit_seller2_same_addr');
+      if (chk) {{
+        chk.checked = (s1Addr !== '' && s1Addr === s2Addr);
+      }}
+      syncAll();
+    }}
+
+    // 주소 동일 체크박스 핸들러 (매수인 2)
+    function onPermitBuyerAddrInput() {{
+      const chk = document.getElementById('chk_permit_buyer2_same_addr');
+      if (chk && chk.checked) {{
+        document.getElementById('in_buyer2_addr').value = document.getElementById('in_buyer_addr').value;
+      }}
+      syncAll();
+    }}
+
+    function onPermitBuyer2SameAddrToggle() {{
+      const chk = document.getElementById('chk_permit_buyer2_same_addr');
+      if (chk && chk.checked) {{
+        document.getElementById('in_buyer2_addr').value = document.getElementById('in_buyer_addr').value;
+      }}
+      syncAll();
+    }}
+
+    function onPermitBuyer2AddrInput() {{
+      const b1Addr = document.getElementById('in_buyer_addr').value.trim();
+      const b2Addr = document.getElementById('in_buyer2_addr').value.trim();
+      const chk = document.getElementById('chk_permit_buyer2_same_addr');
+      if (chk) {{
+        chk.checked = (b1Addr !== '' && b1Addr === b2Addr);
+      }}
+      syncAll();
+    }}
+
     function toggleSeller2() {{
       const grp = document.getElementById('seller2_group');
       if (grp.style.display === 'none') {{
         grp.style.display = 'block';
+        const chkSame = document.getElementById('chk_permit_seller2_same_addr');
+        if (chkSame && chkSame.checked) {{
+          document.getElementById('in_seller2_addr').value = document.getElementById('in_seller_addr').value;
+        }}
         showToast('👥 공동매도인 2 입력란이 활성화되었습니다.');
       }} else {{
         grp.style.display = 'none';
@@ -1935,6 +2005,10 @@ def build_full_html():
       const isCurrentlyHidden = (grp.style.display === 'none');
       if (isCurrentlyHidden) {{
         grp.style.display = 'block';
+        const chkSame = document.getElementById('chk_permit_buyer2_same_addr');
+        if (chkSame && chkSame.checked) {{
+          document.getElementById('in_buyer2_addr').value = document.getElementById('in_buyer_addr').value;
+        }}
         const chk3 = document.getElementById('chk_enable_buyer2_p3');
         if (chk3 && !chk3.checked) {{
           chk3.checked = true;
@@ -2161,11 +2235,18 @@ def build_full_html():
       document.getElementById('in_seller_tel').value = s1.tel || '';
       document.getElementById('in_seller_addr').value = s1.addr || '';
 
+      const chkS2Same = document.getElementById('chk_permit_seller2_same_addr');
       if (s2 && (s2.name || s2.rrn || s2.tel || s2.addr)) {{
         document.getElementById('in_seller2_name').value = s2.name || '';
         document.getElementById('in_seller2_rrn').value = s2.rrn || '';
         document.getElementById('in_seller2_tel').value = s2.tel || '';
-        document.getElementById('in_seller2_addr').value = s2.addr || '';
+        if (s2.addr && s1.addr && s2.addr.trim() !== s1.addr.trim()) {{
+          if (chkS2Same) chkS2Same.checked = false;
+          document.getElementById('in_seller2_addr').value = s2.addr;
+        }} else {{
+          if (chkS2Same) chkS2Same.checked = true;
+          document.getElementById('in_seller2_addr').value = s2.addr || s1.addr || '';
+        }}
         document.getElementById('seller2_group').style.display = 'block';
       }} else {{
         document.getElementById('in_seller2_name').value = '';
@@ -2185,11 +2266,18 @@ def build_full_html():
       document.getElementById('in_buyer_tel').value = b1.tel || '';
       document.getElementById('in_buyer_addr').value = b1.addr || '';
 
+      const chkB2Same = document.getElementById('chk_permit_buyer2_same_addr');
       if (b2 && (b2.name || b2.rrn || b2.tel || b2.addr)) {{
         document.getElementById('in_buyer2_name').value = b2.name || '';
         document.getElementById('in_buyer2_rrn').value = b2.rrn || '';
         document.getElementById('in_buyer2_tel').value = b2.tel || '';
-        document.getElementById('in_buyer2_addr').value = b2.addr || '';
+        if (b2.addr && b1.addr && b2.addr.trim() !== b1.addr.trim()) {{
+          if (chkB2Same) chkB2Same.checked = false;
+          document.getElementById('in_buyer2_addr').value = b2.addr;
+        }} else {{
+          if (chkB2Same) chkB2Same.checked = true;
+          document.getElementById('in_buyer2_addr').value = b2.addr || b1.addr || '';
+        }}
         document.getElementById('buyer2_group').style.display = 'block';
 
         const chk3 = document.getElementById('chk_enable_buyer2_p3');

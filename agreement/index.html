@@ -800,7 +800,7 @@
         </div>
         <div class="form-group">
           <label>소유자 1 주소</label>
-          <input type="text" id="f_seller1_addr" class="form-control" value="" oninput="syncPreview()" />
+          <input type="text" id="f_seller1_addr" class="form-control" value="" oninput="onSeller1AddrChange()" />
         </div>
 
         <!-- 소유자 2 (공동소유) -->
@@ -825,8 +825,14 @@
               </div>
             </div>
             <div class="form-group">
-              <label>소유자 2 주소</label>
-              <input type="text" id="f_seller2_addr" class="form-control" oninput="syncPreview()" />
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;">
+                <label style="margin-bottom:0;">소유자 2 주소</label>
+                <label style="font-size:11px; font-weight:600; color:var(--primary, #0284c7); display:inline-flex; align-items:center; gap:4px; cursor:pointer;">
+                  <input type="checkbox" id="chk_seller2_same_addr" checked onchange="onSeller2SameAddrToggle()" />
+                  <span>소유자 1과 동일</span>
+                </label>
+              </div>
+              <input type="text" id="f_seller2_addr" class="form-control" oninput="onSeller2AddrManualInput()" />
             </div>
           </div>
         </div>
@@ -851,7 +857,7 @@
         </div>
         <div class="form-group">
           <label>매수약정인 1 주소</label>
-          <input type="text" id="f_buyer1_addr" class="form-control" value="" oninput="syncPreview()" />
+          <input type="text" id="f_buyer1_addr" class="form-control" value="" oninput="onBuyer1AddrChange()" />
         </div>
 
         <!-- 매수약정인 2 (공동매수) -->
@@ -876,8 +882,14 @@
               </div>
             </div>
             <div class="form-group">
-              <label>매수약정인 2 주소</label>
-              <input type="text" id="f_buyer2_addr" class="form-control" oninput="syncPreview()" />
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;">
+                <label style="margin-bottom:0;">매수약정인 2 주소</label>
+                <label style="font-size:11px; font-weight:600; color:var(--primary, #0284c7); display:inline-flex; align-items:center; gap:4px; cursor:pointer;">
+                  <input type="checkbox" id="chk_buyer2_same_addr" checked onchange="onBuyer2SameAddrToggle()" />
+                  <span>매수인 1과 동일</span>
+                </label>
+              </div>
+              <input type="text" id="f_buyer2_addr" class="form-control" oninput="onBuyer2AddrManualInput()" />
             </div>
           </div>
         </div>
@@ -2021,7 +2033,15 @@
       document.getElementById('f_seller2_name').value = hasS2 ? (s2.name || '') : '';
       document.getElementById('f_seller2_rrn').value = hasS2 ? (s2.rrn || '') : '';
       document.getElementById('f_seller2_tel').value = hasS2 ? (s2.tel || '') : '';
-      document.getElementById('f_seller2_addr').value = hasS2 ? (s2.addr || '') : '';
+      
+      const chkS2Same = document.getElementById('chk_seller2_same_addr');
+      if (hasS2 && s2.addr && s1.addr && s2.addr.trim() !== s1.addr.trim()) {
+        if (chkS2Same) chkS2Same.checked = false;
+        document.getElementById('f_seller2_addr').value = s2.addr;
+      } else {
+        if (chkS2Same) chkS2Same.checked = true;
+        document.getElementById('f_seller2_addr').value = hasS2 ? (s2.addr || s1.addr || '') : (s1.addr || '');
+      }
 
       // 당사자 (매수인 1/2)
       const buyers = (deal.parties && deal.parties.buyers) ? deal.parties.buyers : (deal.buyers || []);
@@ -2038,7 +2058,15 @@
       document.getElementById('f_buyer2_name').value = hasB2 ? (b2.name || '') : '';
       document.getElementById('f_buyer2_rrn').value = hasB2 ? (b2.rrn || '') : '';
       document.getElementById('f_buyer2_tel').value = hasB2 ? (b2.tel || '') : '';
-      document.getElementById('f_buyer2_addr').value = hasB2 ? (b2.addr || '') : '';
+
+      const chkB2Same = document.getElementById('chk_buyer2_same_addr');
+      if (hasB2 && b2.addr && b1.addr && b2.addr.trim() !== b1.addr.trim()) {
+        if (chkB2Same) chkB2Same.checked = false;
+        document.getElementById('f_buyer2_addr').value = b2.addr;
+      } else {
+        if (chkB2Same) chkB2Same.checked = true;
+        document.getElementById('f_buyer2_addr').value = hasB2 ? (b2.addr || b1.addr || '') : (b1.addr || '');
+      }
 
       // 4. 공동중개사
       const co = deal.coAgent || {};
@@ -2282,6 +2310,60 @@
       document.getElementById('lbl_balance_kr').textContent = window.DealStore.numToKorean(balance);
     }
 
+    // 주소 동일 체크박스 핸들러 (소유자 2)
+    function onSeller1AddrChange() {
+      const chk = document.getElementById('chk_seller2_same_addr');
+      if (chk && chk.checked) {
+        document.getElementById('f_seller2_addr').value = document.getElementById('f_seller1_addr').value;
+      }
+      syncPreview();
+    }
+
+    function onSeller2SameAddrToggle() {
+      const chk = document.getElementById('chk_seller2_same_addr');
+      if (chk && chk.checked) {
+        document.getElementById('f_seller2_addr').value = document.getElementById('f_seller1_addr').value;
+      }
+      syncPreview();
+    }
+
+    function onSeller2AddrManualInput() {
+      const s1Addr = document.getElementById('f_seller1_addr').value.trim();
+      const s2Addr = document.getElementById('f_seller2_addr').value.trim();
+      const chk = document.getElementById('chk_seller2_same_addr');
+      if (chk) {
+        chk.checked = (s1Addr !== '' && s1Addr === s2Addr);
+      }
+      syncPreview();
+    }
+
+    // 주소 동일 체크박스 핸들러 (매수인 2)
+    function onBuyer1AddrChange() {
+      const chk = document.getElementById('chk_buyer2_same_addr');
+      if (chk && chk.checked) {
+        document.getElementById('f_buyer2_addr').value = document.getElementById('f_buyer1_addr').value;
+      }
+      syncPreview();
+    }
+
+    function onBuyer2SameAddrToggle() {
+      const chk = document.getElementById('chk_buyer2_same_addr');
+      if (chk && chk.checked) {
+        document.getElementById('f_buyer2_addr').value = document.getElementById('f_buyer1_addr').value;
+      }
+      syncPreview();
+    }
+
+    function onBuyer2AddrManualInput() {
+      const b1Addr = document.getElementById('f_buyer1_addr').value.trim();
+      const b2Addr = document.getElementById('f_buyer2_addr').value.trim();
+      const chk = document.getElementById('chk_buyer2_same_addr');
+      if (chk) {
+        chk.checked = (b1Addr !== '' && b1Addr === b2Addr);
+      }
+      syncPreview();
+    }
+
     function toggleSeller2UI() {
       const isChecked = document.getElementById('chk_seller2').checked;
       const box = document.getElementById('seller2_box');
@@ -2289,6 +2371,10 @@
         box.style.display = isChecked ? 'block' : 'none';
       }
       if (isChecked) {
+        const chkSame = document.getElementById('chk_seller2_same_addr');
+        if (chkSame && chkSame.checked) {
+          document.getElementById('f_seller2_addr').value = document.getElementById('f_seller1_addr').value;
+        }
         const inp = document.getElementById('f_seller2_name');
         if (inp && !inp.value) inp.focus();
       }
@@ -2302,6 +2388,10 @@
         box.style.display = isChecked ? 'block' : 'none';
       }
       if (isChecked) {
+        const chkSame = document.getElementById('chk_buyer2_same_addr');
+        if (chkSame && chkSame.checked) {
+          document.getElementById('f_buyer2_addr').value = document.getElementById('f_buyer1_addr').value;
+        }
         const inp = document.getElementById('f_buyer2_name');
         if (inp && !inp.value) inp.focus();
       }
