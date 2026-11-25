@@ -733,7 +733,7 @@ def build_full_html():
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">⑯ 종류 (주용도)</label>
-                <input type="text" class="input-box" id="in_bld_type" value="공동주택" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_bld_type" value="공동주택(아파트)" oninput="syncAll();">
               </div>
               <div>
                 <label class="field-label">전유면적(㎡)</label>
@@ -748,11 +748,11 @@ def build_full_html():
               </div>
               <div>
                 <label class="field-label">⑲ 권리 내용</label>
-                <input type="text" class="input-box" id="in_right_act" value="취득" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_right_act" value="이전" oninput="syncAll();">
               </div>
               <div>
                 <label class="field-label">⑳ 이전/설정 형태</label>
-                <input type="text" class="input-box" id="in_transfer_type" value="유상 (매매)" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_transfer_type" value="매매" oninput="syncAll();">
               </div>
             </div>
           </div>
@@ -1202,7 +1202,11 @@ def build_full_html():
       document.getElementById('in_land_ratio_den').value = p.ratioDen || '';
       document.getElementById('in_land_ratio_num').value = p.ratioNum || '';
       document.getElementById('in_yongdo_area').value = p.yongdo || '제3종일반주거지역';
-      document.getElementById('in_bld_type').value = p.bldType || p.bldUsage || '공동주택(아파트)';
+      let presetBldType = p.bldType || (p.bldUsage ? `공동주택(${{p.bldUsage}})` : '') || '공동주택(아파트)';
+      if (!presetBldType || presetBldType === '공동주택' || presetBldType === '아파트') {{
+        presetBldType = '공동주택(아파트)';
+      }}
+      document.getElementById('in_bld_type').value = presetBldType;
       if (p.bldUnit) document.getElementById('in_bld_unit').value = p.bldUnit;
       if (p.officialPrice) document.getElementById('in_land_official_price').value = formatCommaNumber(p.officialPrice);
       if (p.exclusiveArea) document.getElementById('in_exclusive_area').value = p.exclusiveArea;
@@ -1824,6 +1828,15 @@ def build_full_html():
       const BLANK_DATE_TEXT = '      년      월      일';
       const applyDateFmt = (!isBlankDate && applyDateInput) ? formatDateKorean(applyDateInput) : BLANK_DATE_TEXT;
 
+      let compText = complex;
+      let unitText = bldUnit;
+      if (compText && unitText && unitText.startsWith(compText)) {{
+        unitText = unitText.replace(compText, '').trim();
+      }}
+      const bldDetailHtml = (compText && unitText)
+        ? `<div style="font-size:7.5pt; font-weight:bold; line-height:3.6mm; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${{compText}}</div><div style="font-size:7.5pt; font-weight:bold; line-height:3.6mm; white-space:nowrap;">${{unitText}}</div>`
+        : `<div style="font-size:7.5pt; font-weight:bold;">${{compText || unitText}}</div>`;
+
       const dataMap = {{
         apply_date_fmt: applyDateFmt,
         seller_birth: sellerBirth,
@@ -1887,14 +1900,16 @@ def build_full_html():
         rights_status: rightsStatus,
 
         // Building
-        bld_type: bldType,
-        bld_type_short: '공동주택',
-        bld_detail: bldUnit,
-        bld_desc: `${{complex}} ${{bldUnit}}`,
+        bld_type: bldType || '공동주택(아파트)',
+        bld_type_short: bldType || '공동주택(아파트)',
+        bld_type_table: '공동주택',
+        bld_detail: complex ? `${{complex}}\n${{bldUnit}}` : bldUnit,
+        bld_detail_html: bldDetailHtml,
+        bld_desc: `${{complex}} ${{bldUnit}}`.trim(),
         exclusive_area: document.getElementById('in_exclusive_area')?.value || '',
-        right_kind: document.getElementById('in_right_kind')?.value || '소유권',
-        right_action: document.getElementById('in_right_act')?.value || '취득',
-        transfer_type: document.getElementById('in_transfer_type')?.value || '유상 (매매)',
+        right_kind: (document.getElementById('in_right_kind')?.value || '소유권').trim(),
+        right_action: (document.getElementById('in_right_act')?.value || '이전').trim(),
+        transfer_type: (document.getElementById('in_transfer_type')?.value || '매매').trim(),
 
         // Prices
         total_price_fmt: formatNumber(totalPrice),
@@ -2100,7 +2115,7 @@ def build_full_html():
       document.getElementById('in_land_ratio_den').value = p.ratio_den;
       document.getElementById('in_land_ratio_num').value = p.ratio_num;
       document.getElementById('in_yongdo_area').value = p.yongdo;
-      document.getElementById('in_bld_type').value = p.bld_type;
+      document.getElementById('in_bld_type').value = '공동주택(아파트)';
       document.getElementById('in_bld_unit').value = p.bld_unit;
       document.getElementById('in_land_official_price').value = formatCommaNumber(p.official_price);
       document.getElementById('in_exclusive_area').value = p.exclusive_area;
@@ -2430,7 +2445,14 @@ def build_full_html():
       document.getElementById('in_land_ratio_num').value = deal.landRatioNum || p.landRatioNum || parsed.ratioNum || '';
       document.getElementById('in_exclusive_area').value = deal.buildingArea || p.exclusiveArea || '';
       document.getElementById('in_yongdo_area').value = deal.zoning || p.zoning || '제3종일반주거지역';
-      document.getElementById('in_bld_type').value = deal.bldType || p.bldType || (p.bldUsage ? `공동주택(${{p.bldUsage}})` : '') || '공동주택(아파트)';
+      let bldTypeVal = deal.bldType || p.bldType || (p.bldUsage ? `공동주택(${{p.bldUsage}})` : '') || '공동주택(아파트)';
+      if (!bldTypeVal || bldTypeVal === '공동주택' || bldTypeVal === '아파트') {{
+        bldTypeVal = '공동주택(아파트)';
+      }}
+      document.getElementById('in_bld_type').value = bldTypeVal;
+      document.getElementById('in_right_kind').value = deal.rightKind || '소유권';
+      document.getElementById('in_right_act').value = deal.rightAction || '이전';
+      document.getElementById('in_transfer_type').value = deal.transferType || '매매';
 
       // 2. 매도인 정보
       const sellersList = (deal.sellers && deal.sellers.length > 0) ? deal.sellers : ((deal.parties && deal.parties.sellers) || []);
@@ -2630,6 +2652,15 @@ def build_full_html():
       deal.landRatioNum = parseFloat(document.getElementById('in_land_ratio_num').value) || 0;
       deal.buildingArea = parseFloat(document.getElementById('in_exclusive_area').value) || 0;
       deal.zoning = document.getElementById('in_yongdo_area').value;
+      deal.bldType = document.getElementById('in_bld_type').value;
+      deal.rightKind = document.getElementById('in_right_kind').value;
+      deal.rightAction = document.getElementById('in_right_act').value;
+      deal.transferType = document.getElementById('in_transfer_type').value;
+      deal.permit = deal.permit || {{}};
+      deal.permit.bldType = deal.bldType;
+      deal.permit.rightKind = deal.rightKind;
+      deal.permit.rightAction = deal.rightAction;
+      deal.permit.transferType = deal.transferType;
 
       // Sellers
       const s2Name = document.getElementById('in_seller2_name').value.trim();
@@ -2724,6 +2755,10 @@ def build_full_html():
       currentDealId = empty.id;
       document.getElementById('dealSelect').value = '';
       applyDealToInputs(empty);
+      document.getElementById('in_bld_type').value = '공동주택(아파트)';
+      document.getElementById('in_right_kind').value = '소유권';
+      document.getElementById('in_right_act').value = '이전';
+      document.getElementById('in_transfer_type').value = '매매';
       const chkPlanB = document.getElementById('chk_enable_plan_b');
       if (chkPlanB) chkPlanB.checked = false;
       togglePlanB(false);
@@ -2774,6 +2809,7 @@ def build_full_html():
             'buyer2_tel': 'in_buyer2_tel',
             'buyer2_addr': 'in_buyer2_addr',
             'bld_detail': 'in_bld_unit',
+            'bld_detail_html': 'in_bld_unit',
             'purpose': 'in_purpose',
             'reg_date': 'in_reg_date'
           }};

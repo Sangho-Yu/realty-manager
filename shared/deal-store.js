@@ -345,7 +345,7 @@
           commonArea: '',
           bldStructure: '철근콘크리트조',
           bldUsage: '아파트',
-          bldType: '공동주택',
+          bldType: '공동주택(아파트)',
           bldDetail: '아파트',
 
           // 공적장부 분해 항목 (토지거래허가서 바인딩용)
@@ -417,8 +417,9 @@
         // 4. 토지거래허가 전용 항목
         permit: {
           rightKind: '소유권',
-          rightAction: '취득',
-          transferType: '유상',
+          rightKind: '소유권',
+          rightAction: '이전',
+          transferType: '매매',
           purpose: '주거용 (세대원 전원 실거주 자가주택 취득)',
           residents: '',
           regDate: '',

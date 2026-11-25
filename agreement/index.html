@@ -2584,6 +2584,10 @@
       if (!base.usagePlan.purpose) base.usagePlan.purpose = '주거용 (세대원 전원 실거주 자가주택 취득)';
       if (!base.usagePlan.occupantType) base.usagePlan.occupantType = '매도인';
 
+      base.rightKind = base.rightKind || existing?.rightKind || '소유권';
+      base.rightAction = base.rightAction || existing?.rightAction || '이전';
+      base.transferType = base.transferType || existing?.transferType || '매매';
+
       // 공인중개사 기본 정보 연동
       if (!base.agent) {
         base.agent = window.DealStore ? Object.assign({}, window.DealStore.DEFAULT_AGENT) : {};
