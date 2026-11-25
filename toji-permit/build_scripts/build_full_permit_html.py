@@ -1028,14 +1028,18 @@ def build_full_html():
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">잔금예정일</label>
-                <input type="date" class="input-box" id="in_balance_date" value="" oninput="syncAll();">
+                <input type="date" class="input-box" id="in_balance_date" value="" oninput="onBalanceDateChange();">
               </div>
+              <div>
+                <label class="field-label">등기신청일</label>
+                <input type="date" class="input-box" id="in_reg_date" value="" oninput="onRegDateChange();">
+              </div>
+            </div>
+            <div class="field-row grid-2">
               <div>
                 <label class="field-label">입주예정일</label>
                 <input type="date" class="input-box" id="in_move_in_date" value="" oninput="syncAll();">
               </div>
-            </div>
-            <div class="field-row grid-2">
               <div>
                 <label class="field-label">점유현황</label>
                 <select class="input-box" id="in_occupant_type" onchange="syncAll();">
@@ -1044,6 +1048,7 @@ def build_full_html():
                   <option value="공가">공가(공실)</option>
                 </select>
               </div>
+            </div>
               <div>
                 <label class="field-label">임차인 퇴거예정일</label>
                 <input type="date" class="input-box" id="in_tenant_vacate_date" value="" placeholder="임차인 있는 경우" oninput="syncAll();">
@@ -1412,6 +1417,31 @@ def build_full_html():
       return dateStr;
     }}
 
+    function onBalanceDateChange() {{
+      const balInput = document.getElementById('in_balance_date');
+      const regInput = document.getElementById('in_reg_date');
+      if (balInput && regInput) {{
+        if (!regInput.dataset.manual || !regInput.value || regInput.value === regInput.dataset.prevBal) {{
+          regInput.value = balInput.value;
+        }}
+        regInput.dataset.prevBal = balInput.value;
+      }}
+      syncAll();
+    }}
+
+    function onRegDateChange() {{
+      const balInput = document.getElementById('in_balance_date');
+      const regInput = document.getElementById('in_reg_date');
+      if (balInput && regInput) {{
+        if (regInput.value && regInput.value !== balInput.value) {{
+          regInput.dataset.manual = 'true';
+        }} else {{
+          delete regInput.dataset.manual;
+        }}
+      }}
+      syncAll();
+    }}
+
     function calcJibunFull() {{
       const dong = (document.getElementById('in_dong')?.value || '').trim();
       const main = (document.getElementById('in_jibun_main')?.value || '').trim();
@@ -1522,6 +1552,7 @@ def build_full_html():
 
       const purpose = (document.getElementById('in_purpose')?.value || '').trim();
       const balanceDate = formatDateKorean(document.getElementById('in_balance_date')?.value);
+      const regDate = formatDateKorean(document.getElementById('in_reg_date')?.value);
       const moveInDate = formatDateKorean(document.getElementById('in_move_in_date')?.value);
       const occupantType = (document.getElementById('in_occupant_type')?.value || '').trim();
       const tenantVacate = formatDateKorean(document.getElementById('in_tenant_vacate_date')?.value);
@@ -1760,6 +1791,7 @@ def build_full_html():
         // Plan & Dates
         purpose: purpose,
         balance_date: balanceDate,
+        reg_date: regDate,
         move_in_date: moveInDate,
         occupant_type: occupantType,
         tenant_vacate: tenantVacate,
@@ -2299,8 +2331,9 @@ def build_full_html():
 
       // 4. 금액
       const f = deal.financial || {{}};
+      const balDate = deal.balanceDate || f.balanceDate || '';
       document.getElementById('in_total_price').value = deal.totalPrice || f.totalPrice || '';
-      document.getElementById('in_balance_date').value = deal.balanceDate || f.balanceDate || '';
+      document.getElementById('in_balance_date').value = balDate;
 
       // 5. 자금조달
       const funding = deal.funding || {{}};
@@ -2314,7 +2347,18 @@ def build_full_html():
       // 6. 이용계획
       const usage = deal.usagePlan || deal.permit || {{}};
       document.getElementById('in_purpose').value = usage.purpose || '주거용 (세대원 전원 실거주 자가주택 취득)';
-      document.getElementById('in_move_in_date').value = usage.moveInDate || deal.balanceDate || f.balanceDate || '';
+      const regDateVal = usage.regDate || deal.regDate || balDate;
+      const regInput = document.getElementById('in_reg_date');
+      if (regInput) {{
+        regInput.value = regDateVal;
+        regInput.dataset.prevBal = balDate;
+        if (usage.regDate && usage.regDate !== balDate) {{
+          regInput.dataset.manual = 'true';
+        }} else {{
+          delete regInput.dataset.manual;
+        }}
+      }}
+      document.getElementById('in_move_in_date').value = usage.moveInDate || balDate || '';
       document.getElementById('in_occupant_type').value = usage.occupantType || '매도인';
       document.getElementById('in_tenant_vacate_date').value = usage.tenantVacate || '';
 
@@ -2409,6 +2453,7 @@ def build_full_html():
 
       deal.totalPrice = parseFloat(document.getElementById('in_total_price').value) || 0;
       deal.balanceDate = document.getElementById('in_balance_date').value;
+      deal.regDate = document.getElementById('in_reg_date').value;
 
       // Funding
       deal.funding = {{
@@ -2424,6 +2469,7 @@ def build_full_html():
       deal.usagePlan = {{
         purpose: document.getElementById('in_purpose').value.trim(),
         balanceDate: document.getElementById('in_balance_date').value,
+        regDate: document.getElementById('in_reg_date').value,
         moveInDate: document.getElementById('in_move_in_date').value,
         occupantType: document.getElementById('in_occupant_type').value,
         tenantVacate: document.getElementById('in_tenant_vacate_date').value
@@ -2486,7 +2532,8 @@ def build_full_html():
             'buyer2_tel': 'in_buyer2_tel',
             'buyer2_addr': 'in_buyer2_addr',
             'bld_detail': 'in_bld_unit',
-            'purpose': 'in_purpose'
+            'purpose': 'in_purpose',
+            'reg_date': 'in_reg_date'
           }};
           const targetId = mapping[bindKey];
           if (targetId) {{

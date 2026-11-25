@@ -418,6 +418,7 @@
           transferType: '유상',
           purpose: '주거용 (세대원 전원 실거주 자가주택 취득)',
           residents: '',
+          regDate: '',
           moveInDate: '',
           funding: {
             deposit: 0,
