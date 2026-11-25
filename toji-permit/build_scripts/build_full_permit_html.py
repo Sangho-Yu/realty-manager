@@ -883,7 +883,7 @@ def build_full_html():
         <!-- 4. 거래금액 & 지분안분 -->
         <div class="form-section">
           <div class="section-header" onclick="toggleSection(this)">
-            <span>💰 4. 계약예정금액 및 토지·건물 안분</span>
+            <span>💰 4. 계약예정금액</span>
             <span>▾</span>
           </div>
           <div class="section-body">
@@ -891,7 +891,13 @@ def build_full_html():
               <label class="field-label">총 매매예정금액 (원)</label>
               <input type="number" class="input-box" id="in_total_price" value="" oninput="calcPriceBreakdown(); syncAll();">
             </div>
-            <div class="field-row grid-3">
+            <div style="margin-top:6px; margin-bottom:4px;">
+              <label style="font-size:11px; font-weight:600; color:var(--text-muted); display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
+                <input type="checkbox" id="chk_show_price_breakdown" onchange="togglePriceBreakdownUI(); syncAll();">
+                <span>토지·정착물 안분금액(㉖, ㉗, ㉙) 표기 (기본: 미기재)</span>
+              </label>
+            </div>
+            <div id="price_breakdown_box" style="display:none;" class="field-row grid-3">
               <div>
                 <label class="field-label">공시지가 단가(원/㎡)</label>
                 <input type="number" class="input-box" id="in_land_official_price" value="4500000" oninput="calcPriceBreakdown(); syncAll();">
@@ -1493,6 +1499,14 @@ def build_full_html():
       if (bldEl) bldEl.value = `${{formatNumber(bldPrice)}}원`;
     }}
 
+    function togglePriceBreakdownUI() {{
+      const chk = document.getElementById('chk_show_price_breakdown');
+      const box = document.getElementById('price_breakdown_box');
+      if (box && chk) {{
+        box.style.display = chk.checked ? 'grid' : 'none';
+      }}
+    }}
+
     function syncAll() {{
       const dong = (document.getElementById('in_dong')?.value || '').trim();
       const jibunDisplay = calcJibunFull();
@@ -1745,9 +1759,9 @@ def build_full_html():
 
         // Prices
         total_price_fmt: formatNumber(totalPrice),
-        land_unit_fmt: formatNumber(landOfficial),
-        land_price_fmt: formatNumber(landPrice),
-        bld_price_fmt: formatNumber(bldPrice),
+        land_unit_fmt: (document.getElementById('chk_show_price_breakdown')?.checked) ? formatNumber(landOfficial) : '',
+        land_price_fmt: (document.getElementById('chk_show_price_breakdown')?.checked) ? formatNumber(landPrice) : '',
+        bld_price_fmt: (document.getElementById('chk_show_price_breakdown')?.checked) ? formatNumber(bldPrice) : '',
 
         // Parties
         seller_name: sellerName,
@@ -2335,6 +2349,12 @@ def build_full_html():
       document.getElementById('in_total_price').value = deal.totalPrice || f.totalPrice || '';
       document.getElementById('in_balance_date').value = balDate;
 
+      const chkBreakdown = document.getElementById('chk_show_price_breakdown');
+      if (chkBreakdown) {{
+        chkBreakdown.checked = deal.showPriceBreakdown || false;
+        togglePriceBreakdownUI();
+      }}
+
       // 5. 자금조달
       const funding = deal.funding || {{}};
       document.getElementById('in_fund_deposit').value = funding.deposit || '';
@@ -2454,6 +2474,7 @@ def build_full_html():
       deal.totalPrice = parseFloat(document.getElementById('in_total_price').value) || 0;
       deal.balanceDate = document.getElementById('in_balance_date').value;
       deal.regDate = document.getElementById('in_reg_date').value;
+      deal.showPriceBreakdown = document.getElementById('chk_show_price_breakdown')?.checked || false;
 
       // Funding
       deal.funding = {{
