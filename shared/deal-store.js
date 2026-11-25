@@ -77,6 +77,58 @@
   };
 
   const PRESETS_STORAGE_KEY = 'realty_complex_presets';
+  const CLAUSE_STORAGE_KEY = 'realty_clause_templates';
+
+  const DEFAULT_CLAUSE_TEMPLATES = [
+    {
+      id: 'clean',
+      name: '템플릿 1: 권리하자없음 기본',
+      chipLabel: '템플릿 1: 권리하자없음 기본',
+      content: `2. 등기사항전부증명서상 을구 기재내용 없음으로 권리상 하자없음을 확인하였으며, 매도인은 잔금일까지 소유권의 행사를 제한하는 일체의 제한물권을 설정하지 않기로 한다.
+
+3. 현 시설물 상태의 약정이며, 매수인 직접 현장방문하여 확인한 후 토지거래허가를 득하기 위한 약정임을 인지하고 쌍방 합의하에 진행하는 약정이다.
+
+4. 본 매매약정금은 계약금이 아니므로, 매매계약 체결 시 기지급한 약정금 전액을 반환한 후 계약금을 별도로 지급한다.
+
+5. 토지거래 허가 후 매수약정인은 허가일로부터 4개월 이내 취득(등기)하고 취득일로부터 이용의무(2년 실거주)를 이행해야함을 인지하고 진행하는 약정이다. 다만, 주택 취득일이 그보다 빠를 경우 해당 토지 취득일로부터 이용의무를 이행하여야 한다.
+
+6. 계약서는 부동산거래허가를 득한후 협의된 날 작성하며, 확인설명서도 계약서 작성시 함께 작성, 교부하기로 한다.
+
+7. 기타사항은 계약시 협의하기로 하며, 일방 변심에 의해 계약파기시 중개보수는 지불하기로 한다.`
+    },
+    {
+      id: 'mortgage',
+      name: '템플릿 2: 근저당권 말소조건',
+      chipLabel: '템플릿 2: 근저당권 말소조건',
+      content: `2. 본 약정은 목적 부동산의 공부 및 현 시설물 상태를 현장에서 확인하고, 관련 제반 사항을 포괄적으로 인지한 상태에서 현존하는 상태 그대로를 인도하는 조건의 매매약정이다. (매수약정인이 소재지 직접 방문 확인함)
+
+3. 등기사항전부증명서상 을구 근저당권(채권최고액 등) 설정된 상태로 약정하며, 매도약정인은 잔금일까지 전액 상환 및 말소하기로 하고, 소유권의 행사를 제한하는 일체의 제한물권을 추가로 설정하지 않기로 한다.
+
+4. 본 약정 대상 아파트의 하자담보책임은 잔금 당일까지는 매도약정인 책임, 잔금 익일부터는 매수약정인 책임으로 협의한다. (단, 노후화로 인한 가벼운 결로 및 곰팡이 등은 매매약정금액에 반영된 것으로 보고 하자로 보지 아니한다.)
+
+5. 토지거래 허가 후 매수약정인은 허가일로부터 4개월 이내 취득(등기)하고 취득일로부터 이용의무(2년 실거주)를 이행해야함을 인지하고 진행하는 약정이다.
+
+6. 본 매매계약(전자계약) 체결 시에 매수 약정인은 계약금 전액을 지급하고, 매도 약정인은 수령한 약정금 전액을 매수 약정인에게 반환하기로 한다.
+
+7. 양 당사자는 토지거래허가 신청 및 본계약 체결을 위한 개인정보 수집·이용에 동의한다.`
+    },
+    {
+      id: 'seizure',
+      name: '템플릿 3: 가압류 공탁해지',
+      chipLabel: '템플릿 3: 가압류 공탁해지',
+      content: `2. 본 약정은 목적 부동산의 공부 및 현 시설물 상태를 현장에서 확인하고, 관련 제반 사항을 포괄적으로 인지한 상태에서 현존하는 상태 그대로를 인도하는 조건의 매매약정이다. (매수약정인이 소재지 직접 방문 확인함)
+
+3. 등기사항전부증명서상 갑구 가압류 및 을구 근저당권 설정 상태를 확인함. 매도약정인은 중도금 지급일에 갑구 가압류 해지를 위한 지정계좌(또는 법원 공탁계좌)를 매수약정인에게 제공하고, 중도금 중 가압류 해지 필요금액을 매수약정인이 직접 해당 계좌에 입금하여 완납 처리 후 10일 이내 말소등기를 완료하기로 한다. 을구 근저당권은 잔금일까지 전액 상환 말소한다.
+
+4. 본 약정 대상 아파트의 중대한 하자(누수 등) 발생 시 잔금일 기준 매도약정인 책임, 잔금일 이후 매수약정인 책임으로 협의한다.
+
+5. 토지거래 허가 후 매수약정인은 허가일로부터 4개월 이내 취득(등기)하고 취득일로부터 이용의무(2년 실거주)를 성실히 이행한다.
+
+6. 본 매매계약 체결 시 매수 약정인은 계약금 전액을 지급하고, 매도 약정인은 수령한 약정금 전액을 매수 약정인에게 반환하기로 한다.
+
+7. 추가사항은 본계약 체결 시 상호 협의하여 정하기로 한다.`
+    }
+  ];
 
   const DEFAULT_COMPLEX_PRESETS = [
     {
@@ -188,6 +240,8 @@
     DEFAULT_CO_AGENT: DEFAULT_CO_AGENT,
     DEAL_STAGES: DEAL_STAGES,
     DEFAULT_COMPLEX_PRESETS: DEFAULT_COMPLEX_PRESETS,
+    DEFAULT_CLAUSE_TEMPLATES: DEFAULT_CLAUSE_TEMPLATES,
+    CLAUSE_STORAGE_KEY: CLAUSE_STORAGE_KEY,
 
     getComplexPresets: function () {
       try {
@@ -217,6 +271,36 @@
         localStorage.removeItem(PRESETS_STORAGE_KEY);
       } catch (e) { }
       return JSON.parse(JSON.stringify(DEFAULT_COMPLEX_PRESETS));
+    },
+
+    getClauseTemplates: function () {
+      try {
+        const raw = localStorage.getItem(CLAUSE_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {
+        console.error('[DealStore] getClauseTemplates error:', e);
+      }
+      return JSON.parse(JSON.stringify(DEFAULT_CLAUSE_TEMPLATES));
+    },
+
+    saveClauseTemplates: function (list) {
+      try {
+        localStorage.setItem(CLAUSE_STORAGE_KEY, JSON.stringify(list));
+        return true;
+      } catch (e) {
+        console.error('[DealStore] saveClauseTemplates error:', e);
+        return false;
+      }
+    },
+
+    resetClauseTemplates: function () {
+      try {
+        localStorage.removeItem(CLAUSE_STORAGE_KEY);
+      } catch (e) { }
+      return JSON.parse(JSON.stringify(DEFAULT_CLAUSE_TEMPLATES));
     },
 
     /**
