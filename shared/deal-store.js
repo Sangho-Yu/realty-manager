@@ -12,6 +12,7 @@
   'use strict';
 
   const STORAGE_KEY = 'realty_deals';
+  const DELETED_KEY = 'realty_deleted_deal_ids';
 
   // 기본 공인중개사 고정 정보 (엑셀 서식 기준)
   const DEFAULT_AGENT = {
@@ -231,6 +232,7 @@
 
   const DealStore = {
     STORAGE_KEY: STORAGE_KEY,
+    DELETED_KEY: DELETED_KEY,
     PRESETS_STORAGE_KEY: PRESETS_STORAGE_KEY,
     DEFAULT_AGENT: DEFAULT_AGENT,
     DEFAULT_CO_AGENT: DEFAULT_CO_AGENT,
@@ -444,7 +446,51 @@
     },
 
     /**
-     * 저장된 모든 거래 목록 반환 (최신 수정순)
+     * 영구 삭제된 거래 ID 목록 관리 (클라우드/로컬 재동기화 시 부활 방지 톰스톤)
+     */
+    getDeletedDealIds: function () {
+      try {
+        const raw = localStorage.getItem(DELETED_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (e) {
+        console.error('[DealStore] getDeletedDealIds error:', e);
+      }
+      return [];
+    },
+
+    markDealAsDeleted: function (id) {
+      if (!id) return;
+      try {
+        const ids = this.getDeletedDealIds();
+        if (!ids.includes(id)) {
+          ids.push(id);
+          if (ids.length > 500) ids.splice(0, ids.length - 500);
+          localStorage.setItem(DELETED_KEY, JSON.stringify(ids));
+        }
+      } catch (e) {
+        console.error('[DealStore] markDealAsDeleted error:', e);
+      }
+    },
+
+    unmarkDeleted: function (id) {
+      if (!id) return;
+      try {
+        const ids = this.getDeletedDealIds();
+        const idx = ids.indexOf(id);
+        if (idx >= 0) {
+          ids.splice(idx, 1);
+          localStorage.setItem(DELETED_KEY, JSON.stringify(ids));
+        }
+      } catch (e) {
+        console.error('[DealStore] unmarkDeleted error:', e);
+      }
+    },
+
+    /**
+     * 저장된 모든 거래 목록 반환 (최신 수정순, 삭제된 거래 제외)
      */
     listDeals: function () {
       try {
@@ -452,7 +498,11 @@
         if (!raw) return [];
         const list = JSON.parse(raw);
         if (!Array.isArray(list)) return [];
-        return list.sort(function (a, b) {
+        const deletedIds = this.getDeletedDealIds();
+        const filtered = list.filter(function (d) {
+          return d && d.id && !deletedIds.includes(d.id);
+        });
+        return filtered.sort(function (a, b) {
           const tA = new Date(a.updatedAt || a.createdAt || 0).getTime();
           const tB = new Date(b.updatedAt || b.createdAt || 0).getTime();
           return tB - tA;
@@ -482,6 +532,9 @@
       if (!dealData.id) {
         dealData.id = 'deal_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
       }
+
+      // 새로 저장하는 거래는 삭제 목록에서 복권
+      this.unmarkDeleted(dealData.id);
 
       dealData.updatedAt = new Date().toISOString();
       dealData.status = dealData.status || 'agreement_signed';
@@ -618,14 +671,36 @@
       return result;
     },
 
+    /**
+     * 거래 삭제 (ID를 삭제 목록에 등록하여 클라우드 재동기화 시 부활 방지)
+     */
     deleteDeal: function (id) {
       if (!id) return false;
+      this.markDealAsDeleted(id);
       const list = this.listDeals().filter(function (d) { return d.id !== id; });
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
         return true;
       } catch (e) {
         console.error('[DealStore] deleteDeal error:', e);
+        return false;
+      }
+    },
+
+    /**
+     * 전체 거래 완전 비우기 (초기화)
+     */
+    clearAllDeals: function () {
+      try {
+        const list = this.listDeals();
+        const self = this;
+        list.forEach(function (d) {
+          if (d && d.id) self.markDealAsDeleted(d.id);
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+        return true;
+      } catch (e) {
+        console.error('[DealStore] clearAllDeals error:', e);
         return false;
       }
     },
@@ -678,7 +753,7 @@
         if (typeof fileOrString === 'string') {
           try {
             const parsed = JSON.parse(fileOrString);
-            const count = self._mergeImportedData(parsed);
+            const count = self._mergeImportedData(parsed, true);
             resolve(count);
           } catch (e) {
             reject(new Error('JSON 파싱 실패: ' + e.message));
@@ -688,7 +763,7 @@
           reader.onload = function (e) {
             try {
               const parsed = JSON.parse(e.target.result);
-              const count = self._mergeImportedData(parsed);
+              const count = self._mergeImportedData(parsed, true);
               resolve(count);
             } catch (err) {
               reject(new Error('파일 파싱 실패: ' + err.message));
@@ -704,7 +779,7 @@
       });
     },
 
-    _mergeImportedData: function (data) {
+    _mergeImportedData: function (data, isExplicitUserAction = false) {
       let importedDeals = [];
       if (Array.isArray(data)) {
         importedDeals = data;
@@ -714,6 +789,21 @@
         importedDeals = [data];
       } else {
         throw new Error('유효한 거래 데이터 형식이 아닙니다.');
+      }
+
+      const self = this;
+      const deletedIds = this.getDeletedDealIds();
+
+      if (isExplicitUserAction) {
+        // 사용자가 명시적으로 JSON 파일을 복원한 경우 삭제 목록에서 해제
+        importedDeals.forEach(function (deal) {
+          if (deal && deal.id) self.unmarkDeleted(deal.id);
+        });
+      } else {
+        // 백그라운드 동기화 시 이미 삭제된 거래는 불러오지 않고 건너뜀
+        importedDeals = importedDeals.filter(function (deal) {
+          return deal && deal.id && !deletedIds.includes(deal.id);
+        });
       }
 
       const existingList = this.listDeals();
