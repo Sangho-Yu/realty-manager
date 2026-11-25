@@ -1243,7 +1243,7 @@
           </colgroup>
           <!-- 부동산 소유자 -->
           <tr>
-            <th rowspan="4" class="center">부동산<br>소유자</th>
+            <th id="pv_p1_seller_th" rowspan="2" class="center">부동산<br>소유자</th>
             <th class="center">주민등록번호</th>
             <td id="pv_p1_s1_rrn" class="center">-</td>
             <th class="center">전 화</th>
@@ -1255,7 +1255,7 @@
             <th class="center">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</th>
             <td colspan="5" id="pv_p1_s1_addr">경기도 안양시 동안구 호계동 1052-3</td>
           </tr>
-          <tr>
+          <tr id="pv_p1_s2_row1" style="display:none;">
             <th class="center">주민등록번호</th>
             <td id="pv_p1_s2_rrn" class="center">-</td>
             <th class="center">전 화</th>
@@ -1263,14 +1263,14 @@
             <th class="center">성 명</th>
             <td class="center"><span id="pv_p1_s2_name" class="bold">-</span> &nbsp;(인)</td>
           </tr>
-          <tr>
+          <tr id="pv_p1_s2_row2" style="display:none;">
             <th class="center">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</th>
             <td colspan="5" id="pv_p1_s2_addr">-</td>
           </tr>
 
           <!-- 매수 약정인 -->
           <tr>
-            <th rowspan="4" class="center">매&nbsp;&nbsp;&nbsp;&nbsp;수<br>약정인</th>
+            <th id="pv_p1_buyer_th" rowspan="2" class="center">매&nbsp;&nbsp;&nbsp;&nbsp;수<br>약정인</th>
             <th class="center">주민등록번호</th>
             <td id="pv_p1_b1_rrn" class="center">-</td>
             <th class="center">전 화</th>
@@ -1282,7 +1282,7 @@
             <th class="center">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</th>
             <td colspan="5" id="pv_p1_b1_addr">서울특별시 서초구 반포대로 45</td>
           </tr>
-          <tr>
+          <tr id="pv_p1_b2_row1" style="display:none;">
             <th class="center">주민등록번호</th>
             <td id="pv_p1_b2_rrn" class="center">-</td>
             <th class="center">전 화</th>
@@ -1290,7 +1290,7 @@
             <th class="center">성 명</th>
             <td class="center"><span id="pv_p1_b2_name" class="bold">-</span> &nbsp;(인)</td>
           </tr>
-          <tr>
+          <tr id="pv_p1_b2_row2" style="display:none;">
             <th class="center">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</th>
             <td colspan="5" id="pv_p1_b2_addr">-</td>
           </tr>
@@ -2739,10 +2739,26 @@
       document.getElementById('pv_p1_s1_tel').textContent = s1.tel || '-';
       document.getElementById('pv_p1_s1_addr').textContent = s1.addr || '-';
 
-      document.getElementById('pv_p1_s2_name').textContent = s2.name || '-';
-      document.getElementById('pv_p1_s2_rrn').textContent = formatRrnDisplay(s2.rrn);
-      document.getElementById('pv_p1_s2_tel').textContent = s2.tel || '-';
-      document.getElementById('pv_p1_s2_addr').textContent = s2.addr || '-';
+      // 공동소유자(매도인 2) 동적 표시 여부
+      const chkS2 = document.getElementById('chk_seller2');
+      const hasS2 = chkS2 ? chkS2.checked : Boolean(sellers.length > 1 && (s2.name || s2.rrn || s2.tel || s2.addr));
+      const s2Row1 = document.getElementById('pv_p1_s2_row1');
+      const s2Row2 = document.getElementById('pv_p1_s2_row2');
+      const sTh = document.getElementById('pv_p1_seller_th');
+
+      if (hasS2) {
+        if (s2Row1) s2Row1.style.display = 'table-row';
+        if (s2Row2) s2Row2.style.display = 'table-row';
+        if (sTh) sTh.rowSpan = 4;
+        document.getElementById('pv_p1_s2_name').textContent = s2.name || '-';
+        document.getElementById('pv_p1_s2_rrn').textContent = formatRrnDisplay(s2.rrn);
+        document.getElementById('pv_p1_s2_tel').textContent = s2.tel || '-';
+        document.getElementById('pv_p1_s2_addr').textContent = s2.addr || '-';
+      } else {
+        if (s2Row1) s2Row1.style.display = 'none';
+        if (s2Row2) s2Row2.style.display = 'none';
+        if (sTh) sTh.rowSpan = 2;
+      }
 
       // 서명날인표 (매수약정인 1, 2)
       const b1 = buyers[0] || {};
@@ -2752,10 +2768,26 @@
       document.getElementById('pv_p1_b1_tel').textContent = b1.tel || '-';
       document.getElementById('pv_p1_b1_addr').textContent = b1.addr || '-';
 
-      document.getElementById('pv_p1_b2_name').textContent = b2.name || '-';
-      document.getElementById('pv_p1_b2_rrn').textContent = formatRrnDisplay(b2.rrn);
-      document.getElementById('pv_p1_b2_tel').textContent = b2.tel || '-';
-      document.getElementById('pv_p1_b2_addr').textContent = b2.addr || '-';
+      // 공동매수인(매수인 2) 동적 표시 여부
+      const chkB2 = document.getElementById('chk_buyer2');
+      const hasB2 = chkB2 ? chkB2.checked : Boolean(buyers.length > 1 && (b2.name || b2.rrn || b2.tel || b2.addr));
+      const b2Row1 = document.getElementById('pv_p1_b2_row1');
+      const b2Row2 = document.getElementById('pv_p1_b2_row2');
+      const bTh = document.getElementById('pv_p1_buyer_th');
+
+      if (hasB2) {
+        if (b2Row1) b2Row1.style.display = 'table-row';
+        if (b2Row2) b2Row2.style.display = 'table-row';
+        if (bTh) bTh.rowSpan = 4;
+        document.getElementById('pv_p1_b2_name').textContent = b2.name || '-';
+        document.getElementById('pv_p1_b2_rrn').textContent = formatRrnDisplay(b2.rrn);
+        document.getElementById('pv_p1_b2_tel').textContent = b2.tel || '-';
+        document.getElementById('pv_p1_b2_addr').textContent = b2.addr || '-';
+      } else {
+        if (b2Row1) b2Row1.style.display = 'none';
+        if (b2Row2) b2Row2.style.display = 'none';
+        if (bTh) bTh.rowSpan = 2;
+      }
 
       // 공동중개사 행 토글
       if (co.enabled && co.office) {
