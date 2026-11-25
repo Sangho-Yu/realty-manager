@@ -695,8 +695,8 @@ def build_full_html():
 
             <div class="field-row grid-3">
               <div>
-                <label class="field-label">1필지 총면적(㎡)</label>
-                <input type="number" step="0.01" class="input-box" id="in_land_total_area" value="" oninput="calcLandShare(); syncAll();">
+                <label class="field-label">대지(필지) 총면적(㎡)</label>
+                <input type="text" class="input-box" id="in_land_total_area" value="" placeholder="예: 56123.4 (2필지 이상 가능)" oninput="calcLandShare(); syncAll();">
               </div>
               <div>
                 <label class="field-label">대지권 비율 분모</label>
@@ -1202,7 +1202,7 @@ def build_full_html():
       document.getElementById('in_bld_type').value = p.bldType || p.bldUsage || '공동주택(아파트)';
       if (p.bldUnit) document.getElementById('in_bld_unit').value = p.bldUnit;
       if (p.officialPrice) document.getElementById('in_land_official_price').value = p.officialPrice;
-      document.getElementById('in_exclusive_area').value = p.exclusiveArea || '';
+      if (p.exclusiveArea) document.getElementById('in_exclusive_area').value = p.exclusiveArea;
 
       calcJibunFull();
       calcLandShare();
@@ -1226,18 +1226,66 @@ def build_full_html():
       hidePresetForm();
     }}
 
+    function movePresetUp(id) {{
+      let presets = getPresets();
+      const idx = presets.findIndex(p => p.id === id);
+      if (idx > 0) {{
+        const item = presets.splice(idx, 1)[0];
+        presets.splice(idx - 1, 0, item);
+        if (typeof DealStore !== 'undefined' && DealStore.saveComplexPresets) {{
+          DealStore.saveComplexPresets(presets);
+        }}
+        renderPermitComplexChips();
+        renderComplexModalList();
+      }}
+    }}
+
+    function movePresetDown(id) {{
+      let presets = getPresets();
+      const idx = presets.findIndex(p => p.id === id);
+      if (idx !== -1 && idx < presets.length - 1) {{
+        const item = presets.splice(idx, 1)[0];
+        presets.splice(idx + 1, 0, item);
+        if (typeof DealStore !== 'undefined' && DealStore.saveComplexPresets) {{
+          DealStore.saveComplexPresets(presets);
+        }}
+        renderPermitComplexChips();
+        renderComplexModalList();
+      }}
+    }}
+
+    function updateModalLandRatioStr() {{
+      const den = (document.getElementById('pf_ratioDen')?.value || '').trim();
+      const num = (document.getElementById('pf_ratioNum')?.value || '').trim();
+      const strEl = document.getElementById('pf_landRatioStr');
+      if (strEl) {{
+        if (!den || !num) {{
+          strEl.value = '';
+        }} else {{
+          strEl.value = `${{den}}분의 ${{num}}`;
+        }}
+      }}
+    }}
+
     function renderComplexModalList() {{
       const tbody = document.getElementById('preset_table_body');
       if (!tbody) return;
       const presets = getPresets();
 
       if (presets.length === 0) {{
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">등록된 단지 정보가 없습니다.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">등록된 단지 정보가 없습니다.</td></tr>';
         return;
       }}
 
-      tbody.innerHTML = presets.map(p => `
+      tbody.innerHTML = presets.map((p, idx) => `
         <tr style="border-bottom:1px solid var(--border, #e2e8f0);">
+          <td style="padding:6px 6px; text-align:center;">
+            <div style="display:flex; align-items:center; justify-content:center; gap:2px;">
+              <span style="font-weight:700; font-size:12px; width:16px;">${{idx + 1}}</span>
+              <button type="button" class="btn btn-outline" onclick="movePresetUp('${{p.id}}')" ${{idx === 0 ? 'disabled style="opacity:0.3; cursor:default; padding:1px 4px; font-size:10px; height:20px;"' : 'style="padding:1px 4px; font-size:10px; cursor:pointer; height:20px;"'}} title="위로 이동">▲</button>
+              <button type="button" class="btn btn-outline" onclick="movePresetDown('${{p.id}}')" ${{idx === presets.length - 1 ? 'disabled style="opacity:0.3; cursor:default; padding:1px 4px; font-size:10px; height:20px;"' : 'style="padding:1px 4px; font-size:10px; cursor:pointer; height:20px;"'}} title="아래로 이동">▼</button>
+            </div>
+          </td>
           <td style="padding:8px 10px;">
             <div style="font-weight:700; color:var(--text, #1e293b);">${{p.chipLabel || p.name}}</div>
             <div style="font-size:10.5px; color:var(--text-muted, #64748b);">${{p.complex || '-'}}</div>
@@ -1247,8 +1295,7 @@ def build_full_html():
             <div style="font-size:10.5px; color:var(--text-muted, #64748b);">${{p.roadAddr || p.landAddr || '-'}}</div>
           </td>
           <td style="padding:8px 10px;">
-            <div>대지권: ${{p.landRatioStr || (p.ratioDen ? p.ratioDen + '분의 ' + p.ratioNum : '-')}}</div>
-            <div style="font-size:10.5px; color:#0369a1; font-weight:600;">전용: ${{p.exclusiveArea || '-'}}㎡</div>
+            <div style="font-weight:600;">${{p.landRatioStr || (p.ratioDen ? p.ratioDen + '㎡ (분모)' : '-')}}</div>
           </td>
           <td style="padding:8px 10px; text-align:right;">
             <div style="display:inline-flex; gap:4px;">
@@ -1266,6 +1313,7 @@ def build_full_html():
       if (!box) return;
       box.style.display = 'block';
 
+      const presets = getPresets();
       if (idOrNew === 'new') {{
         document.getElementById('preset_form_title').textContent = '➕ 새로운 단지 정보 등록';
         document.getElementById('pf_id').value = '';
@@ -1275,14 +1323,14 @@ def build_full_html():
         document.getElementById('pf_jibunMain').value = '';
         document.getElementById('pf_jibunSub').value = '';
         document.getElementById('pf_roadAddr').value = '';
+        document.getElementById('pf_landRatioStr').value = '';
         document.getElementById('pf_ratioDen').value = '';
         document.getElementById('pf_ratioNum').value = '';
-        document.getElementById('pf_exclusiveArea').value = '';
+        document.getElementById('pf_order').value = presets.length + 1;
         document.getElementById('pf_officialPrice').value = '4500000';
         document.getElementById('pf_yongdo').value = '제3종일반주거지역';
         document.getElementById('pf_bldType').value = '공동주택(아파트)';
       }} else {{
-        const presets = getPresets();
         const p = presets.find(item => item.id === idOrNew);
         if (!p) return;
         document.getElementById('preset_form_title').textContent = `✏️ '${{p.name || p.chipLabel}}' 단지 정보 수정`;
@@ -1295,10 +1343,11 @@ def build_full_html():
         document.getElementById('pf_roadAddr').value = p.roadAddr || p.landAddr || '';
         document.getElementById('pf_ratioDen').value = p.ratioDen || p.totalLand || '';
         document.getElementById('pf_ratioNum').value = p.ratioNum || '';
-        document.getElementById('pf_exclusiveArea').value = p.exclusiveArea || '';
+        document.getElementById('pf_order').value = presets.findIndex(item => item.id === idOrNew) + 1;
         document.getElementById('pf_officialPrice').value = p.officialPrice || '4500000';
         document.getElementById('pf_yongdo').value = p.yongdo || '제3종일반주거지역';
         document.getElementById('pf_bldType').value = p.bldType || '공동주택(아파트)';
+        updateModalLandRatioStr();
       }}
     }}
 
@@ -1328,7 +1377,8 @@ def build_full_html():
 
       const ratioDen = document.getElementById('pf_ratioDen').value.trim();
       const ratioNum = document.getElementById('pf_ratioNum').value.trim();
-      const exclusiveArea = document.getElementById('pf_exclusiveArea').value.trim();
+      const ratioStr = (ratioDen && ratioNum) ? `${{ratioDen}}분의 ${{ratioNum}}` : '';
+      const orderVal = parseInt(document.getElementById('pf_order')?.value, 10);
       const officialPrice = document.getElementById('pf_officialPrice').value.trim() || '4500000';
       const yongdo = document.getElementById('pf_yongdo').value.trim() || '제3종일반주거지역';
       const bldType = document.getElementById('pf_bldType').value.trim() || '공동주택(아파트)';
@@ -1344,11 +1394,10 @@ def build_full_html():
         roadAddr: roadAddr,
         landAddr: roadAddr,
         bldAddr: roadAddr,
-        landRatioStr: (ratioDen && ratioNum) ? `${{ratioDen}}분의 ${{ratioNum}}` : '',
+        landRatioStr: ratioStr,
         ratioDen: ratioDen,
         ratioNum: ratioNum,
         totalLand: ratioDen,
-        exclusiveArea: exclusiveArea,
         officialPrice: officialPrice,
         yongdo: yongdo,
         bldStructure: '철근콘크리트조',
@@ -1358,11 +1407,11 @@ def build_full_html():
 
       if (id) {{
         const idx = presets.findIndex(item => item.id === id);
-        if (idx !== -1) presets[idx] = presetData;
-        else presets.push(presetData);
-      }} else {{
-        presets.push(presetData);
+        if (idx !== -1) presets.splice(idx, 1);
       }}
+
+      const targetIdx = isNaN(orderVal) ? presets.length : Math.max(0, Math.min(presets.length, orderVal - 1));
+      presets.splice(targetIdx, 0, presetData);
 
       if (typeof DealStore !== 'undefined' && DealStore.saveComplexPresets) {{
         DealStore.saveComplexPresets(presets);
@@ -2647,19 +2696,23 @@ def build_full_html():
           </div>
           <div class="field-row grid-3">
             <div>
-              <label class="field-label">1필지 총면적/분모(㎡)</label>
-              <input type="text" id="pf_ratioDen" class="input-box" placeholder="예: 56123.4" />
+              <label class="field-label">대지권 비율 표기 (자동완성)</label>
+              <input type="text" id="pf_landRatioStr" class="input-box" placeholder="분모/분자 입력 시 자동완성 (예: 56123.4분의 51.84)" />
             </div>
             <div>
-              <label class="field-label">대지권 지분 분자(㎡)</label>
-              <input type="text" id="pf_ratioNum" class="input-box" placeholder="예: 51.84" />
+              <label class="field-label">대지(필지) 총면적 / 분모(㎡)</label>
+              <input type="text" id="pf_ratioDen" class="input-box" placeholder="예: 56123.4 또는 1,2필지 합산" oninput="updateModalLandRatioStr()" />
             </div>
             <div>
-              <label class="field-label">전용면적(㎡)</label>
-              <input type="text" id="pf_exclusiveArea" class="input-box" placeholder="예: 84.95" />
+              <label class="field-label">대지권 지분 / 분자(㎡) (기본값 공백)</label>
+              <input type="text" id="pf_ratioNum" class="input-box" placeholder="면적별 지분(예: 51.84, 기본공백)" oninput="updateModalLandRatioStr()" />
             </div>
           </div>
-          <div class="field-row grid-3">
+          <div class="field-row grid-4">
+            <div>
+              <label class="field-label">원클릭 우선순위 (순서)</label>
+              <input type="number" id="pf_order" class="input-box" min="1" placeholder="예: 1" />
+            </div>
             <div>
               <label class="field-label">공시지가 단가(원/㎡)</label>
               <input type="text" id="pf_officialPrice" class="input-box" value="4500000" />
@@ -2684,10 +2737,11 @@ def build_full_html():
           <table style="width:100%; border-collapse:collapse; font-size:11.5px; text-align:left;">
             <thead>
               <tr style="background:var(--header-bg, #f1f5f9); border-bottom:1px solid var(--border, #cbd5e1); font-weight:700;">
+                <th style="padding:8px 6px; width:12%; text-align:center;">우선순위</th>
                 <th style="padding:8px 10px; width:28%;">단지 / 칩 표기</th>
-                <th style="padding:8px 10px; width:22%;">소재지 지번</th>
-                <th style="padding:8px 10px; width:25%;">대지권 / 전용면적</th>
-                <th style="padding:8px 10px; width:25%; text-align:right;">관리 / 적용</th>
+                <th style="padding:8px 10px; width:26%;">소재지 지번</th>
+                <th style="padding:8px 10px; width:20%;">대지 총면적/비율</th>
+                <th style="padding:8px 10px; width:14%; text-align:right;">관리</th>
               </tr>
             </thead>
             <tbody id="preset_table_body">

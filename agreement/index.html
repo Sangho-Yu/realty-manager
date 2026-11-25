@@ -1377,7 +1377,7 @@
       document.getElementById('f_land_addr').value = p.landAddr || '';
       document.getElementById('f_bld_addr').value = p.bldAddr || '';
       document.getElementById('f_land_ratio_str').value = p.landRatioStr || '';
-      document.getElementById('f_exclusive_area').value = p.exclusiveArea || '';
+      if (p.exclusiveArea) document.getElementById('f_exclusive_area').value = p.exclusiveArea;
       document.getElementById('f_bld_structure').value = p.bldStructure || '철근콘크리트조';
       document.getElementById('f_bld_usage').value = p.bldUsage || '아파트';
 
@@ -1401,18 +1401,66 @@
       hidePresetForm();
     }
 
+    function movePresetUp(id) {
+      let presets = getPresets();
+      const idx = presets.findIndex(p => p.id === id);
+      if (idx > 0) {
+        const item = presets.splice(idx, 1)[0];
+        presets.splice(idx - 1, 0, item);
+        if (window.DealStore && window.DealStore.saveComplexPresets) {
+          window.DealStore.saveComplexPresets(presets);
+        }
+        renderComplexChips();
+        renderComplexModalList();
+      }
+    }
+
+    function movePresetDown(id) {
+      let presets = getPresets();
+      const idx = presets.findIndex(p => p.id === id);
+      if (idx !== -1 && idx < presets.length - 1) {
+        const item = presets.splice(idx, 1)[0];
+        presets.splice(idx + 1, 0, item);
+        if (window.DealStore && window.DealStore.saveComplexPresets) {
+          window.DealStore.saveComplexPresets(presets);
+        }
+        renderComplexChips();
+        renderComplexModalList();
+      }
+    }
+
+    function updateModalLandRatioStr() {
+      const den = (document.getElementById('pf_ratioDen')?.value || '').trim();
+      const num = (document.getElementById('pf_ratioNum')?.value || '').trim();
+      const strEl = document.getElementById('pf_landRatioStr');
+      if (strEl) {
+        if (!den || !num) {
+          strEl.value = '';
+        } else {
+          strEl.value = `${den}분의 ${num}`;
+        }
+      }
+    }
+
     function renderComplexModalList() {
       const tbody = document.getElementById('preset_table_body');
       if (!tbody) return;
       const presets = getPresets();
 
       if (presets.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">등록된 단지 정보가 없습니다. [새 단지 추가] 버튼을 눌러 등록하세요.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">등록된 단지 정보가 없습니다. [새 단지 추가] 버튼을 눌러 등록하세요.</td></tr>';
         return;
       }
 
       tbody.innerHTML = presets.map((p, idx) => `
         <tr style="border-bottom:1px solid var(--border, #e2e8f0); hover:background:#f8fafc;">
+          <td style="padding:6px 6px; text-align:center;">
+            <div style="display:flex; align-items:center; justify-content:center; gap:2px;">
+              <span style="font-weight:700; font-size:12px; width:16px;">${idx + 1}</span>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="movePresetUp('${p.id}')" ${idx === 0 ? 'disabled style="opacity:0.3; cursor:default; padding:1px 4px; font-size:10px;"' : 'style="padding:1px 4px; font-size:10px; cursor:pointer;"'} title="위로 이동">▲</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="movePresetDown('${p.id}')" ${idx === presets.length - 1 ? 'disabled style="opacity:0.3; cursor:default; padding:1px 4px; font-size:10px;"' : 'style="padding:1px 4px; font-size:10px; cursor:pointer;"'} title="아래로 이동">▼</button>
+            </div>
+          </td>
           <td style="padding:8px 10px;">
             <div style="font-weight:700; color:var(--text, #1e293b);">${p.chipLabel || p.name}</div>
             <div style="font-size:10.5px; color:var(--text-muted, #64748b);">${p.complex || '-'}</div>
@@ -1422,8 +1470,7 @@
             <div style="font-size:10.5px; color:var(--text-muted, #64748b); text-overflow:ellipsis; overflow:hidden; white-space:nowrap; max-width:180px;">${p.landAddr || '-'}</div>
           </td>
           <td style="padding:8px 10px;">
-            <div>${p.landRatioStr || '-'}</div>
-            <div style="font-size:10.5px; color:#0369a1; font-weight:600;">전용: ${p.exclusiveArea || '-'}㎡</div>
+            <div style="font-weight:600;">${p.landRatioStr || (p.ratioDen ? p.ratioDen + '㎡ (분모)' : '-')}</div>
           </td>
           <td style="padding:8px 10px; text-align:right;">
             <div style="display:inline-flex; gap:4px;">
@@ -1441,6 +1488,7 @@
       if (!box) return;
       box.style.display = 'block';
 
+      const presets = getPresets();
       if (idOrNew === 'new') {
         document.getElementById('preset_form_title').textContent = '➕ 새로운 단지 정보 등록';
         document.getElementById('pf_id').value = '';
@@ -1454,11 +1502,10 @@
         document.getElementById('pf_landRatioStr').value = '';
         document.getElementById('pf_ratioDen').value = '';
         document.getElementById('pf_ratioNum').value = '';
-        document.getElementById('pf_exclusiveArea').value = '';
+        document.getElementById('pf_order').value = presets.length + 1;
         document.getElementById('pf_bldStructure').value = '철근콘크리트조';
         document.getElementById('pf_bldUsage').value = '아파트';
       } else {
-        const presets = getPresets();
         const p = presets.find(item => item.id === idOrNew);
         if (!p) return;
         document.getElementById('preset_form_title').textContent = `✏️ '${p.name || p.chipLabel}' 단지 정보 수정`;
@@ -1470,12 +1517,12 @@
         document.getElementById('pf_jibunSub').value = p.jibunSub || '';
         document.getElementById('pf_landAddr').value = p.landAddr || '';
         document.getElementById('pf_bldAddr').value = p.bldAddr || '';
-        document.getElementById('pf_landRatioStr').value = p.landRatioStr || '';
         document.getElementById('pf_ratioDen').value = p.ratioDen || '';
         document.getElementById('pf_ratioNum').value = p.ratioNum || '';
-        document.getElementById('pf_exclusiveArea').value = p.exclusiveArea || '';
+        document.getElementById('pf_order').value = presets.findIndex(item => item.id === idOrNew) + 1;
         document.getElementById('pf_bldStructure').value = p.bldStructure || '철근콘크리트조';
         document.getElementById('pf_bldUsage').value = p.bldUsage || '아파트';
+        updateModalLandRatioStr();
       }
     }
 
@@ -1508,10 +1555,10 @@
         bldAddr = `${landAddr} ${complex}`;
       }
 
-      const ratioStr = document.getElementById('pf_landRatioStr').value.trim();
       const ratioDen = document.getElementById('pf_ratioDen').value.trim();
       const ratioNum = document.getElementById('pf_ratioNum').value.trim();
-      const exclusiveArea = document.getElementById('pf_exclusiveArea').value.trim();
+      const ratioStr = (ratioDen && ratioNum) ? `${ratioDen}분의 ${ratioNum}` : '';
+      const orderVal = parseInt(document.getElementById('pf_order')?.value, 10);
       const bldStructure = document.getElementById('pf_bldStructure').value.trim() || '철근콘크리트조';
       const bldUsage = document.getElementById('pf_bldUsage').value.trim() || '아파트';
 
@@ -1526,11 +1573,10 @@
         roadAddr: bldAddr,
         landAddr: landAddr,
         bldAddr: bldAddr,
-        landRatioStr: ratioStr || (ratioDen && ratioNum ? `${ratioDen}분의 ${ratioNum}` : ''),
+        landRatioStr: ratioStr,
         ratioDen: ratioDen,
         ratioNum: ratioNum,
         totalLand: ratioDen,
-        exclusiveArea: exclusiveArea,
         officialPrice: '4500000',
         yongdo: '제3종일반주거지역',
         bldStructure: bldStructure,
@@ -1540,15 +1586,22 @@
 
       if (id) {
         const idx = presets.findIndex(item => item.id === id);
-        if (idx !== -1) presets[idx] = presetData;
-        else presets.push(presetData);
-      } else {
-        presets.push(presetData);
+        if (idx !== -1) presets.splice(idx, 1);
       }
+
+      const targetIdx = isNaN(orderVal) ? presets.length : Math.max(0, Math.min(presets.length, orderVal - 1));
+      presets.splice(targetIdx, 0, presetData);
 
       if (window.DealStore && window.DealStore.saveComplexPresets) {
         window.DealStore.saveComplexPresets(presets);
       }
+
+      renderComplexChips();
+      renderClauseChips();
+      renderComplexModalList();
+      hidePresetForm();
+      alert(`단지 정보 '${presetData.chipLabel}'가 성공적으로 저장되었습니다.`);
+    }
 
       renderComplexChips();
       renderClauseChips();
@@ -2820,22 +2873,22 @@
           </div>
           <div class="form-grid-3" style="margin-bottom:6px;">
             <div class="form-group">
-              <label style="font-size:11px;">대지권 비율 표기</label>
-              <input type="text" id="pf_landRatioStr" class="form-control" placeholder="예: 35678.0분의 48.25" />
+              <label style="font-size:11px;">대지권 비율 표기 (자동완성)</label>
+              <input type="text" id="pf_landRatioStr" class="form-control" placeholder="분모/분자 입력 시 자동완성 (예: 56123.4분의 51.84)" />
             </div>
             <div class="form-group">
-              <label style="font-size:11px;">1필지 총면적/분모(㎡)</label>
-              <input type="text" id="pf_ratioDen" class="form-control" placeholder="예: 35678.0" />
+              <label style="font-size:11px;">대지(필지) 총면적 / 분모(㎡)</label>
+              <input type="text" id="pf_ratioDen" class="form-control" placeholder="예: 56123.4 또는 1,2필지 합산" oninput="updateModalLandRatioStr()" />
             </div>
             <div class="form-group">
-              <label style="font-size:11px;">대지권 지분/분자(㎡)</label>
-              <input type="text" id="pf_ratioNum" class="form-control" placeholder="예: 48.25" />
+              <label style="font-size:11px;">대지권 지분 / 분자(㎡) (기본값 공백)</label>
+              <input type="text" id="pf_ratioNum" class="form-control" placeholder="면적별 지분(예: 51.84, 기본공백)" oninput="updateModalLandRatioStr()" />
             </div>
           </div>
           <div class="form-grid-3" style="margin-bottom:8px;">
             <div class="form-group">
-              <label style="font-size:11px;">전용면적(㎡)</label>
-              <input type="text" id="pf_exclusiveArea" class="form-control" placeholder="예: 84.95" />
+              <label style="font-size:11px;">원클릭 우선순위 (순서)</label>
+              <input type="number" id="pf_order" class="form-control" min="1" placeholder="예: 1" />
             </div>
             <div class="form-group">
               <label style="font-size:11px;">건축물 구조</label>
@@ -2859,10 +2912,11 @@
           <table style="width:100%; border-collapse:collapse; font-size:11.5px; text-align:left;">
             <thead>
               <tr style="background:var(--header-bg, #f1f5f9); border-bottom:1px solid var(--border, #cbd5e1); color:var(--text, #334155); font-weight:700;">
+                <th style="padding:8px 6px; width:12%; text-align:center;">우선순위</th>
                 <th style="padding:8px 10px; width:28%;">단지 / 칩 표기</th>
-                <th style="padding:8px 10px; width:22%;">소재지 지번</th>
-                <th style="padding:8px 10px; width:25%;">대지권 비율 / 전용면적</th>
-                <th style="padding:8px 10px; width:25%; text-align:right;">관리 / 적용</th>
+                <th style="padding:8px 10px; width:26%;">소재지 지번</th>
+                <th style="padding:8px 10px; width:20%;">대지 총면적/비율</th>
+                <th style="padding:8px 10px; width:14%; text-align:right;">관리</th>
               </tr>
             </thead>
             <tbody id="preset_table_body">

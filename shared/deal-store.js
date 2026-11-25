@@ -142,14 +142,13 @@
       roadAddr: '경기도 안양시 동안구 동안로 120',
       landAddr: '경기도 안양시 동안구 호계동 1056',
       bldAddr: '경기도 안양시 동안구 동안로 120 목련두산아파트',
-      dongNum: '201',
-      hoNum: '1502',
-      bldUnit: '제201동 제1502호',
+      dongNum: '',
+      hoNum: '',
+      bldUnit: '',
       totalLand: '56123.4',
       ratioDen: '56123.4',
-      ratioNum: '51.84',
-      landRatioStr: '56123.4분의 51.84',
-      exclusiveArea: '84.95',
+      ratioNum: '',
+      landRatioStr: '',
       officialPrice: '4500000',
       yongdo: '제3종일반주거지역',
       bldStructure: '철근콘크리트조',
@@ -167,14 +166,13 @@
       roadAddr: '경기도 안양시 동안구 평촌대로 180',
       landAddr: '경기도 안양시 동안구 호계동 1052-3',
       bldAddr: '경기도 안양시 동안구 호계동 1052-3 목련아파트',
-      dongNum: '308',
-      hoNum: '506',
-      bldUnit: '제308동 제506호',
+      dongNum: '',
+      hoNum: '',
+      bldUnit: '',
       totalLand: '30467.9',
       ratioDen: '30467.9',
-      ratioNum: '35.376',
-      landRatioStr: '30467.9분의 35.376',
-      exclusiveArea: '56.7',
+      ratioNum: '',
+      landRatioStr: '',
       officialPrice: '4500000',
       yongdo: '제3종일반주거지역',
       bldStructure: '철근콘크리트조',
@@ -192,14 +190,13 @@
       roadAddr: '경기도 안양시 동안구 동안로 110',
       landAddr: '경기도 안양시 동안구 호계동 1053',
       bldAddr: '경기도 안양시 동안구 동안로 110 목련선경아파트',
-      dongNum: '502',
-      hoNum: '801',
-      bldUnit: '제502동 제801호',
+      dongNum: '',
+      hoNum: '',
+      bldUnit: '',
       totalLand: '31245.0',
       ratioDen: '31245.0',
-      ratioNum: '42.15',
-      landRatioStr: '31245.0분의 42.15',
-      exclusiveArea: '74.2',
+      ratioNum: '',
+      landRatioStr: '',
       officialPrice: '4500000',
       yongdo: '제3종일반주거지역',
       bldStructure: '철근콘크리트조',
@@ -217,14 +214,13 @@
       roadAddr: '경기도 안양시 동안구 평촌대로179번길 27',
       landAddr: '경기도 안양시 동안구 호계동 1054-6',
       bldAddr: '경기도 안양시 동안구 평촌대로179번길 27 목련두산아파트',
-      dongNum: '603',
-      hoNum: '402',
-      bldUnit: '제603동 제402호',
+      dongNum: '',
+      hoNum: '',
+      bldUnit: '',
       totalLand: '29263.2',
       ratioDen: '29263.2',
-      ratioNum: '54.395',
-      landRatioStr: '29263.2분의 54.395',
-      exclusiveArea: '101.94',
+      ratioNum: '',
+      landRatioStr: '',
       officialPrice: '4500000',
       yongdo: '제3종일반주거지역',
       bldStructure: '철근콘크리트조',
@@ -248,7 +244,12 @@
         const raw = localStorage.getItem(PRESETS_STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            parsed.forEach(p => {
+              if (p && p.exclusiveArea !== undefined) delete p.exclusiveArea;
+            });
+            return parsed;
+          }
         }
       } catch (e) {
         console.error('[DealStore] getComplexPresets error:', e);
