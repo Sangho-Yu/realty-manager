@@ -1377,8 +1377,8 @@
     function detectDocCategory(fileName) {
       if (fileName.includes('등기') || fileName.includes('대장')) return { label: '공적장부', cls: 'bg-sky-50 text-sky-700 border-sky-200' };
       if (fileName.includes('신분증') || fileName.includes('위임')) return { label: '신분·자격', cls: 'bg-amber-50 text-amber-700 border-amber-200' };
-      if (fileName.includes('계약서') || fileName.includes('확인설명')) return { label: '계약서류', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
-      if (fileName.includes('신고') || fileName.includes('확정')) return { label: '신고·필증', cls: 'bg-purple-50 text-purple-700 border-purple-200' };
+      if (fileName.includes('계약서') || fileName.includes('약정서') || fileName.includes('확인설명')) return { label: '계약서류', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+      if (fileName.includes('신고') || fileName.includes('허가') || fileName.includes('확정')) return { label: '신고·필증', cls: 'bg-purple-50 text-purple-700 border-purple-200' };
       if (fileName.includes('영수증') || fileName.includes('이체')) return { label: '정산·영수', cls: 'bg-indigo-50 text-indigo-700 border-indigo-200' };
       return { label: '일반문서', cls: 'bg-slate-100 text-slate-600 border-slate-200' };
     }
@@ -1528,9 +1528,9 @@
         { label: '등기부등본', keys: ['등기'] },
         { label: '건축물대장', keys: ['대장'] },
         { label: '신분증사본', keys: ['신분증'] },
-        { label: '계약서', keys: ['계약서'] },
+        { label: '계약서·약정서', keys: ['계약서', '약정서'] },
         { label: '확인·설명서', keys: ['확인설명'] },
-        { label: '거래신고필증', keys: ['신고필증', '신고'] }
+        { label: '신고·허가필증', keys: ['신고필증', '신고', '허가'] }
       ];
 
       box.innerHTML = requiredDocs.map(doc => {
@@ -2566,12 +2566,17 @@
         folderName = `거래_${deal.id}`;
       }
 
-      if (!confirm(`Google Drive [02_계약진행_잔금관리] 하위에\n'${folderName}' 거래 전용 폴더 및 4대 필수 서류함을 생성하시겠습니까?`)) {
+      // 서류통합관리와 동일한 표준 5대 서류함 사용 (매매약정서는 '03_계약서_확인설명서'에 포함)
+      const standardSubfolders = (agencyConfig.propSubfolders && agencyConfig.propSubfolders.length > 0)
+        ? [...agencyConfig.propSubfolders]
+        : [...DEFAULT_CONFIG.propSubfolders];
+
+      if (!confirm(`Google Drive [02_계약진행_잔금관리] 하위에\n'${folderName}' 거래 전용 폴더 및 표준 서류함(${standardSubfolders.length}개)을 생성하시겠습니까?\n\n※ 매매약정서는 '03_계약서_확인설명서' 서류함에 포함됩니다.`)) {
         return;
       }
 
       closeModal('dealManagerModal');
-      setBackgroundSyncing(true, true, `'${folderName}' 거래 폴더 및 표준 하위폴더 4개 생성 중...`);
+      setBackgroundSyncing(true, true, `'${folderName}' 거래 폴더 및 표준 서류함 생성 중...`);
 
       try {
         // 1. 계약진행_잔금관리 루트 확보
@@ -2580,14 +2585,7 @@
         // 2. 해당 물건 거래 폴더 확보
         const propFolder = await findOrCreateFolderByName(contractsRoot.id, folderName);
 
-        // 3. 4대 표준 서류 하위폴더 자동 생성
-        const standardSubfolders = [
-          '01_매매약정서및영수증',
-          '02_토지거래허가신청서류',
-          '03_등기부등본및공적장부',
-          '04_신분증및서명날인본'
-        ];
-
+        // 3. 서류통합관리와 동일한 표준 서류 하위폴더 자동 생성
         for (const sub of standardSubfolders) {
           await findOrCreateFolderByName(propFolder.id, sub);
         }
@@ -2599,7 +2597,7 @@
         ];
 
         await refreshCurrentView(true, true);
-        alert(`📁 Google Drive에 거래 폴더 생성이 완료되었습니다!\n\n위치: 02_계약진행_잔금관리 > ${folderName}\n하위 서류 폴더: 4개 생성 완료\n\n지금 바로 관련 서류(PDF, 신분증, 등기부)를 드래그하여 보관할 수 있습니다.`);
+        alert(`📁 Google Drive에 거래 폴더 생성이 완료되었습니다!\n\n위치: 02_계약진행_잔금관리 > ${folderName}\n표준 서류함: ${standardSubfolders.join(', ')}\n\n※ 매매약정서는 '03_계약서_확인설명서' 서류함에 함께 보관하실 수 있습니다.`);
       } catch (err) {
         alert('거래 폴더 생성 오류: ' + err.message);
         setBackgroundSyncing(false, false);
@@ -2770,7 +2768,7 @@
       <!-- 하단 상태 바 & 닫기 -->
       <div class="px-5 py-3 bg-white border-t border-slate-200 flex items-center justify-between gap-2">
         <div class="text-[11px] text-slate-500">
-          💡 각 거래 카드의 <strong>[📁 Drive 폴더 생성]</strong>을 클릭하면 구글 드라이브에 표준 서류 보관함 4개가 즉시 자동 생성됩니다.
+          💡 각 거래 카드의 <strong>[📁 Drive 폴더 생성]</strong>을 클릭하면 02_계약진행_잔금관리 하위에 표준 서류 보관함이 즉시 자동 생성됩니다.
         </div>
         <button onclick="closeModal('dealManagerModal')"
           class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition">
