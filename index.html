@@ -293,7 +293,7 @@
         </div>
 
         <!-- 섹션 1: 하위 폴더 그리드 카드 -->
-        <section id="subfoldersSection" class="space-y-2.5">
+        <section id="subfoldersSection" class="hidden space-y-2.5">
           <div class="flex items-center justify-between">
             <h2 class="text-xs font-bold text-slate-500 flex items-center gap-1.5">
               <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1317,7 +1317,14 @@
           appState.cachedItems = JSON.parse(cachedListRaw);
           renderCachedItems();
           hasInstant = true;
-        } catch (e) { }
+        } catch (e) {
+          appState.cachedItems = [];
+          renderCachedItems();
+        }
+      } else {
+        // 이전 폴더의 잔여 아이템(하위폴더/파일)이 노출되지 않도록 즉시 초기화
+        appState.cachedItems = [];
+        renderCachedItems();
       }
 
       setBackgroundSyncing(true, !hasInstant, "Google Drive API에서 목록을 불러오는 중...");
@@ -1398,8 +1405,8 @@
       } else {
         box.classList.add('hidden');
         box.classList.remove('flex');
-        document.getElementById('subfoldersSection').classList.remove('hidden');
         document.getElementById('filesSection').classList.remove('hidden');
+        // subfoldersSection의 표시는 오직 renderCachedItems()에서 실제 폴더 유무에 따라 제어
       }
     }
 
@@ -1462,6 +1469,8 @@
 
     async function navigateTo(pathObjArr) {
       appState.currentPath = pathObjArr;
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) searchInput.value = '';
       document.getElementById('sidebarDrawer').classList.add('-translate-x-full');
       document.getElementById('mobileBackdrop').classList.add('hidden');
       await refreshCurrentView(false, false);
@@ -1577,6 +1586,7 @@
 
       if (folders.length === 0) {
         subfoldersSection.classList.add('hidden');
+        subfoldersGrid.innerHTML = '';
       } else {
         subfoldersSection.classList.remove('hidden');
         subfoldersGrid.innerHTML = folders.map(f => {
