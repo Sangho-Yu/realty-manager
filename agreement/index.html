@@ -2573,8 +2573,14 @@
       // 토지이용계획 및 허가 일정 자동 연동 (잔금일과 기본 동기화)
       if (!base.usagePlan) base.usagePlan = existing?.usagePlan || {};
       base.usagePlan.balanceDate = base.financial.balanceDate;
-      if (!base.usagePlan.regDate) base.usagePlan.regDate = base.financial.balanceDate;
-      if (!base.usagePlan.moveInDate) base.usagePlan.moveInDate = base.financial.balanceDate;
+      const prevBalDate = existing?.financial?.balanceDate || existing?.balanceDate;
+      if (!base.usagePlan.regDate || base.usagePlan.regDate === prevBalDate) {
+        base.usagePlan.regDate = base.financial.balanceDate;
+      }
+      if (!base.usagePlan.moveInDate || base.usagePlan.moveInDate === prevBalDate) {
+        base.usagePlan.moveInDate = base.financial.balanceDate;
+      }
+      base.regDate = base.usagePlan.regDate;
       if (!base.usagePlan.purpose) base.usagePlan.purpose = '주거용 (세대원 전원 실거주 자가주택 취득)';
       if (!base.usagePlan.occupantType) base.usagePlan.occupantType = '매도인';
 

@@ -1037,7 +1037,10 @@ def build_full_html():
                 <input type="date" class="input-box" id="in_balance_date" value="" oninput="onBalanceDateChange();">
               </div>
               <div>
-                <label class="field-label">등기신청일</label>
+                <label class="field-label" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                  <span>등기신청일</span>
+                  <span id="badge_postpone_notice" title="실거주 유예(전입유예) 건은 구청 허가 기준 등기신청일을 반드시 확인하세요" style="font-size:11px; font-weight:700; color:#dc2626; background:#fef2f2; border:1px solid #fecaca; padding:1px 6px; border-radius:4px; display:inline-block; letter-spacing:-0.2px;">※ 전입유예건은 등기신청일 확인</span>
+                </label>
                 <input type="date" class="input-box" id="in_reg_date" value="" oninput="onRegDateChange();">
               </div>
             </div>
@@ -1048,17 +1051,17 @@ def build_full_html():
               </div>
               <div>
                 <label class="field-label">점유현황</label>
-                <select class="input-box" id="in_occupant_type" onchange="syncAll();">
+                <select class="input-box" id="in_occupant_type" onchange="onOccupantTypeChange();">
                   <option value="매도인" selected>매도인 거주</option>
                   <option value="임차인">임차인 거주</option>
                   <option value="공가">공가(공실)</option>
                 </select>
               </div>
             </div>
-              <div>
-                <label class="field-label">임차인 퇴거예정일</label>
-                <input type="date" class="input-box" id="in_tenant_vacate_date" value="" placeholder="임차인 있는 경우" oninput="syncAll();">
-              </div>
+            <div class="field-row" id="row_tenant_vacate">
+              <label class="field-label">임차인 퇴거예정일</label>
+              <input type="date" class="input-box" id="in_tenant_vacate_date" value="" placeholder="임차인 있는 경우" oninput="onTenantVacateChange();">
+            </div>
             </div>
           </div>
         </div>
@@ -1519,12 +1522,21 @@ def build_full_html():
     function onBalanceDateChange() {{
       const balInput = document.getElementById('in_balance_date');
       const regInput = document.getElementById('in_reg_date');
+      const moveInput = document.getElementById('in_move_in_date');
+      const balVal = balInput ? balInput.value : '';
       if (balInput && regInput) {{
         if (!regInput.dataset.manual || !regInput.value || regInput.value === regInput.dataset.prevBal) {{
-          regInput.value = balInput.value;
+          regInput.value = balVal;
         }}
-        regInput.dataset.prevBal = balInput.value;
+        regInput.dataset.prevBal = balVal;
       }}
+      if (balInput && moveInput) {{
+        if (!moveInput.dataset.manual || !moveInput.value || moveInput.value === moveInput.dataset.prevBal) {{
+          moveInput.value = balVal;
+        }}
+        moveInput.dataset.prevBal = balVal;
+      }}
+      updatePostponeNotice();
       syncAll();
     }}
 
@@ -1538,7 +1550,41 @@ def build_full_html():
           delete regInput.dataset.manual;
         }}
       }}
+      updatePostponeNotice();
       syncAll();
+    }}
+
+    function onOccupantTypeChange() {{
+      updatePostponeNotice();
+      syncAll();
+    }}
+
+    function onTenantVacateChange() {{
+      updatePostponeNotice();
+      syncAll();
+    }}
+
+    function updatePostponeNotice() {{
+      const badge = document.getElementById('badge_postpone_notice');
+      if (!badge) return;
+      const isPostpone = Boolean(
+        document.getElementById('chk_enable_plan_b')?.checked ||
+        document.getElementById('in_occupant_type')?.value === '임차인' ||
+        document.getElementById('in_tenant_vacate_date')?.value
+      );
+      if (isPostpone) {{
+        badge.style.background = '#fee2e2';
+        badge.style.borderColor = '#ef4444';
+        badge.style.color = '#b91c1c';
+        badge.style.fontWeight = '800';
+        badge.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.25)';
+      }} else {{
+        badge.style.background = '#fef2f2';
+        badge.style.borderColor = '#fecaca';
+        badge.style.color = '#dc2626';
+        badge.style.fontWeight = '700';
+        badge.style.boxShadow = 'none';
+      }}
     }}
 
     function calcJibunFull() {{
@@ -2190,6 +2236,9 @@ def build_full_html():
       if (chk) chk.checked = isChecked;
       const lbl = document.getElementById('lbl_chk_p5');
       if (lbl) lbl.style.display = isChecked ? 'inline-flex' : 'none';
+      const optChk = document.getElementById('chk_enable_plan_b');
+      if (optChk && optChk.checked !== isChecked) optChk.checked = isChecked;
+      updatePostponeNotice();
     }}
 
     function toggleLeaseConfirm(isChecked) {{
@@ -2204,6 +2253,8 @@ def build_full_html():
       if (chk) chk.checked = isChecked;
       const lbl = document.getElementById('lbl_chk_p6');
       if (lbl) lbl.style.display = isChecked ? 'inline-flex' : 'none';
+      const optChk = document.getElementById('chk_enable_lease_confirm');
+      if (optChk && optChk.checked !== isChecked) optChk.checked = isChecked;
     }}
 
     function toggleBuyer2P3(isChecked) {{
@@ -2268,6 +2319,19 @@ def build_full_html():
       const pEl = document.getElementById(`page_${{pNum}}`);
       if (pEl) {{
         pEl.classList.toggle('print-excluded', !isChecked);
+      }}
+      if (pNum === '5') {{
+        const optChk = document.getElementById('chk_enable_plan_b');
+        if (optChk && optChk.checked !== isChecked) {{
+          optChk.checked = isChecked;
+          togglePlanB(isChecked);
+        }}
+      }} else if (pNum === '6') {{
+        const optChk = document.getElementById('chk_enable_lease_confirm');
+        if (optChk && optChk.checked !== isChecked) {{
+          optChk.checked = isChecked;
+          toggleLeaseConfirm(isChecked);
+        }}
       }}
     }}
 
@@ -2441,7 +2505,7 @@ def build_full_html():
       }}
 
       // 4. 금액
-      const balDate = deal.balanceDate || f.balanceDate || '';
+      const balDate = deal.balanceDate || (deal.financial && deal.financial.balanceDate) || (usage && usage.balanceDate) || '';
       const rawTotal = deal.totalPrice || f.totalPrice || '';
       document.getElementById('in_total_price').value = rawTotal ? formatCommaNumber(rawTotal) : '';
       document.getElementById('in_balance_date').value = balDate;
@@ -2476,17 +2540,40 @@ def build_full_html():
       const regDateVal = usage.regDate || deal.regDate || balDate;
       const regInput = document.getElementById('in_reg_date');
       if (regInput) {{
-        regInput.value = regDateVal;
+        regInput.value = regDateVal || balDate;
         regInput.dataset.prevBal = balDate;
-        if (usage.regDate && usage.regDate !== balDate) {{
+        if (regDateVal && regDateVal !== balDate) {{
           regInput.dataset.manual = 'true';
         }} else {{
           delete regInput.dataset.manual;
         }}
       }}
-      document.getElementById('in_move_in_date').value = usage.moveInDate || balDate || '';
+      const moveDateVal = usage.moveInDate || balDate || '';
+      const moveInput = document.getElementById('in_move_in_date');
+      if (moveInput) {{
+        moveInput.value = moveDateVal;
+        moveInput.dataset.prevBal = balDate;
+        if (moveDateVal && moveDateVal !== balDate) {{
+          moveInput.dataset.manual = 'true';
+        }} else {{
+          delete moveInput.dataset.manual;
+        }}
+      }}
       document.getElementById('in_occupant_type').value = usage.occupantType || '매도인';
       document.getElementById('in_tenant_vacate_date').value = usage.tenantVacate || '';
+
+      // 선택 서식 포함 여부 동기화 (5P, 6P 기본 false)
+      const hasPlanB = Boolean(deal.includePlanB || deal.enablePlanB);
+      const chkPlanB = document.getElementById('chk_enable_plan_b');
+      if (chkPlanB) chkPlanB.checked = hasPlanB;
+      togglePlanB(hasPlanB);
+
+      const hasLeaseConfirm = Boolean(deal.includeLeaseConfirm || deal.enableLeaseConfirm);
+      const chkLease = document.getElementById('chk_enable_lease_confirm');
+      if (chkLease) chkLease.checked = hasLeaseConfirm;
+      toggleLeaseConfirm(hasLeaseConfirm);
+
+      updatePostponeNotice();
 
       // 7. 공인중개사 정보 (사무소 설정 또는 DEFAULT_AGENT)
       const ag = deal.agent || (typeof DealStore !== 'undefined' ? DealStore.DEFAULT_AGENT : null);
@@ -2592,6 +2679,8 @@ def build_full_html():
       deal.balanceDate = document.getElementById('in_balance_date').value;
       deal.regDate = document.getElementById('in_reg_date').value;
       deal.showPriceBreakdown = document.getElementById('chk_show_price_breakdown')?.checked || false;
+      deal.includePlanB = document.getElementById('chk_enable_plan_b')?.checked || false;
+      deal.includeLeaseConfirm = document.getElementById('chk_enable_lease_confirm')?.checked || false;
 
       // Funding
       deal.funding = {{
@@ -2635,6 +2724,13 @@ def build_full_html():
       currentDealId = empty.id;
       document.getElementById('dealSelect').value = '';
       applyDealToInputs(empty);
+      const chkPlanB = document.getElementById('chk_enable_plan_b');
+      if (chkPlanB) chkPlanB.checked = false;
+      togglePlanB(false);
+      const chkLease = document.getElementById('chk_enable_lease_confirm');
+      if (chkLease) chkLease.checked = false;
+      toggleLeaseConfirm(false);
+      updatePostponeNotice();
       showToast('✨ 새로운 거래 작성을 시작합니다.');
     }}
 
@@ -2697,6 +2793,11 @@ def build_full_html():
     window.addEventListener('DOMContentLoaded', () => {{
       const savedTheme = localStorage.getItem('realty_theme') || 'light';
       document.documentElement.setAttribute('data-theme', savedTheme);
+
+      // 5P, 6P 기본 제외 및 초기 상태 적용
+      togglePlanB(document.getElementById('chk_enable_plan_b')?.checked || false);
+      toggleLeaseConfirm(document.getElementById('chk_enable_lease_confirm')?.checked || false);
+      updatePostponeNotice();
 
       calcJibunFull();
       calcLandShare();
