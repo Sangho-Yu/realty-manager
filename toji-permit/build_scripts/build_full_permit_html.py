@@ -889,7 +889,7 @@ def build_full_html():
           <div class="section-body">
             <div class="field-row">
               <label class="field-label">총 매매예정금액 (원)</label>
-              <input type="number" class="input-box" id="in_total_price" value="" oninput="calcPriceBreakdown(); syncAll();">
+              <input type="text" inputmode="numeric" class="input-box" id="in_total_price" value="" oninput="formatMoneyInput(this); calcPriceBreakdown(); syncAll();">
             </div>
             <div style="margin-top:6px; margin-bottom:4px;">
               <label style="font-size:11px; font-weight:600; color:var(--text-muted); display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
@@ -900,7 +900,7 @@ def build_full_html():
             <div id="price_breakdown_box" style="display:none;" class="field-row grid-3">
               <div>
                 <label class="field-label">공시지가 단가(원/㎡)</label>
-                <input type="number" class="input-box" id="in_land_official_price" value="4500000" oninput="calcPriceBreakdown(); syncAll();">
+                <input type="text" inputmode="numeric" class="input-box" id="in_land_official_price" value="4,500,000" oninput="formatMoneyInput(this); calcPriceBreakdown(); syncAll();">
               </div>
               <div>
                 <label class="field-label">토지 예정금액 (안분)</label>
@@ -925,31 +925,31 @@ def build_full_html():
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">② 금융기관 예금액(원)</label>
-                <input type="number" class="input-box" id="in_fund_deposit" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                <input type="text" inputmode="numeric" class="input-box" id="in_fund_deposit" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
               </div>
               <div>
                 <label class="field-label">③ 주식·채권 매각(원)</label>
-                <input type="number" class="input-box" id="in_fund_stocks" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                <input type="text" inputmode="numeric" class="input-box" id="in_fund_stocks" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
               </div>
             </div>
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">④ 증여·상속액(원)</label>
-                <input type="number" class="input-box" id="in_fund_gift" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                <input type="text" inputmode="numeric" class="input-box" id="in_fund_gift" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
               </div>
               <div>
                 <label class="field-label">⑥ 부동산 처분대금(원)</label>
-                <input type="number" class="input-box" id="in_fund_realestate" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                <input type="text" inputmode="numeric" class="input-box" id="in_fund_realestate" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
               </div>
             </div>
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">⑩ 금융기관 대출액(원)</label>
-                <input type="number" class="input-box" id="in_fund_loan_bank" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                <input type="text" inputmode="numeric" class="input-box" id="in_fund_loan_bank" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
               </div>
               <div>
                 <label class="field-label">⑪ 그 밖의 차입금(원)</label>
-                <input type="number" class="input-box" id="in_fund_borrow" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                <input type="text" inputmode="numeric" class="input-box" id="in_fund_borrow" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
               </div>
             </div>
 
@@ -959,31 +959,31 @@ def build_full_html():
               <div class="field-row grid-2">
                 <div>
                   <label class="field-label">② 금융기관 예금액(원)</label>
-                  <input type="number" class="input-box" id="in_fund2_deposit" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                  <input type="text" inputmode="numeric" class="input-box" id="in_fund2_deposit" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
                 </div>
                 <div>
                   <label class="field-label">③ 주식·채권 매각(원)</label>
-                  <input type="number" class="input-box" id="in_fund2_stocks" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                  <input type="text" inputmode="numeric" class="input-box" id="in_fund2_stocks" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
                 </div>
               </div>
               <div class="field-row grid-2">
                 <div>
                   <label class="field-label">④ 증여·상속액(원)</label>
-                  <input type="number" class="input-box" id="in_fund2_gift" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                  <input type="text" inputmode="numeric" class="input-box" id="in_fund2_gift" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
                 </div>
                 <div>
                   <label class="field-label">⑥ 부동산 처분대금(원)</label>
-                  <input type="number" class="input-box" id="in_fund2_realestate" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                  <input type="text" inputmode="numeric" class="input-box" id="in_fund2_realestate" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
                 </div>
               </div>
               <div class="field-row grid-2">
                 <div>
                   <label class="field-label">⑩ 금융기관 대출액(원)</label>
-                  <input type="number" class="input-box" id="in_fund2_loan_bank" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                  <input type="text" inputmode="numeric" class="input-box" id="in_fund2_loan_bank" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
                 </div>
                 <div>
                   <label class="field-label">⑪ 그 밖의 차입금(원)</label>
-                  <input type="number" class="input-box" id="in_fund2_borrow" value="" placeholder="공백(선택입력)" oninput="syncAll();">
+                  <input type="text" inputmode="numeric" class="input-box" id="in_fund2_borrow" value="" placeholder="공백(선택입력)" oninput="formatMoneyInput(this); syncAll();">
                 </div>
               </div>
             </div>
@@ -1201,7 +1201,7 @@ def build_full_html():
       document.getElementById('in_yongdo_area').value = p.yongdo || '제3종일반주거지역';
       document.getElementById('in_bld_type').value = p.bldType || p.bldUsage || '공동주택(아파트)';
       if (p.bldUnit) document.getElementById('in_bld_unit').value = p.bldUnit;
-      if (p.officialPrice) document.getElementById('in_land_official_price').value = p.officialPrice;
+      if (p.officialPrice) document.getElementById('in_land_official_price').value = formatCommaNumber(p.officialPrice);
       if (p.exclusiveArea) document.getElementById('in_exclusive_area').value = p.exclusiveArea;
 
       calcJibunFull();
@@ -1436,7 +1436,7 @@ def build_full_html():
     }}
 
     function resetPresetsToDefault() {{
-      if (!confirm('기본 단지 정보(평촌 목련마을 4개 단지)로 복원하시겠습니까?\n(사용자가 추가/수정한 단지 정보는 초기화됩니다.)')) return;
+      if (!confirm('기본 단지 정보(평촌 목련마을 4개 단지)로 복원하시겠습니까?\\n(사용자가 추가/수정한 단지 정보는 초기화됩니다.)')) return;
       if (typeof DealStore !== 'undefined' && DealStore.resetComplexPresets) {{
         DealStore.resetComplexPresets();
       }}
@@ -1446,7 +1446,7 @@ def build_full_html():
     }}
 
     function resetPermitInputsToEmpty() {{
-      if (confirm('현재 작성 중인 모든 토지거래허가 신청 데이터를 초기화하시겠습니까?\n\n※ 중개사무소 정보는 유지됩니다.')) {{
+      if (confirm('현재 작성 중인 모든 토지거래허가 신청 데이터를 초기화하시겠습니까?\\n\\n※ 중개사무소 정보는 유지됩니다.')) {{
         currentDealId = null;
         const sel = document.getElementById('dealSelect');
         if (sel) sel.value = '';
@@ -1454,6 +1454,50 @@ def build_full_html():
         applyDealToInputs(empty);
         showToast('🔄 모든 입력 데이터가 깨끗하게 초기화되었습니다.');
       }}
+    }}
+
+    // 금액 콤마 포맷팅 및 파싱 유틸리티
+    function formatCommaNumber(val) {{
+      if (val === null || val === undefined || val === '') return '';
+      const str = String(val).replace(/[^\d]/g, '');
+      if (!str) return '';
+      const cleaned = str.replace(/^0+(?=\d)/, '');
+      return cleaned.replace(/\B(?=(\d{{3}})+(?!\d))/g, ',');
+    }}
+
+    function parseAmount(val) {{
+      if (val === null || val === undefined || val === '') return 0;
+      const cleaned = String(val).replace(/[^\d]/g, '');
+      return cleaned ? parseFloat(cleaned) : 0;
+    }}
+
+    function formatMoneyInput(el) {{
+      if (!el) return 0;
+      const orig = el.value;
+      const selStart = el.selectionStart;
+      const digitsBefore = orig.slice(0, selStart).replace(/[^\d]/g, '').length;
+
+      const raw = orig.replace(/[^\d]/g, '');
+      if (!raw) {{
+        el.value = '';
+        return 0;
+      }}
+      const cleaned = raw.replace(/^0+(?=\d)/, '');
+      const formatted = cleaned.replace(/\B(?=(\d{{3}})+(?!\d))/g, ',');
+      el.value = formatted;
+
+      let newPos = 0;
+      let counted = 0;
+      for (let i = 0; i < formatted.length; i++) {{
+        if (/\d/.test(formatted[i])) counted++;
+        if (counted === digitsBefore) {{
+          newPos = i + 1;
+          break;
+        }}
+      }}
+      if (digitsBefore === 0) newPos = 0;
+      el.setSelectionRange(newPos, newPos);
+      return parseFloat(cleaned) || 0;
     }}
 
     function formatNumber(num) {{
@@ -1534,8 +1578,8 @@ def build_full_html():
     }}
 
     function calcPriceBreakdown() {{
-      const total = parseFloat(document.getElementById('in_total_price')?.value) || 0;
-      const unitPrice = parseFloat(document.getElementById('in_land_official_price')?.value) || 0;
+      const total = parseAmount(document.getElementById('in_total_price')?.value);
+      const unitPrice = parseAmount(document.getElementById('in_land_official_price')?.value);
       const landShare = parseFloat(document.getElementById('in_land_ratio_num')?.value) || 0;
 
       let landPrice = Math.round(unitPrice * landShare);
@@ -1600,8 +1644,8 @@ def build_full_html():
         landRatioHtml = `<div style="font-size: 8.2pt; font-weight: 700;">${{landRatioNum.toFixed(2)}}㎡</div>`;
       }}
 
-      const totalPrice = parseFloat(document.getElementById('in_total_price')?.value) || 0;
-      const landOfficial = parseFloat(document.getElementById('in_land_official_price')?.value) || 0;
+      const totalPrice = parseAmount(document.getElementById('in_total_price')?.value);
+      const landOfficial = parseAmount(document.getElementById('in_land_official_price')?.value);
       let landPrice = Math.round(landOfficial * landRatioNum);
       if (landPrice > totalPrice) landPrice = Math.round(totalPrice * 0.2);
       const bldPrice = Math.max(0, totalPrice - landPrice);
@@ -1628,12 +1672,12 @@ def build_full_html():
       const fundLoanVal = (document.getElementById('in_fund_loan_bank')?.value || '').trim();
       const fundBorrowVal = (document.getElementById('in_fund_borrow')?.value || '').trim();
 
-      const fundDeposit = parseFloat(fundDepositVal) || 0;
-      const fundStocks = parseFloat(fundStocksVal) || 0;
-      const fundGift = parseFloat(fundGiftVal) || 0;
-      const fundRealestate = parseFloat(fundRealestateVal) || 0;
-      const fundLoan = parseFloat(fundLoanVal) || 0;
-      const fundBorrow = parseFloat(fundBorrowVal) || 0;
+      const fundDeposit = parseAmount(fundDepositVal);
+      const fundStocks = parseAmount(fundStocksVal);
+      const fundGift = parseAmount(fundGiftVal);
+      const fundRealestate = parseAmount(fundRealestateVal);
+      const fundLoan = parseAmount(fundLoanVal);
+      const fundBorrow = parseAmount(fundBorrowVal);
       const fundTotal = fundDeposit + fundStocks + fundGift + fundRealestate + fundLoan + fundBorrow;
 
       // Funding fields Buyer 2
@@ -1644,12 +1688,12 @@ def build_full_html():
       const fund2LoanVal = (document.getElementById('in_fund2_loan_bank')?.value || '').trim();
       const fund2BorrowVal = (document.getElementById('in_fund2_borrow')?.value || '').trim();
 
-      const fund2Deposit = parseFloat(fund2DepositVal) || 0;
-      const fund2Stocks = parseFloat(fund2StocksVal) || 0;
-      const fund2Gift = parseFloat(fund2GiftVal) || 0;
-      const fund2Realestate = parseFloat(fund2RealestateVal) || 0;
-      const fund2Loan = parseFloat(fund2LoanVal) || 0;
-      const fund2Borrow = parseFloat(fund2BorrowVal) || 0;
+      const fund2Deposit = parseAmount(fund2DepositVal);
+      const fund2Stocks = parseAmount(fund2StocksVal);
+      const fund2Gift = parseAmount(fund2GiftVal);
+      const fund2Realestate = parseAmount(fund2RealestateVal);
+      const fund2Loan = parseAmount(fund2LoanVal);
+      const fund2Borrow = parseAmount(fund2BorrowVal);
       const fund2Total = fund2Deposit + fund2Stocks + fund2Gift + fund2Realestate + fund2Loan + fund2Borrow;
 
       // Auto enable 3P-2 and 7P-2 when buyer 2 exists
@@ -2012,7 +2056,7 @@ def build_full_html():
       document.getElementById('in_yongdo_area').value = p.yongdo;
       document.getElementById('in_bld_type').value = p.bld_type;
       document.getElementById('in_bld_unit').value = p.bld_unit;
-      document.getElementById('in_land_official_price').value = p.official_price;
+      document.getElementById('in_land_official_price').value = formatCommaNumber(p.official_price);
       document.getElementById('in_exclusive_area').value = p.exclusive_area;
 
       calcJibunFull();
@@ -2395,7 +2439,8 @@ def build_full_html():
       // 4. 금액
       const f = deal.financial || {{}};
       const balDate = deal.balanceDate || f.balanceDate || '';
-      document.getElementById('in_total_price').value = deal.totalPrice || f.totalPrice || '';
+      const rawTotal = deal.totalPrice || f.totalPrice || '';
+      document.getElementById('in_total_price').value = rawTotal ? formatCommaNumber(rawTotal) : '';
       document.getElementById('in_balance_date').value = balDate;
 
       const chkBreakdown = document.getElementById('chk_show_price_breakdown');
@@ -2406,12 +2451,20 @@ def build_full_html():
 
       // 5. 자금조달
       const funding = deal.funding || {{}};
-      document.getElementById('in_fund_deposit').value = funding.deposit || '';
-      document.getElementById('in_fund_stocks').value = funding.stocks || '';
-      document.getElementById('in_fund_gift').value = funding.gift || '';
-      document.getElementById('in_fund_realestate').value = funding.realestate || '';
-      document.getElementById('in_fund_loan_bank').value = funding.loanBank || '';
-      document.getElementById('in_fund_borrow').value = funding.borrow || '';
+      document.getElementById('in_fund_deposit').value = funding.deposit ? formatCommaNumber(funding.deposit) : '';
+      document.getElementById('in_fund_stocks').value = funding.stocks ? formatCommaNumber(funding.stocks) : '';
+      document.getElementById('in_fund_gift').value = funding.gift ? formatCommaNumber(funding.gift) : '';
+      document.getElementById('in_fund_realestate').value = funding.realestate ? formatCommaNumber(funding.realestate) : '';
+      document.getElementById('in_fund_loan_bank').value = funding.loanBank ? formatCommaNumber(funding.loanBank) : '';
+      document.getElementById('in_fund_borrow').value = funding.borrow ? formatCommaNumber(funding.borrow) : '';
+
+      const funding2 = deal.funding2 || {{}};
+      document.getElementById('in_fund2_deposit').value = funding2.deposit ? formatCommaNumber(funding2.deposit) : '';
+      document.getElementById('in_fund2_stocks').value = funding2.stocks ? formatCommaNumber(funding2.stocks) : '';
+      document.getElementById('in_fund2_gift').value = funding2.gift ? formatCommaNumber(funding2.gift) : '';
+      document.getElementById('in_fund2_realestate').value = funding2.realestate ? formatCommaNumber(funding2.realestate) : '';
+      document.getElementById('in_fund2_loan_bank').value = funding2.loanBank ? formatCommaNumber(funding2.loanBank) : '';
+      document.getElementById('in_fund2_borrow').value = funding2.borrow ? formatCommaNumber(funding2.borrow) : '';
 
       // 6. 이용계획
       const usage = deal.usagePlan || deal.permit || {{}};
@@ -2520,19 +2573,27 @@ def build_full_html():
       deal.parties = deal.parties || {{}};
       deal.parties.buyers = buyers;
 
-      deal.totalPrice = parseFloat(document.getElementById('in_total_price').value) || 0;
+      deal.totalPrice = parseAmount(document.getElementById('in_total_price').value);
       deal.balanceDate = document.getElementById('in_balance_date').value;
       deal.regDate = document.getElementById('in_reg_date').value;
       deal.showPriceBreakdown = document.getElementById('chk_show_price_breakdown')?.checked || false;
 
       // Funding
       deal.funding = {{
-        deposit: parseFloat(document.getElementById('in_fund_deposit').value) || 0,
-        stocks: parseFloat(document.getElementById('in_fund_stocks').value) || 0,
-        gift: parseFloat(document.getElementById('in_fund_gift').value) || 0,
-        realestate: parseFloat(document.getElementById('in_fund_realestate').value) || 0,
-        loanBank: parseFloat(document.getElementById('in_fund_loan_bank').value) || 0,
-        borrow: parseFloat(document.getElementById('in_fund_borrow').value) || 0
+        deposit: parseAmount(document.getElementById('in_fund_deposit').value),
+        stocks: parseAmount(document.getElementById('in_fund_stocks').value),
+        gift: parseAmount(document.getElementById('in_fund_gift').value),
+        realestate: parseAmount(document.getElementById('in_fund_realestate').value),
+        loanBank: parseAmount(document.getElementById('in_fund_loan_bank').value),
+        borrow: parseAmount(document.getElementById('in_fund_borrow').value)
+      }};
+      deal.funding2 = {{
+        deposit: parseAmount(document.getElementById('in_fund2_deposit').value),
+        stocks: parseAmount(document.getElementById('in_fund2_stocks').value),
+        gift: parseAmount(document.getElementById('in_fund2_gift').value),
+        realestate: parseAmount(document.getElementById('in_fund2_realestate').value),
+        loanBank: parseAmount(document.getElementById('in_fund2_loan_bank').value),
+        borrow: parseAmount(document.getElementById('in_fund2_borrow').value)
       }};
 
       // Usage Plan

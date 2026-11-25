@@ -777,7 +777,7 @@
         <div class="form-grid-2">
           <div class="form-group">
             <label>매매약정금 (원)</label>
-            <input type="number" id="f_temp_deposit" class="form-control form-control-highlight" value=""
+            <input type="text" inputmode="numeric" id="f_temp_deposit" class="form-control form-control-highlight" value=""
               oninput="onTempDepositChange()" />
             <div id="lbl_temp_kr" class="korean-amt"></div>
           </div>
@@ -801,7 +801,7 @@
             <div class="form-grid-2">
               <div class="form-group">
                 <label>1차 약정금 (원)</label>
-                <input type="number" id="f_temp_deposit_1" class="form-control" value="" oninput="calcSplitTemp()" />
+                <input type="text" inputmode="numeric" id="f_temp_deposit_1" class="form-control" value="" oninput="calcSplitTemp(this)" />
               </div>
               <div class="form-group">
                 <label>1차 입금일</label>
@@ -811,7 +811,7 @@
             <div class="form-grid-2">
               <div class="form-group">
                 <label>2차 약정금 (원)</label>
-                <input type="number" id="f_temp_deposit_2" class="form-control" value="0" oninput="calcSplitTemp()" />
+                <input type="text" inputmode="numeric" id="f_temp_deposit_2" class="form-control" value="" oninput="calcSplitTemp(this)" />
               </div>
               <div class="form-group">
                 <label>2차 입금일</label>
@@ -824,8 +824,8 @@
         <!-- 매매대금 -->
         <div class="form-group">
           <label>총 매매대금 (원)</label>
-          <input type="number" id="f_total_price" class="form-control form-control-highlight" value=""
-            oninput="calcBalance()" />
+          <input type="text" inputmode="numeric" id="f_total_price" class="form-control form-control-highlight" value=""
+            oninput="calcBalance(this)" />
           <div id="lbl_total_kr" class="korean-amt"></div>
         </div>
 
@@ -833,7 +833,7 @@
         <div class="form-grid-2">
           <div class="form-group">
             <label>계약금 (원)</label>
-            <input type="number" id="f_contract_deposit" class="form-control" value="" oninput="calcBalance()" />
+            <input type="text" inputmode="numeric" id="f_contract_deposit" class="form-control" value="" oninput="calcBalance(this)" />
             <div id="lbl_contract_kr" class="korean-amt"></div>
           </div>
           <div class="form-group">
@@ -847,7 +847,7 @@
         <div class="form-grid-3">
           <div class="form-group">
             <label>중도금 1차 (원)</label>
-            <input type="number" id="f_mid_payment_1" class="form-control" value="" oninput="calcBalance()" />
+            <input type="text" inputmode="numeric" id="f_mid_payment_1" class="form-control" value="" oninput="calcBalance(this)" />
           </div>
           <div class="form-group">
             <label>1차 중도금일</label>
@@ -863,7 +863,7 @@
         <div class="form-grid-3">
           <div class="form-group">
             <label>중도금 2차 (선택)</label>
-            <input type="number" id="f_mid_payment_2" class="form-control" value="0" oninput="calcBalance()" />
+            <input type="text" inputmode="numeric" id="f_mid_payment_2" class="form-control" value="" oninput="calcBalance(this)" />
           </div>
           <div class="form-group">
             <label>2차 중도금일</label>
@@ -879,8 +879,8 @@
         <div class="form-grid-3">
           <div class="form-group">
             <label>잔금 (원, 자동계산)</label>
-            <input type="number" id="f_balance" class="form-control form-control-highlight" value=""
-              oninput="syncPreview()" />
+            <input type="text" inputmode="numeric" id="f_balance" class="form-control form-control-highlight" value=""
+              oninput="formatMoneyInput(this); syncPreview()" />
           </div>
           <div class="form-group">
             <label>잔금 예정일</label>
@@ -2274,6 +2274,50 @@
       loadDealIntoForm(deal);
     }
 
+    // 금액 콤마 포맷팅 및 파싱 유틸리티
+    function formatCommaNumber(val) {
+      if (val === null || val === undefined || val === '') return '';
+      const str = String(val).replace(/[^\d]/g, '');
+      if (!str) return '';
+      const cleaned = str.replace(/^0+(?=\d)/, '');
+      return cleaned.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function parseAmount(val) {
+      if (val === null || val === undefined || val === '') return 0;
+      const cleaned = String(val).replace(/[^\d]/g, '');
+      return cleaned ? parseFloat(cleaned) : 0;
+    }
+
+    function formatMoneyInput(el) {
+      if (!el) return 0;
+      const orig = el.value;
+      const selStart = el.selectionStart;
+      const digitsBefore = orig.slice(0, selStart).replace(/[^\d]/g, '').length;
+
+      const raw = orig.replace(/[^\d]/g, '');
+      if (!raw) {
+        el.value = '';
+        return 0;
+      }
+      const cleaned = raw.replace(/^0+(?=\d)/, '');
+      const formatted = cleaned.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      el.value = formatted;
+
+      let newPos = 0;
+      let counted = 0;
+      for (let i = 0; i < formatted.length; i++) {
+        if (/\d/.test(formatted[i])) counted++;
+        if (counted === digitsBefore) {
+          newPos = i + 1;
+          break;
+        }
+      }
+      if (digitsBefore === 0) newPos = 0;
+      el.setSelectionRange(newPos, newPos);
+      return parseFloat(cleaned) || 0;
+    }
+
     // 폼에 데이터 바인딩
     function loadDealIntoForm(deal) {
       if (!deal) return;
@@ -2293,26 +2337,26 @@
       // 2. 금액 및 일정
       const f = deal.financial || {};
       document.getElementById('f_deal_date').value = deal.dealDate || '';
-      document.getElementById('f_temp_deposit').value = f.tempDeposit || '';
+      document.getElementById('f_temp_deposit').value = f.tempDeposit ? formatCommaNumber(f.tempDeposit) : '';
 
       const isSplit = Boolean(f.isTempSplit);
       document.getElementById('chk_split_temp').checked = isSplit;
       document.getElementById('split_temp_box').style.display = isSplit ? 'block' : 'none';
-      document.getElementById('f_temp_deposit_1').value = f.tempDeposit1 || f.tempDeposit || '';
+      document.getElementById('f_temp_deposit_1').value = f.tempDeposit1 ? formatCommaNumber(f.tempDeposit1) : (f.tempDeposit ? formatCommaNumber(f.tempDeposit) : '');
       document.getElementById('f_temp_date_1').value = f.tempDeposit1Date || deal.dealDate || '';
-      document.getElementById('f_temp_deposit_2').value = f.tempDeposit2 || 0;
+      document.getElementById('f_temp_deposit_2').value = f.tempDeposit2 ? formatCommaNumber(f.tempDeposit2) : '';
       document.getElementById('f_temp_date_2').value = f.tempDeposit2Date || '';
 
-      document.getElementById('f_total_price').value = f.totalPrice || '';
-      document.getElementById('f_contract_deposit').value = f.contractDeposit || '';
+      document.getElementById('f_total_price').value = f.totalPrice ? formatCommaNumber(f.totalPrice) : '';
+      document.getElementById('f_contract_deposit').value = f.contractDeposit ? formatCommaNumber(f.contractDeposit) : '';
       document.getElementById('f_contract_schedule').value = f.contractSchedule || '토지거래허가후 7일이내';
-      document.getElementById('f_mid_payment_1').value = f.midPayment || '';
+      document.getElementById('f_mid_payment_1').value = f.midPayment ? formatCommaNumber(f.midPayment) : '';
       document.getElementById('f_mid_date_1').value = f.midDate || '';
       document.getElementById('f_mid_note_1').value = f.midNote || '예정';
-      document.getElementById('f_mid_payment_2').value = f.midPayment2 || 0;
+      document.getElementById('f_mid_payment_2').value = f.midPayment2 ? formatCommaNumber(f.midPayment2) : '';
       document.getElementById('f_mid_date_2').value = f.midDate2 || '';
       document.getElementById('f_mid_note_2').value = f.midNote2 || '예정';
-      document.getElementById('f_balance').value = f.balance || '';
+      document.getElementById('f_balance').value = f.balance ? formatCommaNumber(f.balance) : '';
       document.getElementById('f_balance_date').value = f.balanceDate || '';
       document.getElementById('f_balance_note').value = f.balanceNote || '이내로 협의';
       document.getElementById('f_special_terms').value = f.specialTerms || CLAUSE_PRESETS.clean;
@@ -2486,25 +2530,25 @@
       base.buyers = buyers;
 
       // 금액
-      base.financial.tempDeposit = parseFloat(document.getElementById('f_temp_deposit').value) || 0;
+      base.financial.tempDeposit = parseAmount(document.getElementById('f_temp_deposit').value);
       base.financial.tempDepositDate = base.dealDate;
       base.financial.isTempSplit = document.getElementById('chk_split_temp').checked;
-      base.financial.tempDeposit1 = parseFloat(document.getElementById('f_temp_deposit_1').value) || 0;
+      base.financial.tempDeposit1 = parseAmount(document.getElementById('f_temp_deposit_1').value);
       base.financial.tempDeposit1Date = document.getElementById('f_temp_date_1').value;
-      base.financial.tempDeposit2 = parseFloat(document.getElementById('f_temp_deposit_2').value) || 0;
+      base.financial.tempDeposit2 = parseAmount(document.getElementById('f_temp_deposit_2').value);
       base.financial.tempDeposit2Date = document.getElementById('f_temp_date_2').value;
 
-      base.financial.totalPrice = parseFloat(document.getElementById('f_total_price').value) || 0;
-      base.financial.contractDeposit = parseFloat(document.getElementById('f_contract_deposit').value) || 0;
+      base.financial.totalPrice = parseAmount(document.getElementById('f_total_price').value);
+      base.financial.contractDeposit = parseAmount(document.getElementById('f_contract_deposit').value);
       base.financial.contractSchedule = document.getElementById('f_contract_schedule').value.trim();
       base.financial.contractDate = base.dealDate;
-      base.financial.midPayment = parseFloat(document.getElementById('f_mid_payment_1').value) || 0;
+      base.financial.midPayment = parseAmount(document.getElementById('f_mid_payment_1').value);
       base.financial.midDate = document.getElementById('f_mid_date_1').value;
       base.financial.midNote = document.getElementById('f_mid_note_1').value.trim();
-      base.financial.midPayment2 = parseFloat(document.getElementById('f_mid_payment_2').value) || 0;
+      base.financial.midPayment2 = parseAmount(document.getElementById('f_mid_payment_2').value);
       base.financial.midDate2 = document.getElementById('f_mid_date_2').value;
       base.financial.midNote2 = document.getElementById('f_mid_note_2').value.trim();
-      base.financial.balance = parseFloat(document.getElementById('f_balance').value) || 0;
+      base.financial.balance = parseAmount(document.getElementById('f_balance').value);
       base.financial.balanceDate = document.getElementById('f_balance_date').value;
       base.financial.balanceNote = document.getElementById('f_balance_note').value.trim();
       base.financial.specialTerms = document.getElementById('f_special_terms').value;
@@ -2532,9 +2576,10 @@
 
     // 금액 계산 및 동기화
     function onTempDepositChange() {
-      const temp = parseFloat(document.getElementById('f_temp_deposit').value) || 0;
+      formatMoneyInput(document.getElementById('f_temp_deposit'));
+      const temp = parseAmount(document.getElementById('f_temp_deposit').value);
       if (!document.getElementById('chk_split_temp').checked) {
-        document.getElementById('f_temp_deposit_1').value = temp;
+        document.getElementById('f_temp_deposit_1').value = temp ? formatCommaNumber(temp) : '';
       }
       updateKoreanLabels();
       syncPreview();
@@ -2545,36 +2590,42 @@
       document.getElementById('split_temp_box').style.display = isChecked ? 'block' : 'none';
       if (!isChecked) {
         document.getElementById('f_temp_deposit_1').value = document.getElementById('f_temp_deposit').value;
-        document.getElementById('f_temp_deposit_2').value = 0;
+        document.getElementById('f_temp_deposit_2').value = '';
       } else {
         calcSplitTemp();
       }
       syncPreview();
     }
 
-    function calcSplitTemp() {
-      const totalTemp = parseFloat(document.getElementById('f_temp_deposit').value) || 0;
-      const t2 = parseFloat(document.getElementById('f_temp_deposit_2').value) || 0;
+    function calcSplitTemp(changedInput) {
+      if (changedInput) {
+        formatMoneyInput(changedInput);
+      }
+      const totalTemp = parseAmount(document.getElementById('f_temp_deposit').value);
+      const t2 = parseAmount(document.getElementById('f_temp_deposit_2').value);
       const t1 = totalTemp - t2;
-      document.getElementById('f_temp_deposit_1').value = t1 >= 0 ? t1 : totalTemp;
+      document.getElementById('f_temp_deposit_1').value = (t1 >= 0 ? t1 : totalTemp) ? formatCommaNumber(t1 >= 0 ? t1 : totalTemp) : '';
       syncPreview();
     }
 
-    function calcBalance() {
-      const total = parseFloat(document.getElementById('f_total_price').value) || 0;
-      let contract = parseFloat(document.getElementById('f_contract_deposit').value) || 0;
-      const mid1 = parseFloat(document.getElementById('f_mid_payment_1').value) || 0;
-      const mid2 = parseFloat(document.getElementById('f_mid_payment_2').value) || 0;
+    function calcBalance(changedInput) {
+      if (changedInput) {
+        formatMoneyInput(changedInput);
+      }
+      const total = parseAmount(document.getElementById('f_total_price').value);
+      let contract = parseAmount(document.getElementById('f_contract_deposit').value);
+      const mid1 = parseAmount(document.getElementById('f_mid_payment_1').value);
+      const mid2 = parseAmount(document.getElementById('f_mid_payment_2').value);
 
-      // 계약금이 비어있으면 매매가의 약 10% 자동 제안
-      if (!contract && total > 0) {
+      // 계약금이 비어있으면 매매가의 약 10% 자동 제안 (총액 입력시에만)
+      if (!contract && total > 0 && changedInput && changedInput.id === 'f_total_price') {
         contract = Math.round(total * 0.1);
-        document.getElementById('f_contract_deposit').value = contract;
+        document.getElementById('f_contract_deposit').value = formatCommaNumber(contract);
       }
 
       const balance = total - contract - mid1 - mid2;
       if (balance >= 0) {
-        document.getElementById('f_balance').value = balance;
+        document.getElementById('f_balance').value = formatCommaNumber(balance);
       }
 
       updateKoreanLabels();
@@ -2582,10 +2633,10 @@
     }
 
     function updateKoreanLabels() {
-      const total = parseFloat(document.getElementById('f_total_price').value) || 0;
-      const temp = parseFloat(document.getElementById('f_temp_deposit').value) || 0;
-      const contract = parseFloat(document.getElementById('f_contract_deposit').value) || 0;
-      const balance = parseFloat(document.getElementById('f_balance').value) || 0;
+      const total = parseAmount(document.getElementById('f_total_price').value);
+      const temp = parseAmount(document.getElementById('f_temp_deposit').value);
+      const contract = parseAmount(document.getElementById('f_contract_deposit').value);
+      const balance = parseAmount(document.getElementById('f_balance').value);
 
       document.getElementById('lbl_total_kr').textContent = window.DealStore.numToKorean(total);
       document.getElementById('lbl_temp_kr').textContent = window.DealStore.numToKorean(temp);
