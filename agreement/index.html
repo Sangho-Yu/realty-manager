@@ -2462,30 +2462,42 @@
       base.property.bldStructure = document.getElementById('f_bld_structure').value.trim();
       base.property.bldUsage = document.getElementById('f_bld_usage').value.trim();
 
-      // 토지거래허가서 바인딩 호환용 지번/단지명 파싱 보조
-      const bldStr = base.property.bldAddr;
-      const mDong = bldStr.match(/([가-힣\d]+동)\s+(\d+(?:-\d+)?)/);
-      if (mDong) {
-        base.property.dong = mDong[1];
-        const jparts = mDong[2].split('-');
-        base.property.jibunMain = jparts[0];
-        base.property.jibunSub = jparts[1] || '';
-      }
-      const mUnit = bldStr.match(/([가-힣\w]+(?:아파트|마을|단지|빌라))\s*(?:제?(\d+)동)?\s*(?:제?(\d+)호)?/);
-      if (mUnit) {
-        base.property.complex = mUnit[1];
-        if (mUnit[2]) base.property.dongNum = mUnit[2];
-        if (mUnit[3]) base.property.hoNum = mUnit[3];
-      }
-      base.property.addrFull = base.property.bldAddr;
+      // 스마트 주소 분해 및 토지거래허가(8P) 연동 항목 완벽 정제
+      const parsed = window.DealStore ? window.DealStore.parseAddressAndRatio(
+        base.property.landAddr,
+        base.property.bldAddr,
+        base.property.landRatioStr
+      ) : {};
 
-      // 대지권 분모/분자 파싱
-      const mRatio = base.property.landRatioStr.match(/([\d\.]+)\s*분의\s*([\d\.]+)/);
-      if (mRatio) {
-        base.property.landRatioDen = parseFloat(mRatio[1]) || 0;
-        base.property.landRatioNum = parseFloat(mRatio[2]) || 0;
-        base.property.landShare = base.property.landRatioNum;
-      }
+      // 토지거래허가서 루트 레벨 매핑
+      base.dong = parsed.dong || '';
+      base.jibunMain = parsed.jibunMain || '';
+      base.jibunSub = parsed.jibunSub || '';
+      base.complex = parsed.complex || '';
+      base.unit = parsed.unit || '';
+      base.addrRoad = parsed.roadAddr || base.property.bldAddr;
+      base.addrFull = base.property.bldAddr || '';
+      base.landCategory = base.property.landCategoryLegal || '대';
+      base.landArea = parsed.ratioDen || 0;
+      base.landRatioDen = parsed.ratioDen || '';
+      base.landRatioNum = parsed.ratioNum || 0;
+      base.buildingArea = base.property.exclusiveArea || 0;
+      base.bldType = base.property.bldUsage ? `공동주택(${base.property.bldUsage})` : '공동주택(아파트)';
+      base.zoning = base.zoning || '제3종일반주거지역';
+
+      // property 내부 동기화
+      base.property.dong = base.dong;
+      base.property.jibunMain = base.jibunMain;
+      base.property.jibunSub = base.jibunSub;
+      base.property.complex = base.complex;
+      base.property.dongNum = parsed.dongNum || '';
+      base.property.hoNum = parsed.hoNum || '';
+      base.property.roadAddr = base.addrRoad;
+      base.property.addrFull = base.addrFull;
+      base.property.landRatioDen = base.landRatioDen;
+      base.property.landRatioNum = base.landRatioNum;
+      base.property.landShare = base.landRatioNum;
+      base.property.totalLand = base.landArea;
 
       // 당사자 (소유자)
       const sellers = [];
@@ -2552,6 +2564,24 @@
       base.financial.balanceDate = document.getElementById('f_balance_date').value;
       base.financial.balanceNote = document.getElementById('f_balance_note').value.trim();
       base.financial.specialTerms = document.getElementById('f_special_terms').value;
+
+      // 금액 및 일정 루트 레벨 연동
+      base.totalPrice = base.financial.totalPrice;
+      base.balanceDate = base.financial.balanceDate;
+      base.title = `${base.dealDate ? base.dealDate + '_' : ''}${base.complex || base.dong || ''} ${base.unit || ''}`.trim() || '신규 거래';
+
+      // 토지이용계획 및 허가 일정 자동 연동 (잔금일과 기본 동기화)
+      if (!base.usagePlan) base.usagePlan = existing?.usagePlan || {};
+      base.usagePlan.balanceDate = base.financial.balanceDate;
+      if (!base.usagePlan.regDate) base.usagePlan.regDate = base.financial.balanceDate;
+      if (!base.usagePlan.moveInDate) base.usagePlan.moveInDate = base.financial.balanceDate;
+      if (!base.usagePlan.purpose) base.usagePlan.purpose = '주거용 (세대원 전원 실거주 자가주택 취득)';
+      if (!base.usagePlan.occupantType) base.usagePlan.occupantType = '매도인';
+
+      // 공인중개사 기본 정보 연동
+      if (!base.agent) {
+        base.agent = window.DealStore ? Object.assign({}, window.DealStore.DEFAULT_AGENT) : {};
+      }
 
       // 공동중개사
       const isCo = document.getElementById('chk_co_agent').checked;
@@ -2983,9 +3013,7 @@
       currentDealId = saved.id;
       refreshDealDropdown();
 
-      if (confirm(`현재 거래 데이터를 저장했습니다.\n[토지거래허가신청서 8페이지 자동완성 시스템]으로 이동하시겠습니까?`)) {
-        window.location.href = `../toji-permit/index.html?dealId=${encodeURIComponent(saved.id)}`;
-      }
+      window.location.href = `../toji-permit/index.html?dealId=${encodeURIComponent(saved.id)}`;
     }
 
     function exportCurrentDealJson() {

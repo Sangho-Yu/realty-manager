@@ -2375,35 +2375,39 @@
       currentDealId = deal.id;
 
       const p = deal.property || {};
-      // 엑셀 서식 주소 파싱 보조
-      if (!p.dong && (p.landAddr || p.bldAddr)) {
-        const full = p.landAddr || p.bldAddr;
-        const mDong = full.match(/([가-힣\d]+동)\s+(\d+(?:-\d+)?)/);
-        if (mDong) {
-          p.dong = mDong[1];
-          const parts = mDong[2].split('-');
-          p.jibunMain = parts[0];
-          p.jibunSub = parts[1] || '';
-        }
+      const f = deal.financial || {};
+      const usage = deal.usagePlan || deal.permit || {};
+      const funding = deal.funding || {};
+      const funding2 = deal.funding2 || {};
+
+      // 스마트 주소 분해 보조 (구버전 deal 또는 미분해 거래도 완벽 자동 분해 연동)
+      let parsed = {};
+      if (typeof DealStore !== 'undefined' && DealStore.parseAddressAndRatio) {
+        parsed = DealStore.parseAddressAndRatio(
+          p.landAddr || deal.addrFull || '',
+          p.bldAddr || deal.addrRoad || '',
+          p.landRatioStr || `${deal.landRatioDen || p.landRatioDen || ''}분의 ${deal.landRatioNum || p.landRatioNum || ''}`
+        );
       }
 
       // 1. 매물 정보 (비어있으면 깨끗하게 빈값 바인딩)
       document.getElementById('in_date').value = deal.dealDate || '';
-      document.getElementById('in_dong').value = deal.dong || p.dong || '';
-      document.getElementById('in_jibun_main').value = deal.jibunMain || p.jibunMain || '';
-      document.getElementById('in_jibun_sub').value = deal.jibunSub || p.jibunSub || '';
-      document.getElementById('in_complex').value = deal.complex || p.complex || '';
-      document.getElementById('in_bld_unit').value = deal.unit || (p.dongNum ? `제${p.dongNum}동 제${p.hoNum || ''}호` : '');
-      document.getElementById('in_road_addr').value = deal.addrRoad || p.roadAddr || p.landAddr || '';
+      document.getElementById('in_dong').value = deal.dong || p.dong || parsed.dong || '호계동';
+      document.getElementById('in_jibun_main').value = deal.jibunMain || p.jibunMain || parsed.jibunMain || '';
+      document.getElementById('in_jibun_sub').value = deal.jibunSub || p.jibunSub || parsed.jibunSub || '';
+      document.getElementById('in_complex').value = deal.complex || p.complex || parsed.complex || '';
+      document.getElementById('in_bld_unit').value = deal.unit || parsed.unit || (p.dongNum ? `${p.dongNum}동 ${p.hoNum || ''}호` : '');
+      document.getElementById('in_road_addr').value = deal.addrRoad || p.roadAddr || parsed.roadAddr || p.landAddr || '';
       document.getElementById('in_addr_full').value = deal.addrFull || p.bldAddr || '';
 
       document.getElementById('in_jimok_legal').value = deal.landCategory || p.landCategoryLegal || '대';
       document.getElementById('in_jimok_actual').value = p.landCategoryActual || '대';
-      document.getElementById('in_land_total_area').value = deal.landArea || p.landAreaTotal || p.totalLand || '';
-      document.getElementById('in_land_ratio_den').value = deal.landRatioDen || p.landRatioDen || '';
-      document.getElementById('in_land_ratio_num').value = deal.landRatioNum || p.landRatioNum || '';
+      document.getElementById('in_land_total_area').value = deal.landArea || p.landAreaTotal || p.totalLand || deal.landRatioDen || p.landRatioDen || parsed.ratioDen || '';
+      document.getElementById('in_land_ratio_den').value = deal.landRatioDen || p.landRatioDen || parsed.ratioDen || '';
+      document.getElementById('in_land_ratio_num').value = deal.landRatioNum || p.landRatioNum || parsed.ratioNum || '';
       document.getElementById('in_exclusive_area').value = deal.buildingArea || p.exclusiveArea || '';
       document.getElementById('in_yongdo_area').value = deal.zoning || p.zoning || '제3종일반주거지역';
+      document.getElementById('in_bld_type').value = deal.bldType || p.bldType || (p.bldUsage ? `공동주택(${p.bldUsage})` : '') || '공동주택(아파트)';
 
       // 2. 매도인 정보
       const sellersList = (deal.sellers && deal.sellers.length > 0) ? deal.sellers : ((deal.parties && deal.parties.sellers) || []);
@@ -2478,11 +2482,14 @@
       }
 
       // 4. 금액
-      const f = deal.financial || {};
       const balDate = deal.balanceDate || f.balanceDate || '';
       const rawTotal = deal.totalPrice || f.totalPrice || '';
       document.getElementById('in_total_price').value = rawTotal ? formatCommaNumber(rawTotal) : '';
       document.getElementById('in_balance_date').value = balDate;
+
+      if (deal.officialPrice || p.officialPrice) {
+        document.getElementById('in_land_official_price').value = formatCommaNumber(deal.officialPrice || p.officialPrice);
+      }
 
       const chkBreakdown = document.getElementById('chk_show_price_breakdown');
       if (chkBreakdown) {
@@ -2491,7 +2498,6 @@
       }
 
       // 5. 자금조달
-      const funding = deal.funding || {};
       document.getElementById('in_fund_deposit').value = funding.deposit ? formatCommaNumber(funding.deposit) : '';
       document.getElementById('in_fund_stocks').value = funding.stocks ? formatCommaNumber(funding.stocks) : '';
       document.getElementById('in_fund_gift').value = funding.gift ? formatCommaNumber(funding.gift) : '';
@@ -2499,7 +2505,6 @@
       document.getElementById('in_fund_loan_bank').value = funding.loanBank ? formatCommaNumber(funding.loanBank) : '';
       document.getElementById('in_fund_borrow').value = funding.borrow ? formatCommaNumber(funding.borrow) : '';
 
-      const funding2 = deal.funding2 || {};
       document.getElementById('in_fund2_deposit').value = funding2.deposit ? formatCommaNumber(funding2.deposit) : '';
       document.getElementById('in_fund2_stocks').value = funding2.stocks ? formatCommaNumber(funding2.stocks) : '';
       document.getElementById('in_fund2_gift').value = funding2.gift ? formatCommaNumber(funding2.gift) : '';
@@ -2508,7 +2513,6 @@
       document.getElementById('in_fund2_borrow').value = funding2.borrow ? formatCommaNumber(funding2.borrow) : '';
 
       // 6. 이용계획
-      const usage = deal.usagePlan || deal.permit || {};
       document.getElementById('in_purpose').value = usage.purpose || '주거용 (세대원 전원 실거주 자가주택 취득)';
       const regDateVal = usage.regDate || deal.regDate || balDate;
       const regInput = document.getElementById('in_reg_date');
@@ -2524,6 +2528,17 @@
       document.getElementById('in_move_in_date').value = usage.moveInDate || balDate || '';
       document.getElementById('in_occupant_type').value = usage.occupantType || '매도인';
       document.getElementById('in_tenant_vacate_date').value = usage.tenantVacate || '';
+
+      // 7. 공인중개사 정보 (사무소 설정 또는 DEFAULT_AGENT)
+      const ag = deal.agent || (typeof DealStore !== 'undefined' ? DealStore.DEFAULT_AGENT : null);
+      if (ag) {
+        if (ag.office) document.getElementById('in_agent_office').value = ag.office;
+        if (ag.name) document.getElementById('in_agent_name').value = ag.name;
+        if (ag.rrn) document.getElementById('in_agent_rrn').value = ag.rrn;
+        if (ag.regNo) document.getElementById('in_agent_reg').value = ag.regNo;
+        if (ag.tel) document.getElementById('in_agent_tel').value = ag.tel;
+        if (ag.addr) document.getElementById('in_agent_addr').value = ag.addr;
+      }
 
       // 약정서 링크 업데이트
       const linkEl = document.getElementById('linkToAgreement');
@@ -2545,7 +2560,7 @@
       const deal = DealStore.getDeal(dealId);
       if (deal) {
         applyDealToInputs(deal);
-        showToast(`📂 '${deal.title}' 거래 데이터를 불러왔습니다.`);
+        showToast(`📂 '${deal.title || '매매약정서'}' 거래 데이터가 연동되었습니다.`);
       }
     }
 

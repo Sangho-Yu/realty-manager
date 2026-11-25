@@ -633,28 +633,40 @@
         complex: '',
         dongNum: '',
         hoNum: '',
+        unit: '',
+        roadAddr: '',
         ratioDen: 0,
         ratioNum: 0,
+        landRatioDen: 0,
+        landRatioNum: 0,
         landShare: 0
       };
 
-      const source = landAddr || bldAddr || '';
-      const mDong = source.match(/([가-힣\d]+동)\s+(\d+)(?:-(\d+))?/);
-      if (mDong) {
-        result.dong = mDong[1];
-        result.jibunMain = mDong[2];
-        result.jibunSub = mDong[3] || '';
+      if (landAddr) {
+        const mDong = landAddr.match(/([가-힣]{2,}동)\s*(\d+)?(?:-(\d+))?/);
+        if (mDong) {
+          result.dong = mDong[1] || '';
+          result.jibunMain = mDong[2] || '';
+          result.jibunSub = mDong[3] || '';
+        }
       }
 
       if (bldAddr) {
+        if (!result.dong) {
+          const mDong = bldAddr.match(/([가-힣]{2,}동)/);
+          if (mDong) result.dong = mDong[1];
+        }
+
         const mCplx = bldAddr.match(/([가-힣\w]+(?:아파트|마을|단지|빌라))/);
         if (mCplx) result.complex = mCplx[1];
 
-        const mDongNum = bldAddr.match(/제?(\d+)\s*동/);
+        const mDongNum = bldAddr.match(/(?:제\s*)?(\d+)\s*동/);
         if (mDongNum) result.dongNum = mDongNum[1];
 
-        const mHoNum = bldAddr.match(/제?(\d+)\s*호/);
+        const mHoNum = bldAddr.match(/(?:제\s*)?(\d+)\s*호/);
         if (mHoNum) result.hoNum = mHoNum[1];
+
+        result.roadAddr = bldAddr.replace(/\s*(?:제\s*)?\d+\s*동.*$/, '').trim();
       }
 
       if (ratioStr) {
@@ -667,6 +679,10 @@
           result.landShare = result.ratioNum;
         }
       }
+
+      const dStr = result.dongNum ? (result.dongNum.includes('동') ? result.dongNum : result.dongNum + '동') : '';
+      const hStr = result.hoNum ? (result.hoNum.includes('호') ? result.hoNum : result.hoNum + '호') : '';
+      result.unit = (dStr + ' ' + hStr).trim();
 
       return result;
     },
