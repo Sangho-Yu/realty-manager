@@ -927,60 +927,7 @@
         </div>
       </div>
 
-      <!-- 5. 토지거래허가 사전 정보 (3P 자금조달 & 4~5P 실거주계획 연계) -->
-      <div class="form-section">
-        <div class="section-title">
-          <span style="display:flex; align-items:center; gap:5px;">
-            <span>🏛️</span> <span>토지거래허가 사전 정보 (3P & 4~5P 연계)</span>
-          </span>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="togglePermitPreInputUI()" id="btn_toggle_permit_pre">
-            <span id="btn_permit_pre_text">+ 사전입력 펼치기</span>
-          </button>
-        </div>
-        <div style="font-size:10.5px; color:var(--text-muted); margin-bottom:6px;">
-          약정 단계에서 매수인의 자금조달 및 실거주 계획을 미리 기재해 두면, 토지거래허가신청서(8P) 이동 시 100% 완전 자동 작성됩니다.
-        </div>
-
-        <div id="permit_pre_input_box" style="display:none; padding-top:4px;">
-          <!-- 자금조달계획 개요 (3P 연동) -->
-          <div style="font-size:11px; font-weight:700; color:#0284c7; margin-bottom:4px;">[3P 자금조달계획서 개요]</div>
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label>자기자금 (예금/처분대금 등, 원)</label>
-              <input type="number" id="f_permit_fund_self" class="form-control" placeholder="예: 450000000" oninput="syncPreview()" />
-            </div>
-            <div class="form-group">
-              <label>차입금 (금융기관 대출예정액, 원)</label>
-              <input type="number" id="f_permit_fund_loan" class="form-control" placeholder="예: 500000000" oninput="syncPreview()" />
-            </div>
-          </div>
-
-          <!-- 토지이용계획 개요 (4~5P 연동) -->
-          <div style="font-size:11px; font-weight:700; color:#059669; margin:8px 0 4px 0;">[4~5P 토지이용계획서 개요]</div>
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label>이용목적</label>
-              <input type="text" id="f_permit_purpose" class="form-control" value="주거용 (세대원 전원 실거주 자가주택 취득)" oninput="syncPreview()" />
-            </div>
-            <div class="form-group">
-              <label>입주예정시기</label>
-              <input type="text" id="f_permit_movein" class="form-control" placeholder="예: 2026년 12월 (잔금 즉시 입주)" oninput="syncPreview()" />
-            </div>
-          </div>
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label>거주예정자 (등본상 세대원)</label>
-              <input type="text" id="f_permit_residents" class="form-control" placeholder="예: 본인 및 배우자, 자녀 2명 (세대원 전원)" oninput="syncPreview()" />
-            </div>
-            <div class="form-group">
-              <label>주택 보유 현황 및 처분계획</label>
-              <input type="text" id="f_permit_plan" class="form-control" value="무주택 세대 (실거주 목적 신규 취득)" oninput="syncPreview()" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 6. 개업공인중개사 (고정 및 공동중개) -->
+      <!-- 5. 개업공인중개사 (고정 및 공동중개) -->
       <div class="form-section">
         <div class="section-title">
           <span>5. 개업공인중개사 정보</span>
@@ -1667,25 +1614,7 @@
       syncPreview();
     }
 
-    function togglePermitPreInputUI() {
-      const box = document.getElementById('permit_pre_input_box');
-      const btnText = document.getElementById('btn_permit_pre_text');
-      const isVisible = box.style.display !== 'none';
-      if (isVisible) {
-        box.style.display = 'none';
-        btnText.textContent = '+ 사전입력 펼치기';
-      } else {
-        box.style.display = 'block';
-        btnText.textContent = '- 사전입력 접기';
-        // 기본값 자동 제안
-        const total = parseFloat(document.getElementById('f_total_price').value) || 0;
-        if (!document.getElementById('f_permit_fund_loan').value && total > 0) {
-          const estLoan = Math.round(total * 0.4 / 10000000) * 10000000;
-          document.getElementById('f_permit_fund_loan').value = estLoan;
-          document.getElementById('f_permit_fund_self').value = total - estLoan;
-        }
-      }
-    }
+
 
     function onDealStageChange() {
       const stage = document.getElementById('sel_deal_stage').value;
@@ -2270,15 +2199,7 @@
         onDealStageChange();
       }
 
-      // 허가서 사전 입력 데이터 로딩
-      const permit = deal.permit || {};
-      const b1Fund = permit.funding?.buyer1 || {};
-      document.getElementById('f_permit_fund_self').value = b1Fund.selfDeposit || '';
-      document.getElementById('f_permit_fund_loan').value = b1Fund.loanAmount || '';
-      document.getElementById('f_permit_purpose').value = permit.purpose || '주거용 (세대원 전원 실거주 자가주택 취득)';
-      document.getElementById('f_permit_movein').value = permit.moveInDate || deal.financial?.balanceDate || '';
-      document.getElementById('f_permit_residents').value = permit.residents || '';
-      document.getElementById('f_permit_plan').value = permit.usagePlan?.dispositionPlan || '무주택 세대 (실거주 목적 신규 취득)';
+
 
       refreshDealDropdown();
             // 주민번호 표기 모드 복원
@@ -2416,21 +2337,7 @@
       const selStage = document.getElementById('sel_deal_stage');
       if (selStage) base.status = selStage.value;
 
-      if (!base.permit) base.permit = {};
-      base.permit.purpose = document.getElementById('f_permit_purpose').value.trim();
-      base.permit.moveInDate = document.getElementById('f_permit_movein').value.trim() || base.financial.balanceDate;
-      base.permit.residents = document.getElementById('f_permit_residents').value.trim() || (base.parties.buyers[0]?.name || '');
-      
-      const selfAmt = parseFloat(document.getElementById('f_permit_fund_self').value) || 0;
-      const loanAmt = parseFloat(document.getElementById('f_permit_fund_loan').value) || 0;
-      if (!base.permit.funding) base.permit.funding = {};
-      base.permit.funding.buyer1 = {
-        name: base.parties.buyers[0]?.name || '',
-        selfDeposit: selfAmt,
-        loanAmount: loanAmt
-      };
-      if (!base.permit.usagePlan) base.permit.usagePlan = {};
-      base.permit.usagePlan.dispositionPlan = document.getElementById('f_permit_plan').value.trim();
+      if (!base.permit) base.permit = existing?.permit || {};
 
       return base;
     }
