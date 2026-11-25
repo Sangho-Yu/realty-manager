@@ -601,7 +601,7 @@ def build_full_html():
           <option value="">-- 거래를 선택하거나 새로 작성 --</option>
         </select>
       </div>
-      <button type="button" class="btn btn-outline btn-icon" onclick="resetToNewDeal()" title="새 거래 작성">✨</button>
+      <button type="button" class="btn btn-outline" onclick="resetPermitInputsToEmpty()" style="color:#ef4444; border-color:#fca5a5; font-weight:600;" title="모든 입력 데이터 초기화">🔄 초기화</button>
     </div>
 
     <div class="header-actions">
@@ -618,15 +618,14 @@ def build_full_html():
     <!-- Left Sidebar Editor -->
     <aside class="editor-panel">
       <div class="editor-content">
-        <!-- Preset Chips -->
+        <!-- Preset Chips & 단지정보 관리 -->
         <div class="preset-box">
-          <div class="preset-title">🏢 평촌 주요 단지 프리셋 (원클릭 자동 입력)</div>
-          <div class="preset-chips">
-            <span class="preset-chip" onclick="applyComplexPreset('목련두산2')">목련두산 2단지</span>
-            <span class="preset-chip" onclick="applyComplexPreset('목련우성3')">목련우성 3단지</span>
-            <span class="preset-chip" onclick="applyComplexPreset('목련우성5')">목련우성 5단지</span>
-            <span class="preset-chip" onclick="applyComplexPreset('꿈마을건영')">꿈마을건영</span>
-            <span class="preset-chip" onclick="applyComplexPreset('무궁화태영')">무궁화태영</span>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <div class="preset-title" style="margin-bottom:0;">🏢 평촌 주요 단지 프리셋 (원클릭 자동 입력)</div>
+            <button type="button" class="btn btn-outline" onclick="openComplexPresetModal()" style="font-size:11px; padding:1px 8px; color:var(--primary); font-weight:600; height:24px;">⚙️ 단지정보 관리/수정</button>
+          </div>
+          <div class="preset-chips" id="permit_complex_chips">
+            <!-- JS 동적 생성 -->
           </div>
         </div>
 
@@ -648,14 +647,14 @@ def build_full_html():
               </div>
               <div>
                 <label class="field-label">법정동</label>
-                <input type="text" class="input-box" id="in_dong" value="호계동" oninput="calcJibunFull(); syncAll();">
+                <input type="text" class="input-box" id="in_dong" value="" oninput="calcJibunFull(); syncAll();">
               </div>
             </div>
 
             <div class="field-row grid-3">
               <div>
                 <label class="field-label">지번 본번</label>
-                <input type="text" class="input-box" id="in_jibun_main" value="1054" oninput="calcJibunFull(); syncAll();">
+                <input type="text" class="input-box" id="in_jibun_main" value="" oninput="calcJibunFull(); syncAll();">
               </div>
               <div>
                 <label class="field-label">부번</label>
@@ -663,24 +662,24 @@ def build_full_html():
               </div>
               <div>
                 <label class="field-label">단지명</label>
-                <input type="text" class="input-box" id="in_complex" value="목련마을두산" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_complex" value="" oninput="syncAll();">
               </div>
             </div>
 
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">동·호수 (정착물 내용)</label>
-                <input type="text" class="input-box" id="in_bld_unit" value="제601동 제601호" placeholder="예: 제601동 제601호" oninput="calcJibunFull(); syncAll();">
+                <input type="text" class="input-box" id="in_bld_unit" value="" placeholder="예: 제601동 제601호" oninput="calcJibunFull(); syncAll();">
               </div>
               <div>
                 <label class="field-label">도로명 주소</label>
-                <input type="text" class="input-box" id="in_road_addr" value="경기도 안양시 동안구 동안로 120" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_road_addr" value="" oninput="syncAll();">
               </div>
             </div>
 
             <div class="field-row">
               <label class="field-label">전체 지번 표시 (공적장부용)</label>
-              <input type="text" class="input-box" id="in_addr_full" value="경기도 안양시 동안구 호계동 1054 목련마을두산아파트 제601동 제601호" oninput="syncAll();">
+              <input type="text" class="input-box" id="in_addr_full" value="" oninput="syncAll();">
             </div>
 
             <div class="field-row grid-2">
@@ -697,22 +696,22 @@ def build_full_html():
             <div class="field-row grid-3">
               <div>
                 <label class="field-label">1필지 총면적(㎡)</label>
-                <input type="number" step="0.01" class="input-box" id="in_land_total_area" value="56123.4" oninput="calcLandShare(); syncAll();">
+                <input type="number" step="0.01" class="input-box" id="in_land_total_area" value="" oninput="calcLandShare(); syncAll();">
               </div>
               <div>
                 <label class="field-label">대지권 비율 분모</label>
-                <input type="text" class="input-box" id="in_land_ratio_den" value="56123.4" oninput="calcLandShare(); syncAll();">
+                <input type="text" class="input-box" id="in_land_ratio_den" value="" oninput="calcLandShare(); syncAll();">
               </div>
               <div>
                 <label class="field-label">대지권 지분(㎡)</label>
-                <input type="number" step="0.01" class="input-box" id="in_land_ratio_num" value="51.84" oninput="calcLandShare(); syncAll();">
+                <input type="number" step="0.01" class="input-box" id="in_land_ratio_num" value="" oninput="calcLandShare(); syncAll();">
               </div>
             </div>
 
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">⑫ 대지권 지분면적 표기</label>
-                <input type="text" class="input-box read-calc" id="in_land_share_display" value="51.84㎡" readonly>
+                <input type="text" class="input-box read-calc" id="in_land_share_display" value="" readonly>
               </div>
               <div>
                 <label class="field-label">⑬ 용도지역</label>
@@ -738,7 +737,7 @@ def build_full_html():
               </div>
               <div>
                 <label class="field-label">전유면적(㎡)</label>
-                <input type="number" step="0.01" class="input-box" id="in_exclusive_area" value="101.42" oninput="syncAll();">
+                <input type="number" step="0.01" class="input-box" id="in_exclusive_area" value="" oninput="syncAll();">
               </div>
             </div>
 
@@ -769,21 +768,21 @@ def build_full_html():
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">매도인 1 성명</label>
-                <input type="text" class="input-box" id="in_seller_name" value="김매도" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_seller_name" value="" oninput="syncAll();">
               </div>
               <div>
                 <label class="field-label">주민등록번호</label>
-                <input type="text" class="input-box" id="in_seller_rrn" value="700101-1234567" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_seller_rrn" value="" oninput="syncAll();">
               </div>
             </div>
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">연락처</label>
-                <input type="text" class="input-box" id="in_seller_tel" value="010-3322-1144" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_seller_tel" value="" oninput="syncAll();">
               </div>
               <div>
                 <label class="field-label">주소</label>
-                <input type="text" class="input-box" id="in_seller_addr" value="경기도 안양시 동안구 동안로 120, 101동 202호" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_seller_addr" value="" oninput="syncAll();">
               </div>
             </div>
 
@@ -824,21 +823,21 @@ def build_full_html():
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">매수인 1 성명</label>
-                <input type="text" class="input-box" id="in_buyer_name" value="이매수" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_buyer_name" value="" oninput="syncAll();">
               </div>
               <div>
                 <label class="field-label">주민등록번호</label>
-                <input type="text" class="input-box" id="in_buyer_rrn" value="820512-2345678" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_buyer_rrn" value="" oninput="syncAll();">
               </div>
             </div>
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">연락처</label>
-                <input type="text" class="input-box" id="in_buyer_tel" value="010-9988-7766" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_buyer_tel" value="" oninput="syncAll();">
               </div>
               <div>
                 <label class="field-label">주소</label>
-                <input type="text" class="input-box" id="in_buyer_addr" value="서울특별시 서초구 반포대로 58, 105동 1204호" oninput="syncAll();">
+                <input type="text" class="input-box" id="in_buyer_addr" value="" oninput="syncAll();">
               </div>
             </div>
 
@@ -878,7 +877,7 @@ def build_full_html():
           <div class="section-body">
             <div class="field-row">
               <label class="field-label">총 매매예정금액 (원)</label>
-              <input type="number" class="input-box" id="in_total_price" value="1250000000" oninput="calcPriceBreakdown(); syncAll();">
+              <input type="number" class="input-box" id="in_total_price" value="" oninput="calcPriceBreakdown(); syncAll();">
             </div>
             <div class="field-row grid-3">
               <div>
@@ -887,11 +886,11 @@ def build_full_html():
               </div>
               <div>
                 <label class="field-label">토지 예정금액 (안분)</label>
-                <input type="text" class="input-box read-calc" id="in_land_price_display" value="233,280,000원" readonly>
+                <input type="text" class="input-box read-calc" id="in_land_price_display" value="" readonly>
               </div>
               <div>
                 <label class="field-label">건물 예정금액 (안분)</label>
-                <input type="text" class="input-box read-calc" id="in_bld_price_display" value="1,016,720,000원" readonly>
+                <input type="text" class="input-box read-calc" id="in_bld_price_display" value="" readonly>
               </div>
             </div>
           </div>
@@ -1017,11 +1016,11 @@ def build_full_html():
             <div class="field-row grid-2">
               <div>
                 <label class="field-label">잔금예정일</label>
-                <input type="date" class="input-box" id="in_balance_date" value="2026-12-30" oninput="syncAll();">
+                <input type="date" class="input-box" id="in_balance_date" value="" oninput="syncAll();">
               </div>
               <div>
                 <label class="field-label">입주예정일</label>
-                <input type="date" class="input-box" id="in_move_in_date" value="2026-12-30" oninput="syncAll();">
+                <input type="date" class="input-box" id="in_move_in_date" value="" oninput="syncAll();">
               </div>
             </div>
             <div class="field-row grid-2">
@@ -1140,79 +1139,250 @@ def build_full_html():
     let currentDealId = null;
     let currentZoom = 1.0;
 
-    // Presets database
-    const COMPLEX_PRESETS = {{
-      '목련두산2': {{
-        dong: '호계동',
-        jibun_main: '1054',
-        complex: '목련마을두산',
-        road_addr: '경기도 안양시 동안구 동안로 120',
-        total_land: '56123.4',
-        ratio_den: '56123.4',
-        ratio_num: '51.84',
-        yongdo: '제3종일반주거지역',
-        bld_type: '공동주택(아파트)',
-        bld_unit: '제601동 제601호',
-        official_price: '4500000',
-        exclusive_area: '101.42'
-      }},
-      '목련우성3': {{
-        dong: '호계동',
-        jibun_main: '1053-1',
-        complex: '목련마을우성3단지',
-        road_addr: '경기도 안양시 동안구 동안로 120',
-        total_land: '52140.0',
-        ratio_den: '52140.0',
-        ratio_num: '48.20',
-        yongdo: '제3종일반주거지역',
-        bld_type: '공동주택(아파트)',
-        bld_unit: '제302동 제504호',
-        official_price: '4450000',
-        exclusive_area: '84.95'
-      }},
-      '목련우성5': {{
-        dong: '호계동',
-        jibun_main: '1052',
-        complex: '목련마을우성5단지',
-        road_addr: '경기도 안양시 동안구 동안로 142',
-        total_land: '41200.0',
-        ratio_den: '41200.0',
-        ratio_num: '42.15',
-        yongdo: '제3종일반주거지역',
-        bld_type: '공동주택(아파트)',
-        bld_unit: '제501동 제702호',
-        official_price: '4400000',
-        exclusive_area: '74.80'
-      }},
-      '꿈마을건영': {{
-        dong: '귀인동',
-        jibun_main: '933',
-        complex: '꿈마을건영',
-        road_addr: '경기도 안양시 동안구 귀인로 193',
-        total_land: '48900.0',
-        ratio_den: '48900.0',
-        ratio_num: '55.30',
-        yongdo: '제3종일반주거지역',
-        bld_type: '공동주택(아파트)',
-        bld_unit: '제201동 제1003호',
-        official_price: '4600000',
-        exclusive_area: '101.90'
-      }},
-      '무궁화태영': {{
-        dong: '호계동',
-        jibun_main: '1057',
-        complex: '무궁화태영',
-        road_addr: '경기도 안양시 동안구 동안로 98',
-        total_land: '32000.0',
-        ratio_den: '32000.0',
-        ratio_num: '38.50',
-        yongdo: '제3종일반주거지역',
-        bld_type: '공동주택(아파트)',
-        bld_unit: '제101동 제402호',
-        official_price: '4100000',
-        exclusive_area: '59.85'
+    // ========================================================
+    // 동적 아파트 단지 정보 관리 (localStorage & DealStore 연동)
+    // ========================================================
+    function getPresets() {{
+      return (typeof DealStore !== 'undefined' && DealStore.getComplexPresets)
+        ? DealStore.getComplexPresets()
+        : [];
+    }}
+
+    function renderPermitComplexChips() {{
+      const container = document.getElementById('permit_complex_chips');
+      if (!container) return;
+      const presets = getPresets();
+      container.innerHTML = '';
+      presets.forEach(p => {{
+        const span = document.createElement('span');
+        span.className = 'preset-chip';
+        span.textContent = p.chipLabel || p.name || p.complex;
+        span.onclick = () => applyComplexPresetById(p.id);
+        container.appendChild(span);
+      }});
+    }}
+
+    function applyComplexPresetById(id) {{
+      const presets = getPresets();
+      const p = presets.find(item => item.id === id);
+      if (!p) return;
+
+      document.getElementById('in_dong').value = p.dong || '호계동';
+      document.getElementById('in_jibun_main').value = p.jibunMain || '';
+      document.getElementById('in_jibun_sub').value = p.jibunSub || '';
+      document.getElementById('in_complex').value = p.complex || '';
+      document.getElementById('in_road_addr').value = p.roadAddr || '';
+      document.getElementById('in_land_total_area').value = p.totalLand || p.ratioDen || '';
+      document.getElementById('in_land_ratio_den').value = p.ratioDen || '';
+      document.getElementById('in_land_ratio_num').value = p.ratioNum || '';
+      document.getElementById('in_yongdo_area').value = p.yongdo || '제3종일반주거지역';
+      document.getElementById('in_bld_type').value = p.bldType || p.bldUsage || '공동주택(아파트)';
+      if (p.bldUnit) document.getElementById('in_bld_unit').value = p.bldUnit;
+      if (p.officialPrice) document.getElementById('in_land_official_price').value = p.officialPrice;
+      document.getElementById('in_exclusive_area').value = p.exclusiveArea || '';
+
+      calcJibunFull();
+      calcLandShare();
+      calcPriceBreakdown();
+      syncAll();
+      showToast(`🏢 '${{p.chipLabel || p.name}}' 프리셋이 적용되었습니다.`);
+    }}
+
+    function openComplexPresetModal() {{
+      const modal = document.getElementById('modal_complex_presets');
+      if (modal) {{
+        modal.style.display = 'flex';
+        renderComplexModalList();
+        hidePresetForm();
       }}
-    }};
+    }}
+
+    function closeComplexPresetModal() {{
+      const modal = document.getElementById('modal_complex_presets');
+      if (modal) modal.style.display = 'none';
+      hidePresetForm();
+    }}
+
+    function renderComplexModalList() {{
+      const tbody = document.getElementById('preset_table_body');
+      if (!tbody) return;
+      const presets = getPresets();
+
+      if (presets.length === 0) {{
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">등록된 단지 정보가 없습니다.</td></tr>';
+        return;
+      }}
+
+      tbody.innerHTML = presets.map(p => `
+        <tr style="border-bottom:1px solid var(--border, #e2e8f0);">
+          <td style="padding:8px 10px;">
+            <div style="font-weight:700; color:var(--text, #1e293b);">${{p.chipLabel || p.name}}</div>
+            <div style="font-size:10.5px; color:var(--text-muted, #64748b);">${{p.complex || '-'}}</div>
+          </td>
+          <td style="padding:8px 10px;">
+            <div>${{p.dong || ''}} ${{p.jibunMain || ''}}${{p.jibunSub ? '-' + p.jibunSub : ''}}</div>
+            <div style="font-size:10.5px; color:var(--text-muted, #64748b);">${{p.roadAddr || p.landAddr || '-'}}</div>
+          </td>
+          <td style="padding:8px 10px;">
+            <div>대지권: ${{p.landRatioStr || (p.ratioDen ? p.ratioDen + '분의 ' + p.ratioNum : '-')}}</div>
+            <div style="font-size:10.5px; color:#0369a1; font-weight:600;">전용: ${{p.exclusiveArea || '-'}}㎡</div>
+          </td>
+          <td style="padding:8px 10px; text-align:right;">
+            <div style="display:inline-flex; gap:4px;">
+              <button type="button" class="btn btn-outline" onclick="applyComplexPresetById('${{p.id}}'); closeComplexPresetModal();" style="padding:2px 6px; font-size:10.5px; color:#0284c7; height:22px;">적용</button>
+              <button type="button" class="btn btn-outline" onclick="showPresetForm('${{p.id}}')" style="padding:2px 6px; font-size:10.5px; height:22px;">수정</button>
+              <button type="button" class="btn btn-outline" onclick="deletePreset('${{p.id}}')" style="padding:2px 6px; font-size:10.5px; color:#ef4444; height:22px;">삭제</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }}
+
+    function showPresetForm(idOrNew) {{
+      const box = document.getElementById('preset_edit_box');
+      if (!box) return;
+      box.style.display = 'block';
+
+      if (idOrNew === 'new') {{
+        document.getElementById('preset_form_title').textContent = '➕ 새로운 단지 정보 등록';
+        document.getElementById('pf_id').value = '';
+        document.getElementById('pf_chipLabel').value = '';
+        document.getElementById('pf_complex').value = '';
+        document.getElementById('pf_dong').value = '호계동';
+        document.getElementById('pf_jibunMain').value = '';
+        document.getElementById('pf_jibunSub').value = '';
+        document.getElementById('pf_roadAddr').value = '';
+        document.getElementById('pf_ratioDen').value = '';
+        document.getElementById('pf_ratioNum').value = '';
+        document.getElementById('pf_exclusiveArea').value = '';
+        document.getElementById('pf_officialPrice').value = '4500000';
+        document.getElementById('pf_yongdo').value = '제3종일반주거지역';
+        document.getElementById('pf_bldType').value = '공동주택(아파트)';
+      }} else {{
+        const presets = getPresets();
+        const p = presets.find(item => item.id === idOrNew);
+        if (!p) return;
+        document.getElementById('preset_form_title').textContent = `✏️ '${{p.name || p.chipLabel}}' 단지 정보 수정`;
+        document.getElementById('pf_id').value = p.id;
+        document.getElementById('pf_chipLabel').value = p.chipLabel || p.name || '';
+        document.getElementById('pf_complex').value = p.complex || '';
+        document.getElementById('pf_dong').value = p.dong || '';
+        document.getElementById('pf_jibunMain').value = p.jibunMain || '';
+        document.getElementById('pf_jibunSub').value = p.jibunSub || '';
+        document.getElementById('pf_roadAddr').value = p.roadAddr || p.landAddr || '';
+        document.getElementById('pf_ratioDen').value = p.ratioDen || p.totalLand || '';
+        document.getElementById('pf_ratioNum').value = p.ratioNum || '';
+        document.getElementById('pf_exclusiveArea').value = p.exclusiveArea || '';
+        document.getElementById('pf_officialPrice').value = p.officialPrice || '4500000';
+        document.getElementById('pf_yongdo').value = p.yongdo || '제3종일반주거지역';
+        document.getElementById('pf_bldType').value = p.bldType || '공동주택(아파트)';
+      }}
+    }}
+
+    function hidePresetForm() {{
+      const box = document.getElementById('preset_edit_box');
+      if (box) box.style.display = 'none';
+    }}
+
+    function savePresetFromForm() {{
+      const chipLabel = document.getElementById('pf_chipLabel').value.trim();
+      const complex = document.getElementById('pf_complex').value.trim();
+      if (!chipLabel && !complex) {{
+        alert('단지 표기명 또는 단지명을 입력해주세요.');
+        return;
+      }}
+
+      const presets = getPresets();
+      const id = document.getElementById('pf_id').value;
+      const dong = document.getElementById('pf_dong').value.trim();
+      const jibunMain = document.getElementById('pf_jibunMain').value.trim();
+      const jibunSub = document.getElementById('pf_jibunSub').value.trim();
+      let roadAddr = document.getElementById('pf_roadAddr').value.trim();
+
+      if (!roadAddr && dong && jibunMain) {{
+        roadAddr = `경기도 안양시 동안구 ${{dong}} ${{jibunMain}}${{jibunSub ? '-' + jibunSub : ''}}`;
+      }}
+
+      const ratioDen = document.getElementById('pf_ratioDen').value.trim();
+      const ratioNum = document.getElementById('pf_ratioNum').value.trim();
+      const exclusiveArea = document.getElementById('pf_exclusiveArea').value.trim();
+      const officialPrice = document.getElementById('pf_officialPrice').value.trim() || '4500000';
+      const yongdo = document.getElementById('pf_yongdo').value.trim() || '제3종일반주거지역';
+      const bldType = document.getElementById('pf_bldType').value.trim() || '공동주택(아파트)';
+
+      const presetData = {{
+        id: id || ('preset_' + Date.now()),
+        name: chipLabel || complex,
+        chipLabel: chipLabel || complex,
+        complex: complex,
+        dong: dong,
+        jibunMain: jibunMain,
+        jibunSub: jibunSub,
+        roadAddr: roadAddr,
+        landAddr: roadAddr,
+        bldAddr: roadAddr,
+        landRatioStr: (ratioDen && ratioNum) ? `${{ratioDen}}분의 ${{ratioNum}}` : '',
+        ratioDen: ratioDen,
+        ratioNum: ratioNum,
+        totalLand: ratioDen,
+        exclusiveArea: exclusiveArea,
+        officialPrice: officialPrice,
+        yongdo: yongdo,
+        bldStructure: '철근콘크리트조',
+        bldUsage: '아파트',
+        bldType: bldType
+      }};
+
+      if (id) {{
+        const idx = presets.findIndex(item => item.id === id);
+        if (idx !== -1) presets[idx] = presetData;
+        else presets.push(presetData);
+      }} else {{
+        presets.push(presetData);
+      }}
+
+      if (typeof DealStore !== 'undefined' && DealStore.saveComplexPresets) {{
+        DealStore.saveComplexPresets(presets);
+      }}
+
+      renderPermitComplexChips();
+      renderComplexModalList();
+      hidePresetForm();
+      showToast(`💾 단지 정보 '${{presetData.chipLabel}}'가 저장되었습니다.`);
+    }}
+
+    function deletePreset(id) {{
+      if (!confirm('이 단지 정보를 삭제하시겠습니까?')) return;
+      let presets = getPresets();
+      presets = presets.filter(item => item.id !== id);
+      if (typeof DealStore !== 'undefined' && DealStore.saveComplexPresets) {{
+        DealStore.saveComplexPresets(presets);
+      }}
+      renderPermitComplexChips();
+      renderComplexModalList();
+      showToast('🗑️ 단지 정보가 삭제되었습니다.');
+    }}
+
+    function resetPresetsToDefault() {{
+      if (!confirm('기본 단지 정보(평촌 목련마을 4개 단지)로 복원하시겠습니까?\n(사용자가 추가/수정한 단지 정보는 초기화됩니다.)')) return;
+      if (typeof DealStore !== 'undefined' && DealStore.resetComplexPresets) {{
+        DealStore.resetComplexPresets();
+      }}
+      renderPermitComplexChips();
+      renderComplexModalList();
+      showToast('↺ 기본 단지 정보로 복원되었습니다.');
+    }}
+
+    function resetPermitInputsToEmpty() {{
+      if (confirm('현재 작성 중인 모든 토지거래허가 신청 데이터를 초기화하시겠습니까?\n\n※ 중개사무소 정보는 유지됩니다.')) {{
+        currentDealId = null;
+        const sel = document.getElementById('dealSelect');
+        if (sel) sel.value = '';
+        const empty = (typeof DealStore !== 'undefined') ? DealStore.createEmptyDeal() : {{}};
+        applyDealToInputs(empty);
+        showToast('🔄 모든 입력 데이터가 깨끗하게 초기화되었습니다.');
+      }}
+    }}
 
     function formatNumber(num) {{
       if (num === null || num === undefined || num === '') return '';
@@ -1963,100 +2133,107 @@ def build_full_html():
         }}
       }}
 
-      if (deal.dealDate) document.getElementById('in_date').value = deal.dealDate;
-      if (deal.dong) document.getElementById('in_dong').value = deal.dong;
-      if (deal.jibunMain) document.getElementById('in_jibun_main').value = deal.jibunMain;
-      if (deal.jibunSub) document.getElementById('in_jibun_sub').value = deal.jibunSub;
-      if (deal.complex) document.getElementById('in_complex').value = deal.complex;
-      if (deal.unit) document.getElementById('in_bld_unit').value = deal.unit;
-      if (deal.addrRoad) document.getElementById('in_road_addr').value = deal.addrRoad;
-      if (deal.addrFull) document.getElementById('in_addr_full').value = deal.addrFull;
+      // 1. 매물 정보 (비어있으면 깨끗하게 빈값 바인딩)
+      document.getElementById('in_date').value = deal.dealDate || '';
+      document.getElementById('in_dong').value = deal.dong || p.dong || '';
+      document.getElementById('in_jibun_main').value = deal.jibunMain || p.jibunMain || '';
+      document.getElementById('in_jibun_sub').value = deal.jibunSub || p.jibunSub || '';
+      document.getElementById('in_complex').value = deal.complex || p.complex || '';
+      document.getElementById('in_bld_unit').value = deal.unit || (p.dongNum ? `제${{p.dongNum}}동 제${{p.hoNum || ''}}호` : '');
+      document.getElementById('in_road_addr').value = deal.addrRoad || p.roadAddr || p.landAddr || '';
+      document.getElementById('in_addr_full').value = deal.addrFull || p.bldAddr || '';
 
-      if (deal.landCategory) document.getElementById('in_jimok_legal').value = deal.landCategory;
-      if (deal.landArea) document.getElementById('in_land_total_area').value = deal.landArea;
-      if (deal.landRatioDen) document.getElementById('in_land_ratio_den').value = deal.landRatioDen;
-      if (deal.landRatioNum) document.getElementById('in_land_ratio_num').value = deal.landRatioNum;
-      if (deal.buildingArea) document.getElementById('in_exclusive_area').value = deal.buildingArea;
-      if (deal.zoning) document.getElementById('in_yongdo_area').value = deal.zoning;
+      document.getElementById('in_jimok_legal').value = deal.landCategory || p.landCategoryLegal || '대';
+      document.getElementById('in_jimok_actual').value = p.landCategoryActual || '대';
+      document.getElementById('in_land_total_area').value = deal.landArea || p.landAreaTotal || p.totalLand || '';
+      document.getElementById('in_land_ratio_den').value = deal.landRatioDen || p.landRatioDen || '';
+      document.getElementById('in_land_ratio_num').value = deal.landRatioNum || p.landRatioNum || '';
+      document.getElementById('in_exclusive_area').value = deal.buildingArea || p.exclusiveArea || '';
+      document.getElementById('in_yongdo_area').value = deal.zoning || p.zoning || '제3종일반주거지역';
 
-      // Seller
+      // 2. 매도인 정보
       const sellersList = (deal.sellers && deal.sellers.length > 0) ? deal.sellers : ((deal.parties && deal.parties.sellers) || []);
-      if (sellersList.length > 0) {{
-        const s1 = sellersList[0];
-        document.getElementById('in_seller_name').value = s1.name || '';
-        document.getElementById('in_seller_rrn').value = s1.rrn || '';
-        document.getElementById('in_seller_tel').value = s1.tel || '';
-        document.getElementById('in_seller_addr').value = s1.addr || '';
+      const s1 = sellersList[0] || {{}};
+      const s2 = sellersList[1] || null;
 
-        if (sellersList.length > 1) {{
-          const s2 = sellersList[1];
-          document.getElementById('in_seller2_name').value = s2.name || '';
-          document.getElementById('in_seller2_rrn').value = s2.rrn || '';
-          document.getElementById('in_seller2_tel').value = s2.tel || '';
-          document.getElementById('in_seller2_addr').value = s2.addr || '';
-          document.getElementById('seller2_group').style.display = 'block';
-        }} else {{
-          document.getElementById('seller2_group').style.display = 'none';
-        }}
+      document.getElementById('in_seller_name').value = s1.name || '';
+      document.getElementById('in_seller_rrn').value = s1.rrn || '';
+      document.getElementById('in_seller_tel').value = s1.tel || '';
+      document.getElementById('in_seller_addr').value = s1.addr || '';
+
+      if (s2 && (s2.name || s2.rrn || s2.tel || s2.addr)) {{
+        document.getElementById('in_seller2_name').value = s2.name || '';
+        document.getElementById('in_seller2_rrn').value = s2.rrn || '';
+        document.getElementById('in_seller2_tel').value = s2.tel || '';
+        document.getElementById('in_seller2_addr').value = s2.addr || '';
+        document.getElementById('seller2_group').style.display = 'block';
+      }} else {{
+        document.getElementById('in_seller2_name').value = '';
+        document.getElementById('in_seller2_rrn').value = '';
+        document.getElementById('in_seller2_tel').value = '';
+        document.getElementById('in_seller2_addr').value = '';
+        document.getElementById('seller2_group').style.display = 'none';
       }}
 
-      // Buyer
+      // 3. 매수인 정보
       const buyersList = (deal.buyers && deal.buyers.length > 0) ? deal.buyers : ((deal.parties && deal.parties.buyers) || []);
-      if (buyersList.length > 0) {{
-        const b1 = buyersList[0];
-        document.getElementById('in_buyer_name').value = b1.name || '';
-        document.getElementById('in_buyer_rrn').value = b1.rrn || '';
-        document.getElementById('in_buyer_tel').value = b1.tel || '';
-        document.getElementById('in_buyer_addr').value = b1.addr || '';
+      const b1 = buyersList[0] || {{}};
+      const b2 = buyersList[1] || null;
 
-        if (buyersList.length > 1) {{
-          const b2 = buyersList[1];
-          document.getElementById('in_buyer2_name').value = b2.name || '';
-          document.getElementById('in_buyer2_rrn').value = b2.rrn || '';
-          document.getElementById('in_buyer2_tel').value = b2.tel || '';
-          document.getElementById('in_buyer2_addr').value = b2.addr || '';
-          document.getElementById('buyer2_group').style.display = 'block';
+      document.getElementById('in_buyer_name').value = b1.name || '';
+      document.getElementById('in_buyer_rrn').value = b1.rrn || '';
+      document.getElementById('in_buyer_tel').value = b1.tel || '';
+      document.getElementById('in_buyer_addr').value = b1.addr || '';
 
-          // Automatically enable 3P-2 and 7P-2
-          const chk3 = document.getElementById('chk_enable_buyer2_p3');
-          if (chk3) {{ chk3.checked = true; toggleBuyer2P3(true); }}
-          const chk7 = document.getElementById('chk_enable_buyer2_p7');
-          if (chk7) {{ chk7.checked = true; toggleBuyer2P7(true); }}
-        }} else {{
-          document.getElementById('buyer2_group').style.display = 'none';
-        }}
+      if (b2 && (b2.name || b2.rrn || b2.tel || b2.addr)) {{
+        document.getElementById('in_buyer2_name').value = b2.name || '';
+        document.getElementById('in_buyer2_rrn').value = b2.rrn || '';
+        document.getElementById('in_buyer2_tel').value = b2.tel || '';
+        document.getElementById('in_buyer2_addr').value = b2.addr || '';
+        document.getElementById('buyer2_group').style.display = 'block';
+
+        const chk3 = document.getElementById('chk_enable_buyer2_p3');
+        if (chk3) {{ chk3.checked = true; toggleBuyer2P3(true); }}
+        const chk7 = document.getElementById('chk_enable_buyer2_p7');
+        if (chk7) {{ chk7.checked = true; toggleBuyer2P7(true); }}
+      }} else {{
+        document.getElementById('in_buyer2_name').value = '';
+        document.getElementById('in_buyer2_rrn').value = '';
+        document.getElementById('in_buyer2_tel').value = '';
+        document.getElementById('in_buyer2_addr').value = '';
+        document.getElementById('buyer2_group').style.display = 'none';
+
+        const chk3 = document.getElementById('chk_enable_buyer2_p3');
+        if (chk3) {{ chk3.checked = false; toggleBuyer2P3(false); }}
+        const chk7 = document.getElementById('chk_enable_buyer2_p7');
+        if (chk7) {{ chk7.checked = false; toggleBuyer2P7(false); }}
       }}
 
-      // Price
-      if (deal.totalPrice) {{
-        document.getElementById('in_total_price').value = deal.totalPrice;
-      }}
-      if (deal.balanceDate) {{
-        document.getElementById('in_balance_date').value = deal.balanceDate;
-      }}
+      // 4. 금액
+      const f = deal.financial || {{}};
+      document.getElementById('in_total_price').value = deal.totalPrice || f.totalPrice || '';
+      document.getElementById('in_balance_date').value = deal.balanceDate || f.balanceDate || '';
 
-      // Funding
-      if (deal.funding) {{
-        if (deal.funding.deposit) document.getElementById('in_fund_deposit').value = deal.funding.deposit;
-        if (deal.funding.stocks) document.getElementById('in_fund_stocks').value = deal.funding.stocks;
-        if (deal.funding.gift) document.getElementById('in_fund_gift').value = deal.funding.gift;
-        if (deal.funding.realestate) document.getElementById('in_fund_realestate').value = deal.funding.realestate;
-        if (deal.funding.loanBank) document.getElementById('in_fund_loan_bank').value = deal.funding.loanBank;
-        if (deal.funding.borrow) document.getElementById('in_fund_borrow').value = deal.funding.borrow;
-      }}
+      // 5. 자금조달
+      const funding = deal.funding || {{}};
+      document.getElementById('in_fund_deposit').value = funding.deposit || '';
+      document.getElementById('in_fund_stocks').value = funding.stocks || '';
+      document.getElementById('in_fund_gift').value = funding.gift || '';
+      document.getElementById('in_fund_realestate').value = funding.realestate || '';
+      document.getElementById('in_fund_loan_bank').value = funding.loanBank || '';
+      document.getElementById('in_fund_borrow').value = funding.borrow || '';
 
-      // Usage Plan
-      if (deal.usagePlan) {{
-        if (deal.usagePlan.purpose) document.getElementById('in_purpose').value = deal.usagePlan.purpose;
-        if (deal.usagePlan.moveInDate) document.getElementById('in_move_in_date').value = deal.usagePlan.moveInDate;
-        if (deal.usagePlan.occupantType) document.getElementById('in_occupant_type').value = deal.usagePlan.occupantType;
-        if (deal.usagePlan.tenantVacate) document.getElementById('in_tenant_vacate_date').value = deal.usagePlan.tenantVacate;
-      }}
+      // 6. 이용계획
+      const usage = deal.usagePlan || deal.permit || {{}};
+      document.getElementById('in_purpose').value = usage.purpose || '주거용 (세대원 전원 실거주 자가주택 취득)';
+      document.getElementById('in_move_in_date').value = usage.moveInDate || deal.balanceDate || f.balanceDate || '';
+      document.getElementById('in_occupant_type').value = usage.occupantType || '매도인';
+      document.getElementById('in_tenant_vacate_date').value = usage.tenantVacate || '';
 
-      // Update agreement link
+      // 약정서 링크 업데이트
       const linkEl = document.getElementById('linkToAgreement');
       if (linkEl) {{
-        linkEl.href = `../agreement/index.html?dealId=${{deal.id}}`;
+        linkEl.href = deal.id ? `../agreement/index.html?dealId=${{deal.id}}` : '../agreement/index.html';
       }}
 
       calcJibunFull();
@@ -2166,6 +2343,7 @@ def build_full_html():
 
       const saved = DealStore.saveDeal(deal);
       currentDealId = saved.id;
+      renderPermitComplexChips();
       initPermitDealDropdown();
       document.getElementById('dealSelect').value = saved.id;
       showToast(`💾 '${{saved.title}}' 거래가 저장되었습니다.`);
@@ -2248,6 +2426,126 @@ def build_full_html():
       initInlineSync();
     }});
   </script>
+
+  <!-- 아파트 단지별 정보 관리 및 수정 모달 -->
+  <div id="modal_complex_presets" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:var(--card-bg, #ffffff); color:var(--text, #1e293b); width:100%; max-width:760px; max-height:90vh; border-radius:12px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); display:flex; flex-direction:column; overflow:hidden; border:1px solid var(--border, #cbd5e1);">
+      <div style="padding:14px 18px; border-bottom:1px solid var(--border, #e2e8f0); display:flex; align-items:center; justify-content:space-between; background:var(--header-bg, #f8fafc);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:18px;">🏢</span>
+          <span style="font-weight:700; font-size:14px;">아파트 단지별 정보 관리 및 수정</span>
+          <span style="font-size:11px; background:#e0f2fe; color:#0369a1; padding:2px 7px; border-radius:10px; font-weight:600;">원클릭 프리셋</span>
+        </div>
+        <button type="button" onclick="closeComplexPresetModal()" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:var(--text-muted, #64748b);">✕</button>
+      </div>
+
+      <div style="padding:16px; overflow-y:auto; flex:1;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <div style="font-size:12px; color:var(--text-muted, #64748b);">
+            단지를 선택하면 신청서와 각 서식의 소재지, 대지권, 면적 등이 자동 기재됩니다.
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn btn-outline" onclick="showPresetForm('new')" style="color:var(--primary, #0284c7); font-weight:600; font-size:11px; padding:3px 8px;">
+              ➕ 새 단지 추가
+            </button>
+            <button type="button" class="btn btn-outline" onclick="resetPresetsToDefault()" style="color:#64748b; font-size:11px; padding:3px 8px;">
+              ↺ 기본 단지 복원
+            </button>
+          </div>
+        </div>
+
+        <!-- 단지 등록/수정 폼 -->
+        <div id="preset_edit_box" style="display:none; background:var(--bg-secondary, #f0fdf4); border:1px solid #bbf7d0; border-radius:8px; padding:12px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span id="preset_form_title" style="font-weight:700; font-size:12.5px; color:#15803d;">단지 정보 등록/수정</span>
+            <button type="button" onclick="hidePresetForm()" style="border:none; background:transparent; font-size:13px; cursor:pointer; color:#64748b;">닫기 ✕</button>
+          </div>
+          <input type="hidden" id="pf_id" />
+          <div class="field-row grid-2">
+            <div>
+              <label class="field-label">칩 표기명 (버튼 라벨)</label>
+              <input type="text" id="pf_chipLabel" class="input-box" placeholder="예: 목련두산 2단지 (1056)" />
+            </div>
+            <div>
+              <label class="field-label">단지명 (정식)</label>
+              <input type="text" id="pf_complex" class="input-box" placeholder="예: 목련두산아파트" />
+            </div>
+          </div>
+          <div class="field-row grid-3">
+            <div>
+              <label class="field-label">법정동</label>
+              <input type="text" id="pf_dong" class="input-box" placeholder="예: 호계동" />
+            </div>
+            <div>
+              <label class="field-label">본번</label>
+              <input type="text" id="pf_jibunMain" class="input-box" placeholder="예: 1056" />
+            </div>
+            <div>
+              <label class="field-label">부번</label>
+              <input type="text" id="pf_jibunSub" class="input-box" placeholder="예: 3" />
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">도로명 주소</label>
+            <input type="text" id="pf_roadAddr" class="input-box" placeholder="예: 경기도 안양시 동안구 동안로 120" />
+          </div>
+          <div class="field-row grid-3">
+            <div>
+              <label class="field-label">1필지 총면적/분모(㎡)</label>
+              <input type="text" id="pf_ratioDen" class="input-box" placeholder="예: 56123.4" />
+            </div>
+            <div>
+              <label class="field-label">대지권 지분 분자(㎡)</label>
+              <input type="text" id="pf_ratioNum" class="input-box" placeholder="예: 51.84" />
+            </div>
+            <div>
+              <label class="field-label">전용면적(㎡)</label>
+              <input type="text" id="pf_exclusiveArea" class="input-box" placeholder="예: 84.95" />
+            </div>
+          </div>
+          <div class="field-row grid-3">
+            <div>
+              <label class="field-label">공시지가 단가(원/㎡)</label>
+              <input type="text" id="pf_officialPrice" class="input-box" value="4500000" />
+            </div>
+            <div>
+              <label class="field-label">용도지역</label>
+              <input type="text" id="pf_yongdo" class="input-box" value="제3종일반주거지역" />
+            </div>
+            <div>
+              <label class="field-label">건물 용도/구분</label>
+              <input type="text" id="pf_bldType" class="input-box" value="공동주택(아파트)" />
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+            <button type="button" class="btn btn-outline" onclick="hidePresetForm()" style="font-size:11px;">취소</button>
+            <button type="button" class="btn btn-success" onclick="savePresetFromForm()" style="font-size:11px;">💾 단지 정보 저장</button>
+          </div>
+        </div>
+
+        <!-- 단지 목록 테이블 -->
+        <div style="border:1px solid var(--border, #e2e8f0); border-radius:8px; overflow:hidden;">
+          <table style="width:100%; border-collapse:collapse; font-size:11.5px; text-align:left;">
+            <thead>
+              <tr style="background:var(--header-bg, #f1f5f9); border-bottom:1px solid var(--border, #cbd5e1); font-weight:700;">
+                <th style="padding:8px 10px; width:28%;">단지 / 칩 표기</th>
+                <th style="padding:8px 10px; width:22%;">소재지 지번</th>
+                <th style="padding:8px 10px; width:25%;">대지권 / 전용면적</th>
+                <th style="padding:8px 10px; width:25%; text-align:right;">관리 / 적용</th>
+              </tr>
+            </thead>
+            <tbody id="preset_table_body">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="padding:10px 16px; border-top:1px solid var(--border, #e2e8f0); display:flex; justify-content:flex-end; background:var(--header-bg, #f8fafc);">
+        <button type="button" class="btn btn-outline" onclick="closeComplexPresetModal()">닫기</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
 """

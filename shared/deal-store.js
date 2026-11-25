@@ -76,14 +76,151 @@
     addr: ''
   };
 
+  const PRESETS_STORAGE_KEY = 'realty_complex_presets';
+
+  const DEFAULT_COMPLEX_PRESETS = [
+    {
+      id: 'mokryeon_2',
+      name: '목련두산 2단지',
+      chipLabel: '목련두산 2단지 (1056)',
+      dong: '호계동',
+      jibunMain: '1056',
+      jibunSub: '',
+      complex: '목련두산아파트',
+      roadAddr: '경기도 안양시 동안구 동안로 120',
+      landAddr: '경기도 안양시 동안구 호계동 1056',
+      bldAddr: '경기도 안양시 동안구 동안로 120 목련두산아파트',
+      dongNum: '201',
+      hoNum: '1502',
+      bldUnit: '제201동 제1502호',
+      totalLand: '56123.4',
+      ratioDen: '56123.4',
+      ratioNum: '51.84',
+      landRatioStr: '56123.4분의 51.84',
+      exclusiveArea: '84.95',
+      officialPrice: '4500000',
+      yongdo: '제3종일반주거지역',
+      bldStructure: '철근콘크리트조',
+      bldUsage: '아파트',
+      bldType: '공동주택(아파트)'
+    },
+    {
+      id: 'mokryeon_3',
+      name: '목련우성 3단지',
+      chipLabel: '목련우성 3단지 (1052-3)',
+      dong: '호계동',
+      jibunMain: '1052',
+      jibunSub: '3',
+      complex: '목련우성아파트',
+      roadAddr: '경기도 안양시 동안구 평촌대로 180',
+      landAddr: '경기도 안양시 동안구 호계동 1052-3',
+      bldAddr: '경기도 안양시 동안구 호계동 1052-3 목련아파트',
+      dongNum: '308',
+      hoNum: '506',
+      bldUnit: '제308동 제506호',
+      totalLand: '30467.9',
+      ratioDen: '30467.9',
+      ratioNum: '35.376',
+      landRatioStr: '30467.9분의 35.376',
+      exclusiveArea: '56.7',
+      officialPrice: '4500000',
+      yongdo: '제3종일반주거지역',
+      bldStructure: '철근콘크리트조',
+      bldUsage: '아파트',
+      bldType: '공동주택(아파트)'
+    },
+    {
+      id: 'mokryeon_5',
+      name: '목련선경 5단지',
+      chipLabel: '목련선경 5단지 (1053)',
+      dong: '호계동',
+      jibunMain: '1053',
+      jibunSub: '',
+      complex: '목련선경아파트',
+      roadAddr: '경기도 안양시 동안구 동안로 110',
+      landAddr: '경기도 안양시 동안구 호계동 1053',
+      bldAddr: '경기도 안양시 동안구 동안로 110 목련선경아파트',
+      dongNum: '502',
+      hoNum: '801',
+      bldUnit: '제502동 제801호',
+      totalLand: '31245.0',
+      ratioDen: '31245.0',
+      ratioNum: '42.15',
+      landRatioStr: '31245.0분의 42.15',
+      exclusiveArea: '74.2',
+      officialPrice: '4500000',
+      yongdo: '제3종일반주거지역',
+      bldStructure: '철근콘크리트조',
+      bldUsage: '아파트',
+      bldType: '공동주택(아파트)'
+    },
+    {
+      id: 'mokryeon_6',
+      name: '목련두산 6단지',
+      chipLabel: '목련두산 6단지 (1054-6)',
+      dong: '호계동',
+      jibunMain: '1054',
+      jibunSub: '6',
+      complex: '목련두산아파트',
+      roadAddr: '경기도 안양시 동안구 평촌대로179번길 27',
+      landAddr: '경기도 안양시 동안구 호계동 1054-6',
+      bldAddr: '경기도 안양시 동안구 평촌대로179번길 27 목련두산아파트',
+      dongNum: '603',
+      hoNum: '402',
+      bldUnit: '제603동 제402호',
+      totalLand: '29263.2',
+      ratioDen: '29263.2',
+      ratioNum: '54.395',
+      landRatioStr: '29263.2분의 54.395',
+      exclusiveArea: '101.94',
+      officialPrice: '4500000',
+      yongdo: '제3종일반주거지역',
+      bldStructure: '철근콘크리트조',
+      bldUsage: '아파트',
+      bldType: '공동주택(아파트)'
+    }
+  ];
+
   const DealStore = {
     STORAGE_KEY: STORAGE_KEY,
+    PRESETS_STORAGE_KEY: PRESETS_STORAGE_KEY,
     DEFAULT_AGENT: DEFAULT_AGENT,
     DEFAULT_CO_AGENT: DEFAULT_CO_AGENT,
     DEAL_STAGES: DEAL_STAGES,
+    DEFAULT_COMPLEX_PRESETS: DEFAULT_COMPLEX_PRESETS,
+
+    getComplexPresets: function () {
+      try {
+        const raw = localStorage.getItem(PRESETS_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {
+        console.error('[DealStore] getComplexPresets error:', e);
+      }
+      return JSON.parse(JSON.stringify(DEFAULT_COMPLEX_PRESETS));
+    },
+
+    saveComplexPresets: function (list) {
+      try {
+        localStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(list));
+        return true;
+      } catch (e) {
+        console.error('[DealStore] saveComplexPresets error:', e);
+        return false;
+      }
+    },
+
+    resetComplexPresets: function () {
+      try {
+        localStorage.removeItem(PRESETS_STORAGE_KEY);
+      } catch (e) { }
+      return JSON.parse(JSON.stringify(DEFAULT_COMPLEX_PRESETS));
+    },
 
     /**
-     * 신규 거래 기본 데이터 템플릿 생성 (엑셀 서식 기본값 반영)
+     * 신규 거래 기본 데이터 템플릿 생성 (순수 빈 서식)
      */
     createEmptyDeal: function () {
       const today = new Date();
@@ -103,22 +240,22 @@
         // 1. 부동산의 표시 (토지 및 건축물)
         property: {
           // 토지
-          landAddr: '경기도 안양시 동안구 호계동 1052-3',
-          landAreaTotal: 30467.9,
-          landRatioNum: 35.376,
-          landRatioDen: 30467.9,
-          landRatioStr: '30467.9분의 35.376',
+          landAddr: '',
+          landAreaTotal: '',
+          landRatioNum: '',
+          landRatioDen: '',
+          landRatioStr: '',
           landCategoryLegal: '대',
           landCategoryActual: '대',
-          landUnitPrice: 10500000,
+          landUnitPrice: 0,
           zoning: '제3종일반주거지역',
           landUseStatus: '주거용',
           rightsStatus: '소유권',
 
           // 건축물
-          bldAddr: '경기도 안양시 동안구 호계동 1052-3 목련아파트 308동 506호',
-          exclusiveArea: 56.7,
-          commonArea: 18.5,
+          bldAddr: '',
+          exclusiveArea: '',
+          commonArea: '',
           bldStructure: '철근콘크리트조',
           bldUsage: '아파트',
           bldType: '공동주택',
@@ -128,34 +265,34 @@
           sido: '경기도',
           sgg: '안양시 동안구',
           dong: '호계동',
-          jibunMain: '1052',
-          jibunSub: '3',
+          jibunMain: '',
+          jibunSub: '',
           jibunExtra: '',
-          complex: '목련두산아파트',
-          dongNum: '308',
-          hoNum: '506',
-          roadAddr: '경기도 안양시 동안구 평촌대로179번길 27',
-          addrFull: '경기도 안양시 동안구 호계동 1052-3 목련아파트 308동 506호',
-          landShare: 35.38
+          complex: '',
+          dongNum: '',
+          hoNum: '',
+          roadAddr: '',
+          addrFull: '',
+          landShare: ''
         },
 
         // 2. 당사자 정보 (소유자 및 매수약정인 각각 명의자1, 명의자2 공동명의 지원)
         parties: {
           sellers: [
             {
-              name: '홍길동',
-              rrn: '750101-1234567',
-              tel: '010-1234-5678',
-              addr: '경기도 안양시 동안구 동안로 120, 101동 202호',
+              name: '',
+              rrn: '',
+              tel: '',
+              addr: '',
               share: '1/1'
             }
           ],
           buyers: [
             {
-              name: '김철수',
-              rrn: '750101-1234567',
-              tel: '010-9876-5432',
-              addr: '서울특별시 서초구 서초대로 50, 203동 501호',
+              name: '',
+              rrn: '',
+              tel: '',
+              addr: '',
               share: '1/1'
             }
           ]
@@ -164,38 +301,30 @@
         // 3. 계약내용 및 대금 지급일정
         financial: {
           // 약정금
-          tempDeposit: 30000000,        // 매매약정금
+          tempDeposit: 0,        // 매매약정금
           tempDepositDate: todayStr,    // 약정일
           isTempSplit: false,           // 분할입금 여부
-          tempDeposit1: 30000000,       // 1차 약정금
+          tempDeposit1: 0,       // 1차 약정금
           tempDeposit1Date: todayStr,   // 1차 입금일
           tempDeposit2: 0,              // 2차 약정금
           tempDeposit2Date: '',         // 2차 입금일
           tempDepositAccount: '',       // 입금계좌
 
           // 매매대금 및 지급일정
-          totalPrice: 950000000,        // 매매대금
-          contractDeposit: 100000000,   // 계약금
+          totalPrice: 0,        // 매매대금
+          contractDeposit: 0,   // 계약금
           contractSchedule: '토지거래허가후 7일이내', // 계약예정일
           contractDate: '',
-          midPayment: 200000000,        // 중도금(1차)
-          midDate: '2026-10-16',        // 중도금(1차) 예정일
+          midPayment: 0,        // 중도금(1차)
+          midDate: '',                  // 중도금(1차) 예정일
           midNote: '예정',
           midPayment2: 0,               // 중도금(2차)
           midDate2: '',                 // 중도금(2차) 예정일
           midNote2: '예정',
-          balance: 650000000,           // 잔금
-          balanceDate: '2026-12-04',    // 잔금예정일
+          balance: 0,           // 잔금
+          balanceDate: '',    // 잔금예정일
           balanceNote: '이내로 협의',
-
-          // 특약사항 (배열 또는 텍스트)
-          specialTerms:
-            `2. 등기사항전부증명서상 을구 기재내용 없음으로 권리상 하자없음을 확인하였으며, 매도인은 잔금일까지 소유권의 행사를 제한하는 일체의 제한물권을 설정하지 않기로 한다.
-3. 현 시설물 상태의 약정이며, 매수인 직접 현장방문하여 확인한 후 토지거래허가를 득하기 위한 약정임을 인지하고 쌍방 합의하에 진행하는 약정이다.
-4. 본 매매약정금은 계약금이 아니므로, 매매계약 체결 시 기지급한 약정금 전액을 반환한 후 계약금을 별도로 지급한다.
-5. 토지거래 허가 후 매수약정인은 허가일로부터 4개월 이내 취득(등기)하고 취득일로부터 이용의무(2년 실거주)를 이행해야함을 인지하고 진행하는 약정이다. 다만, 주택 취득일이 그보다 빠를 경우 해당 토지 취득일로부터 이용의무를 이행하여야 한다.
-6. 계약서는 부동산거래허가를 득한후 협의된 날 작성하며, 확인설명서도 계약서 작성시 함께 작성, 교부하기로 한다.
-7. 기타사항은 계약시 협의하기로 하며, 일방 변심에 의해 계약파기시 중개보수는 지불하기로 한다.`
+          specialTerms: ''
         },
 
         // 4. 토지거래허가 전용 항목
@@ -203,22 +332,21 @@
           rightKind: '소유권',
           rightAction: '취득',
           transferType: '유상',
-          purpose: '자기거주용 주택',
-          residents: '김철수',
-          moveInDate: '2026-12-04',
+          purpose: '주거용 (세대원 전원 실거주 자가주택 취득)',
+          residents: '',
+          moveInDate: '',
           funding: {
-            buyer1: {
-              name: '김철수',
-              selfDeposit: 450000000,
-              assetSale: 200000000,
-              loanAmount: 300000000,
-              etc: 0
-            }
+            deposit: 0,
+            stocks: 0,
+            gift: 0,
+            realestate: 0,
+            loanBank: 0,
+            borrow: 0
           },
           usagePlan: {
-            householdCount: 2,
+            householdCount: 0,
             currentHomeCount: 0,
-            dispositionPlan: '무주택자 실거주 취득',
+            dispositionPlan: '',
             actualLiving: '본인 및 세대원 전원 실거주 예정'
           }
         },

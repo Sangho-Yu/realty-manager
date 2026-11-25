@@ -2222,14 +2222,11 @@
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
             <h3 class="text-sm font-bold text-slate-700">해당 단계에 등록된 거래 내역이 없습니다</h3>
-            <p class="text-xs text-slate-500 mt-1 mb-4">새로운 매매약정서를 작성하거나 샘플 데이터를 생성해 보세요.</p>
+            <p class="text-xs text-slate-500 mt-1 mb-4">새로운 매매약정서를 작성하여 거래를 시작해 보세요.</p>
             <div class="flex items-center justify-center gap-2">
               <a href="./agreement/index.html" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow-xs">
                 ✨ 새 매매약정서 작성하기
               </a>
-              <button onclick="createSampleDealInModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition border border-slate-300">
-                샘플 거래 생성
-              </button>
             </div>
           </div>
         `;
@@ -2368,35 +2365,23 @@
       }
     }
 
-    function createSampleDealInModal() {
-      if (!window.DealStore) return;
-      const sample = window.DealStore.createEmptyDeal();
-      sample.dealDate = '2026-11-20';
-      sample.property.dong = '호계동';
-      sample.property.complex = '목련두산아파트';
-      sample.property.dongNum = '201';
-      sample.property.hoNum = '1502';
-      sample.property.bldAddr = '경기도 안양시 동안구 호계동 1052-3 목련아파트 201동 1502호';
-      sample.parties.sellers = [{ name: '홍길동', rrn: '750101-1234567', tel: '010-1234-5678', addr: '경기도 안양시 동안구 동안로 120, 101동 202호', share: '1/1' }];
-      sample.parties.buyers = [
-        { name: '김철수', rrn: '750101-1234567', tel: '010-9876-5432', addr: '서울특별시 서초구 서초대로 50, 203동 501호', share: '1/2' },
-        { name: '이영희', rrn: '800505-2345678', tel: '010-5555-6666', addr: '서울특별시 서초구 서초대로 50, 203동 501호', share: '1/2' }
-      ];
-      sample.financial.totalPrice = 1250000000;
-      sample.financial.tempDeposit = 30000000;
-      sample.financial.contractDeposit = 125000000;
-      sample.financial.midPayment = 200000000;
-      sample.financial.balance = 925000000;
-      sample.financial.balanceDate = '2026-12-30';
-      sample.status = 'agreement_signed';
-
-      window.DealStore.saveDeal(sample);
-      updateDealCountBadges();
-      renderDealListInModal();
-      alert('샘플 거래 데이터가 등록되었습니다: ' + sample.title);
-      if (accessToken && appState.rootFolderId) {
-        syncDealsWithGoogleDrive(true).catch(e => console.warn(e));
+    function clearAllDealsFromModal() {
+      const list = window.DealStore ? window.DealStore.listDeals() : [];
+      if (list.length === 0) {
+        alert('등록된 거래 내역이 없습니다.');
+        return;
       }
+      if (confirm(`현재 저장된 모든 거래 내역(${list.length}건)을 완전히 삭제하시겠습니까?\n\n※ 삭제된 거래 데이터는 복구할 수 없습니다.`)) {
+        localStorage.removeItem('realty_deals');
+        updateDealCountBadges();
+        renderDealListInModal();
+        alert('모든 거래 내역이 초기화되었습니다.');
+      }
+    }
+
+    function createSampleDealInModal() {
+      // 샘플 생성 비활성화
+      alert('샘플 데이터 생성이 제거되었습니다. 상단의 [✨ 새 매매약정서 작성]을 클릭하여 실제 거래를 작성하세요.');
     }
 
     // Step 4: Google Drive 클라우드 거래 동기화
@@ -2651,6 +2636,11 @@
             class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition shadow-xs flex items-center gap-1">
             <span>✨ 새 매매약정서 작성</span>
           </a>
+          <button onclick="clearAllDealsFromModal()"
+            class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg font-semibold border border-rose-300 transition"
+            title="등록된 모든 거래 목록 삭제 (초기화)">
+            <span>🗑️ 전체 거래 비우기</span>
+          </button>
           <button onclick="exportAllDealsJson()"
             class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-semibold border border-slate-300 transition"
             title="전체 거래 JSON 다운로드">
