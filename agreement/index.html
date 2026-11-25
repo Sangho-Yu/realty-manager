@@ -775,9 +775,22 @@
 
       <!-- 3. 계약자 정보 (부동산 소유자 & 매수 약정인) -->
       <div class="form-section">
-        <div class="section-title">
-          <span>3. 당사자 정보 (소유자 & 매수약정인)</span>
-          <span style="font-size:10px; color:#94a3b8;">공동명의 완벽 대응</span>
+        <div class="section-title" style="flex-wrap:wrap; gap:6px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span>3. 당사자 정보 (소유자 & 매수약정인)</span>
+          </div>
+          <!-- 주민등록번호 별표시 / 전체표시 토글 옵션 -->
+          <div style="display:inline-flex; align-items:center; gap:8px; font-size:11px; background:var(--header-bg, #f1f5f9); padding:2px 8px; border-radius:6px; border:1px solid var(--border, #cbd5e1);">
+            <span style="font-weight:700; color:var(--text, #334155); font-size:10.5px;">주민번호 표기:</span>
+            <label style="cursor:pointer; display:inline-flex; align-items:center; gap:3px; color:var(--text, #334155); font-weight:600; font-size:11px;">
+              <input type="radio" name="rrn_display_mode" value="masked" checked onchange="onRrnDisplayModeChange()" />
+              <span>별표시 (1******)</span>
+            </label>
+            <label style="cursor:pointer; display:inline-flex; align-items:center; gap:3px; color:var(--primary, #0284c7); font-weight:600; font-size:11px;">
+              <input type="radio" name="rrn_display_mode" value="full" onchange="onRrnDisplayModeChange()" />
+              <span>전체표시 (13자리)</span>
+            </label>
+          </div>
         </div>
 
         <!-- 부동산 소유자 (매도인) -->
@@ -1993,6 +2006,9 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       initTheme();
+      const savedRrnMode = localStorage.getItem('agreement_rrn_display_mode') || 'masked';
+      const rrnRadioInit = document.querySelector(`input[name="rrn_display_mode"][value="${savedRrnMode}"]`);
+      if (rrnRadioInit) rrnRadioInit.checked = true;
       renderComplexChips();
       refreshDealDropdown();
 
@@ -2265,6 +2281,11 @@
       document.getElementById('f_permit_plan').value = permit.usagePlan?.dispositionPlan || '무주택 세대 (실거주 목적 신규 취득)';
 
       refreshDealDropdown();
+            // 주민번호 표기 모드 복원
+      const rrnMode = deal.rrnDisplayMode || localStorage.getItem('agreement_rrn_display_mode') || 'masked';
+      const rrnRadio = document.querySelector(`input[name="rrn_display_mode"][value="${rrnMode}"]`);
+      if (rrnRadio) rrnRadio.checked = true;
+      
       updateKoreanLabels();
       onAddressFieldChange();
       syncPreview();
@@ -2276,6 +2297,7 @@
       const base = existing || window.DealStore.createEmptyDeal();
 
       base.dealDate = document.getElementById('f_deal_date').value;
+      base.rrnDisplayMode = getRrnDisplayMode();
 
       // 부동산
       base.property.landAddr = document.getElementById('f_land_addr').value.trim();
@@ -2717,10 +2739,35 @@
       document.getElementById('pv_rcpt_detail_text').textContent = rcptText;
     }
 
-    // 주민번호 표시 포맷팅
+    // 주민등록번호 별표시(마스킹) / 전체표시 모드 조회 및 변경
+    function getRrnDisplayMode() {
+      const checked = document.querySelector('input[name="rrn_display_mode"]:checked');
+      return checked ? checked.value : (localStorage.getItem('agreement_rrn_display_mode') || 'masked');
+    }
+
+    function onRrnDisplayModeChange() {
+      const mode = getRrnDisplayMode();
+      localStorage.setItem('agreement_rrn_display_mode', mode);
+      syncPreview();
+    }
+
+    // 주민번호 표시 포맷팅 (별표시 또는 전체표시 지원)
     function formatRrnDisplay(rrn) {
       if (!rrn) return '-';
       const clean = rrn.trim();
+      const mode = getRrnDisplayMode();
+
+      // 전체표시 모드 (13자리 전체 노출)
+      if (mode === 'full') {
+        if (clean.includes('-')) {
+          return clean;
+        } else if (clean.length === 13) {
+          return clean.substring(0, 6) + '-' + clean.substring(6);
+        }
+        return clean;
+      }
+
+      // 기본 별표시 모드 (앞 6자리 + 뒷 1자리 + ****** 마스킹)
       if (clean.includes('-')) {
         const parts = clean.split('-');
         if (parts[1] && parts[1].length > 0) {
